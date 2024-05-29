@@ -12,26 +12,28 @@ import java.util.Date;
  */
 @Data
 @TableName(autoResultMap = true)
-public class CustomerInfo implements Serializable,Cloneable{
-    /** 主键 */
+public class CustomerInfo implements Serializable, Cloneable {
+    /**
+     * 主键
+     */
     @TableId
-    private String id ;
+    private String id;
     // 客户名称
-    private String name ;
+    private String name;
     // 责任人
-    private String owner ;
+    private String owner;
     // 当前归属活动
-    private String currentCampaign ;
+    private String currentCampaign;
     // 转化概率，枚举值
-    private String conversionRate ;
+    private String conversionRate;
     // 客户阶段，0-4
-    private Integer customerStage ;
+    private Integer customerStage;
     // 沟通轮次
-    private Integer communicationRounds ;
+    private Integer communicationRounds;
     // 最近沟通日期
-    private Date lastCommunicationDate ;
+    private Date lastCommunicationDate;
     // 沟通总时长，单位s
-    private Double totalDuration ;
-    private Date createTime ;
-    private Date updateTime ;
+    private Long totalDuration;
+    private Date createTime;
+    private Date updateTime;
 }
