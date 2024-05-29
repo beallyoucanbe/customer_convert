@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wuyou.mapper.ApplyMapper">
+    <resultMap type="com.smart.sso.server.model.CustomerInfo" id="CustomerInfoMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="owner" column="owner" jdbcType="VARCHAR"/>
+        <result property="currentCampaign" column="current_campaign" jdbcType="VARCHAR"/>
+        <result property="conversionRate" column="conversion_rate" jdbcType="VARCHAR"/>
+        <result property="customerStage" column="customer_stage" jdbcType="INTEGER"/>
+        <result property="communicationRounds" column="communication_rounds" jdbcType="INTEGER"/>
+        <result property="lastCommunicationDate" column="last_communication_date" jdbcType="TIME"/>
+        <result property="totalDuration" column="total_duration" jdbcType="DOUBLE"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+</mapper>
