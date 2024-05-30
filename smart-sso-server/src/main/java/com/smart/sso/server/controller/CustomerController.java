@@ -23,7 +23,7 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
-    public BaseResponse<CustomerInfoListResponse> getCustomerList(@RequestParam(value = "page", defaultValue = "1") Integer page,
+    public BaseResponse<CustomerInfoListResponse> getCustomerList(@RequestParam(value = "offset", defaultValue = "1") Integer page,
                                                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit,
                                                                                   @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
                                                                                   @RequestParam(value = "order", defaultValue = "desc") String order,

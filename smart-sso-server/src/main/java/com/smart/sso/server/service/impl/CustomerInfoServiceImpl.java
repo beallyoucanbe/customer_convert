@@ -43,7 +43,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             queryWrapper.like("name", params.getName());
         }
         if (!StringUtils.isEmpty(params.getOwner())) {
-            queryWrapper.like("owner", params.getName());
+            queryWrapper.like("owner", params.getOwner());
         }
         if (!StringUtils.isEmpty(params.getConversionRate())) {
             queryWrapper.eq("conversion_rate", params.getConversionRate());
