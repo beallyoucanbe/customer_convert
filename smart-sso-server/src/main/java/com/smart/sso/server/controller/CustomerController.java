@@ -3,6 +3,7 @@ package com.smart.sso.server.controller;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.model.VO.CustomerProfile;
+import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.service.CustomerInfoService;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,16 +47,16 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户特征信息")
     @GetMapping("/customer/{id}/features")
-    public BaseResponse<CustomerProfile> getCustomerFeatures(@PathVariable(value = "id") String id) {
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
-        return ResultUtils.success(customerProfile);
+    public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "id") String id) {
+        CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(id);
+        return ResultUtils.success(FeatureProfile);
     }
-
 
     @ApiOperation(value = "插入客户信息")
-    @PostMapping("/customer")
-    public BaseResponse<String> insertCustomerList(@RequestBody CustomerInfoListRequest params) {
+    @PostMapping("/customer_list")
+    public BaseResponse<String> insertCustomerInfo() {
         customerInfoService.insetCustomerInfoList();
-        return ResultUtils.success("123");
+        return ResultUtils.success("success");
     }
+
 }

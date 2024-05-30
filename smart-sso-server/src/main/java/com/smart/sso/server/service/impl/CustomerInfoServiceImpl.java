@@ -2,10 +2,14 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.model.CustomerFeature;
 import com.smart.sso.server.model.CustomerInfo;
+import com.smart.sso.server.model.FeatureContent;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
+import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.service.CustomerInfoService;
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,6 +31,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
+    @Autowired
+    private CustomerFeatureMapper customerFeatureMapper;
 
     @Override
     public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -56,8 +63,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerProfile queryCustomerById(String id) {
-        CustomerInfo customerInfo =  customerInfoMapper.selectById(id);
+        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         return convert2CustomerProfile(customerInfo);
+    }
+
+    @Override
+    public CustomerFeatureResponse queryCustomerFeatureById(String id) {
+        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
+        return convert2CustomerFeatureResponse(customerFeature);
     }
 
     @Override
@@ -83,7 +96,26 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfo.setLastCommunicationDate(DateUtil.getDateObj());
             customerInfo.setTotalDuration((long) (random.nextInt(9999) + 1));
             customerInfoMapper.insert(customerInfo);
+            // 同时写入客户特征表
+            insetCustomerFeature(customerInfo.getId());
         }
+    }
+
+    @Override
+    public void insetCustomerFeature(String id) {
+        CustomerFeature customerFeature = new CustomerFeature();
+        Random random = new Random();
+        customerFeature.setId(id);
+        customerFeature.setClassLength((long) (random.nextInt(9999) + 1));
+        customerFeature.setClassCount(random.nextInt(10) + 1);
+
+        FeatureContent contentWithNum = new FeatureContent(Boolean.TRUE, "12", "tell me");
+        FeatureContent contentWithBoolean = new FeatureContent(Boolean.TRUE, "true", "这是一个测试的记录");
+        FeatureContent contentWithString = new FeatureContent(Boolean.TRUE, "字符串测试", "另一个test");
+        customerFeature.setFundsVolume(contentWithNum);
+        customerFeature.setEarningDesire(contentWithBoolean);
+        customerFeature.setSoftwareValueApproval(contentWithString);
+        customerFeatureMapper.insert(customerFeature);
     }
 
     public Object getRandomElement(Object[] array, Random random) {
@@ -100,9 +132,55 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     public CustomerProfile convert2CustomerProfile(CustomerInfo customerInfo) {
+        if (Objects.isNull(customerInfo)) {
+            return null;
+        }
         CustomerProfile customerProfile = new CustomerProfile();
         BeanUtils.copyProperties(customerInfo, customerProfile);
         return customerProfile;
     }
 
+    public CustomerFeatureResponse convert2CustomerFeatureResponse(CustomerFeature customerFeature) {
+        if (Objects.isNull(customerFeature)) {
+            return null;
+        }
+        CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
+        // Profile
+        CustomerFeatureResponse.Profile profile = new CustomerFeatureResponse.Profile();
+        profile.setCustomerLifecycle(customerFeature.getCustomerLifecycle());
+        profile.setHasComputerVersion(customerFeature.getHasComputerVersion());
+        profile.setClassCount(customerFeature.getClassCount());
+        profile.setPasswordEarnest(customerFeature.getPasswordEarnest());
+        profile.setUsageFrequency(customerFeature.getUsageFrequency());
+        profile.setClassLength(customerFeature.getClassLength());
+        customerFeatureResponse.setProfile(profile);
+        // Basic
+        CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
+        basic.setFundsVolume(customerFeature.getFundsVolume());
+        basic.setProfitLossSituation(customerFeature.getProfitLossSituation());
+        basic.setEarningDesire(customerFeature.getEarningDesire());
+        customerFeatureResponse.setBasic(basic);
+        // TradingMethod
+        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
+        tradingMethod.setCurrentStocks(customerFeature.getCurrentStocks());
+        tradingMethod.setStockPurchaseReason(customerFeature.getStockPurchaseReason());
+        tradingMethod.setTradeTimingDecision(customerFeature.getTradeTimingDecision());
+        tradingMethod.setTradingStyle(customerFeature.getTradingStyle());
+        tradingMethod.setStockMarketAge(customerFeature.getStockMarketAge());
+        tradingMethod.setLearningAbility(customerFeature.getLearningAbility());
+        customerFeatureResponse.setTradingMethod(tradingMethod);
+        // Recognition
+        CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
+        recognition.setCourseTeacherApproval(customerFeature.getCourseTeacherApproval());
+        recognition.setSoftwareFunctionClarity(customerFeature.getSoftwareFunctionClarity());
+        recognition.setStockSelectionMethod(customerFeature.getStockSelectionMethod());
+        recognition.setSelfIssueRecognition(customerFeature.getSelfIssueRecognition());
+        recognition.setSoftwareValueApproval(customerFeature.getSoftwareValueApproval());
+        recognition.setSoftwarePurchaseAttitude(customerFeature.getSoftwarePurchaseAttitude());
+        customerFeatureResponse.setRecognition(recognition);
+        // Note
+        customerFeatureResponse.setNote(customerFeature.getNote());
+
+        return customerFeatureResponse;
+    }
 }

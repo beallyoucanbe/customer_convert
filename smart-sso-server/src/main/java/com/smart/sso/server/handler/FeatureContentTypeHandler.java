@@ -21,16 +21,28 @@ public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
 
     @Override
     public FeatureContent getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        String json = rs.getString(columnName);
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
         return convertToFeatureContent(rs.getString(columnName));
     }
 
     @Override
     public FeatureContent getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        String json = rs.getString(columnIndex);
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
         return convertToFeatureContent(rs.getString(columnIndex));
     }
 
     @Override
     public FeatureContent getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        String json = cs.getString(columnIndex);
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
         return convertToFeatureContent(cs.getString(columnIndex));
     }
 
