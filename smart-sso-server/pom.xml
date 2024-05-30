@@ -8,7 +8,7 @@
 		<version>2.1.1</version>
 	</parent>
 	<artifactId>smart-sso-server</artifactId>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	
 	<dependencies>

@@ -61,26 +61,4 @@
 			</resource>
 		</resources>
 	</build>
-	
-	<issueManagement>
-		<system>github</system>
-		<url>https://github.com/a466350665/smart-sso/issues</url>
-	</issueManagement>
-	
-	<scm>
-		<url>https://github.com/a466350665/smart-sso</url>
-		<connection>https://github.com/a466350665/smart-sso.git</connection>
-	</scm>
-	
-	<developers>
-		<developer>
-			<name>ZhouLe(Joe)</name>
-			<id>Joe</id>
-			<email>a466350665@qq.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+8</timezone>
-		</developer>
-	</developers>
 </project>
