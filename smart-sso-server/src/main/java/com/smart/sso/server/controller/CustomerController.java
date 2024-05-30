@@ -40,7 +40,14 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户基本信息")
     @GetMapping("/customer/{id}/profile")
-    public BaseResponse<CustomerProfile> getCustomerList(@PathVariable(value = "id") String id) {
+    public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "id") String id) {
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
+        return ResultUtils.success(customerProfile);
+    }
+
+    @ApiOperation(value = "获取客户特征信息")
+    @GetMapping("/customer/{id}/features")
+    public BaseResponse<CustomerProfile> getCustomerFeatures(@PathVariable(value = "id") String id) {
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
         return ResultUtils.success(customerProfile);
     }
