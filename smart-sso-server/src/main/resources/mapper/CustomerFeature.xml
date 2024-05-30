@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.wuyou.mapper.ApplyMapper">
+    <resultMap type="com.smart.sso.server.model.CustomerInfo" id="CustomerFeatureMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="customerLifecycle" column="customer_lifecycle" jdbcType="VARCHAR"/>
+        <result property="hasComputerVersion" column="has_computer_version" jdbcType="TINYINT"/>
+        <result property="classCount" column="class_count" jdbcType="INTEGER"/>
+        <result property="passwordEarnest" column="password_earnest" jdbcType="VARCHAR"/>
+        <result property="usageFrequency" column="usage_frequency" jdbcType="VARCHAR"/>
+        <result property="classLength" column="class_length" jdbcType="BIGINT"/>
+        <result property="fundsVolume" column="funds_volume" jdbcType="VARCHAR"/>
+        <result property="profitLossSituation" column="profit_loss_situation" jdbcType="VARCHAR"/>
+        <result property="earningDesire" column="earning_desire" jdbcType="VARCHAR"/>
+        <result property="currentStocks" column="current_stocks" jdbcType="VARCHAR"/>
+        <result property="stockPurchaseReason" column="stock_purchase_reason" jdbcType="VARCHAR"/>
+        <result property="tradeTimingDecision" column="trade_timing_decision" jdbcType="VARCHAR"/>
+        <result property="tradingStyle" column="trading_style" jdbcType="VARCHAR"/>
+        <result property="stockMarketAge" column="stock_market_age" jdbcType="VARCHAR"/>
+        <result property="learningAbility" column="learning_ability" jdbcType="VARCHAR"/>
+        <result property="courseTeacherApproval" column="course_teacher_approval" jdbcType="VARCHAR"/>
+        <result property="softwareFunctionClarity" column="software_function_clarity" jdbcType="VARCHAR"/>
+        <result property="stockSelectionMethod" column="stock_selection_method" jdbcType="VARCHAR"/>
+        <result property="selfIssueRecognition" column="self_issue_recognition" jdbcType="VARCHAR"/>
+        <result property="softwareValueApproval" column="software_value_approval" jdbcType="VARCHAR"/>
+        <result property="softwarePurchaseAttitude" column="software_purchase_attitude" jdbcType="VARCHAR"/>
+        <result property="note" column="note" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+</mapper>
