@@ -7,7 +7,7 @@ import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
-import com.smart.sso.server.model.dto.PageListResponse;
+import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
@@ -28,7 +28,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerInfoMapper customerInfoMapper;
 
     @Override
-    public PageListResponse<CustomerListVO> queryCustomerInfoList(CustomerInfoListRequest params) {
+    public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
         Page<CustomerInfo> selectPage = new Page<>(params.getPage(), params.getLimit());
         QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
 
@@ -46,11 +46,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         queryWrapper.orderBy(Boolean.TRUE, "asc".equals(params.getOrder()), params.getSortBy());
         Page<CustomerInfo> resultPage = customerInfoMapper.selectPage(selectPage, queryWrapper);
-        PageListResponse<CustomerListVO> result = new PageListResponse<>();
+        CustomerInfoListResponse result = new CustomerInfoListResponse();
         result.setTotal(resultPage.getTotal());
         result.setLimit(params.getLimit());
         result.setOffset(params.getPage());
-        result.setData(convert(resultPage.getRecords()));
+        result.setCustomers(convert(resultPage.getRecords()));
         return result;
     }
 

@@ -1,12 +1,10 @@
 package com.smart.sso.server.controller;
 
-
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
-import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
-import com.smart.sso.server.model.dto.PageListResponse;
+import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,19 +23,19 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
-    public BaseResponse<PageListResponse<CustomerListVO>> getCustomerList(@RequestParam(value = "page", defaultValue = "1") Integer page,
-                                                                          @RequestParam(value = "limit", defaultValue = "10") Integer limit,
-                                                                          @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
-                                                                          @RequestParam(value = "order", defaultValue = "desc") String order,
-                                                                          @RequestParam(value = "name", required = false) String name,
-                                                                          @RequestParam(value = "owner", required = false) String owner,
-                                                                          @RequestParam(value = "conversion_rate", required = false) String conversionRate,
-                                                                          @RequestParam(value = "last_updated", required = false) String lastUpdated,
-                                                                          @RequestParam(value = "current_campaign", required = false) String currentCampaign) {
+    public BaseResponse<CustomerInfoListResponse> getCustomerList(@RequestParam(value = "page", defaultValue = "1") Integer page,
+                                                                                  @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+                                                                                  @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
+                                                                                  @RequestParam(value = "order", defaultValue = "desc") String order,
+                                                                                  @RequestParam(value = "name", required = false) String name,
+                                                                                  @RequestParam(value = "owner", required = false) String owner,
+                                                                                  @RequestParam(value = "conversion_rate", required = false) String conversionRate,
+                                                                                  @RequestParam(value = "last_updated", required = false) String lastUpdated,
+                                                                                  @RequestParam(value = "current_campaign", required = false) String currentCampaign) {
         CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order,
                 name, owner, conversionRate, lastUpdated, currentCampaign);
-        PageListResponse<CustomerListVO> pageListResponse = customerInfoService.queryCustomerInfoList(params);
-        return ResultUtils.success(pageListResponse);
+        CustomerInfoListResponse commonPageList = customerInfoService.queryCustomerInfoList(params);
+        return ResultUtils.success(commonPageList);
     }
 
     @ApiOperation(value = "获取客户基本信息")
