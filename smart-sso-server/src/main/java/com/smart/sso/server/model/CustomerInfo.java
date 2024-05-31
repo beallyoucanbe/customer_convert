@@ -1,10 +1,13 @@
 package com.smart.sso.server.model;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -34,6 +37,8 @@ public class CustomerInfo implements Serializable, Cloneable {
     private Date lastCommunicationDate;
     // 沟通总时长，单位s
     private Long totalDuration;
-    private Date createTime;
-    private Date updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime  updateTime;
 }

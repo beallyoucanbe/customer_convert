@@ -1,5 +1,6 @@
 package com.smart.sso.server.model;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -7,7 +8,7 @@ import com.smart.sso.server.handler.FeatureContentTypeHandler;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @TableName(autoResultMap = true)
@@ -56,6 +57,8 @@ public class CustomerFeature implements Serializable, Cloneable {
     private FeatureContent softwarePurchaseAttitude;
 
     private String note;
-    private Date createTime;
-    private Date updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime  updateTime;
 }
