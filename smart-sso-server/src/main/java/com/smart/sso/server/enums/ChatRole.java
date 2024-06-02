@@ -5,21 +5,21 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
- * 客户转化率
+ * 对话双方角色
  */
 @Getter
-public enum ConversionRateEnum {
-    LOW("low", 0),
-    MEDIUM("medium", 1),
-    HIGH("high", 2);
+public enum ChatRole {
+    SALES("sales", 0),
+    CUSTOMER("customer", 1);
 
     @EnumValue
     private final int value;
     @JsonValue
     private final String text;
 
-    ConversionRateEnum(String text, int value) {
+    ChatRole(String text, int value) {
         this.text = text;
         this.value = value;
     }
+
 }
