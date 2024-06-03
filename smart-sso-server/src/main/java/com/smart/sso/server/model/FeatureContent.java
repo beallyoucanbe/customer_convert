@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FeatureContent {
     private Boolean inquired;
-    private String modelRecord;
+    private Object modelRecord;
     private String salesRecord;
 }

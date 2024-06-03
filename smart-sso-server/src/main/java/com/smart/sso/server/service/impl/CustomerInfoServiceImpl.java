@@ -119,23 +119,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.setPasswordEarnest(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
         customerFeature.setUsageFrequency(getRandomElement(useFrequency, random).toString());
 
-        customerFeature.setFundsVolume(new FeatureContent(random.nextBoolean(), Integer.toString(random.nextInt(9999) + 1), getRandomElement(saleMark, random).toString()));
+        customerFeature.setFundsVolume(new FeatureContent(random.nextBoolean(), random.nextInt(9999) + 1, getRandomElement(saleMark, random).toString()));
         customerFeature.setProfitLossSituation(new FeatureContent(random.nextBoolean(), getRandomElement(profit, random).toString(), getRandomElement(saleMark, random).toString()));
-        customerFeature.setEarningDesire(new FeatureContent(random.nextBoolean(), Boolean.toString(random.nextBoolean()), getRandomElement(saleMark, random).toString()));
+        customerFeature.setEarningDesire(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
 
         customerFeature.setCurrentStocks(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
         customerFeature.setStockPurchaseReason(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
         customerFeature.setTradeTimingDecision(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
         customerFeature.setTradingStyle(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setStockMarketAge(new FeatureContent(random.nextBoolean(), Integer.toString(random.nextInt(9999) + 1), getRandomElement(saleMark, random).toString()));
+        customerFeature.setStockMarketAge(new FeatureContent(random.nextBoolean(), random.nextInt(9999) + 1, getRandomElement(saleMark, random).toString()));
         customerFeature.setLearningAbility(new FeatureContent(random.nextBoolean(), getRandomElement(useFrequency, random).toString(), getRandomElement(saleMark, random).toString()));
 
         customerFeature.setCourseTeacherApproval(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSoftwareFunctionClarity(new FeatureContent(random.nextBoolean(), Boolean.toString(random.nextBoolean()), getRandomElement(saleMark, random).toString()));
-        customerFeature.setStockSelectionMethod(new FeatureContent(random.nextBoolean(), Boolean.toString(random.nextBoolean()), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSelfIssueRecognition(new FeatureContent(random.nextBoolean(), Boolean.toString(random.nextBoolean()), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSoftwareValueApproval(new FeatureContent(random.nextBoolean(), Boolean.toString(random.nextBoolean()), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSoftwarePurchaseAttitude(new FeatureContent(random.nextBoolean(), Boolean.toString(random.nextBoolean()), getRandomElement(saleMark, random).toString()));
+        customerFeature.setSoftwareFunctionClarity(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
+        customerFeature.setStockSelectionMethod(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
+        customerFeature.setSelfIssueRecognition(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
+        customerFeature.setSoftwareValueApproval(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
+        customerFeature.setSoftwarePurchaseAttitude(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
 
         customerFeatureMapper.insert(customerFeature);
     }
