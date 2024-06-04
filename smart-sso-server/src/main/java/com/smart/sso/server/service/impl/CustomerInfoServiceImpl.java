@@ -2,6 +2,7 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.CustomerFeature;
@@ -12,9 +13,11 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
+import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
+import com.smart.sso.server.util.JsonUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,6 +74,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public CustomerFeatureResponse queryCustomerFeatureById(String id) {
         CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
         return convert2CustomerFeatureResponse(customerFeature);
+    }
+
+    @Override
+    public CustomerProcessSummaryResponse queryCustomerProcessSummaryById(String id) {
+        return JsonUtil.readValue(JsonUtil.summary_string, new TypeReference<CustomerProcessSummaryResponse>() {
+        });
     }
 
     @Override

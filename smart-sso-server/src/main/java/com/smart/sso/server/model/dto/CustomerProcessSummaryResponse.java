@@ -1,5 +1,6 @@
 package com.smart.sso.server.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -78,6 +79,7 @@ public class CustomerProcessSummaryResponse {
     public static class Message {
         private String role;
         private String content;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Date time;
     }
 

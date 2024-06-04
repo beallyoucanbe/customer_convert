@@ -6,6 +6,7 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
+import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,14 @@ public class CustomerController {
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
     public BaseResponse<CustomerInfoListResponse> getCustomerList(@RequestParam(value = "offset", defaultValue = "1") Integer page,
-                                                                                  @RequestParam(value = "limit", defaultValue = "10") Integer limit,
-                                                                                  @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
-                                                                                  @RequestParam(value = "order", defaultValue = "desc") String order,
-                                                                                  @RequestParam(value = "name", required = false) String name,
-                                                                                  @RequestParam(value = "owner", required = false) String owner,
-                                                                                  @RequestParam(value = "conversion_rate", required = false) String conversionRate,
-                                                                                  @RequestParam(value = "current_campaign", required = false) String currentCampaign) {
-        CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order,
-                name, owner, conversionRate, currentCampaign);
+                                                                  @RequestParam(value = "limit", defaultValue = "10") Integer limit,
+                                                                  @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
+                                                                  @RequestParam(value = "order", defaultValue = "desc") String order,
+                                                                  @RequestParam(value = "name", required = false) String name,
+                                                                  @RequestParam(value = "owner", required = false) String owner,
+                                                                  @RequestParam(value = "conversion_rate", required = false) String conversionRate,
+                                                                  @RequestParam(value = "current_campaign", required = false) String currentCampaign) {
+        CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order, name, owner, conversionRate, currentCampaign);
         CustomerInfoListResponse commonPageList = customerInfoService.queryCustomerInfoList(params);
         return ResultUtils.success(commonPageList);
     }
@@ -49,6 +49,13 @@ public class CustomerController {
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "id") String id) {
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(id);
         return ResultUtils.success(FeatureProfile);
+    }
+
+    @ApiOperation(value = "获取客户过程总结")
+    @GetMapping("/customer/{id}/summary")
+    public BaseResponse<CustomerProcessSummaryResponse> getCustomerSummary(@PathVariable(value = "id") String id) {
+        CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
+        return ResultUtils.success(customerSummary);
     }
 
     @ApiOperation(value = "插入客户信息")
