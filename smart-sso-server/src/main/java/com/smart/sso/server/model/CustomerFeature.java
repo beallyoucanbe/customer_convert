@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Data
 @TableName(autoResultMap = true)
-public class CustomerFeature implements Serializable, Cloneable {
+public class CustomerFeature implements Serializable {
     /**
      * 主键
      */

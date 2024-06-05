@@ -15,7 +15,7 @@ import java.util.Date;
  */
 @Data
 @TableName(autoResultMap = true)
-public class CustomerInfo implements Serializable, Cloneable {
+public class CustomerInfo implements Serializable {
     /**
      * 主键
      */

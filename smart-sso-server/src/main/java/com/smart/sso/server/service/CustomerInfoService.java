@@ -20,4 +20,6 @@ public interface CustomerInfoService {
     void insetCustomerInfoList();
 
     void insetCustomerFeature(String id);
+
+    void insetCustomerSummary(String id);
 }

@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.model.CustomerFeature;
 import com.smart.sso.server.model.CustomerInfo;
+import com.smart.sso.server.model.CustomerSummary;
 import com.smart.sso.server.model.FeatureContent;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -36,6 +38,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
     private CustomerFeatureMapper customerFeatureMapper;
+    @Autowired
+    private CustomerSummaryMapper customerSummaryMapper;
 
     @Override
     public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -78,8 +82,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerProcessSummaryResponse queryCustomerProcessSummaryById(String id) {
-        return JsonUtil.readValue(JsonUtil.summary_string, new TypeReference<CustomerProcessSummaryResponse>() {
-        });
+        CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
+        return convert2CustomerProcessSummaryResponse(customerSummary);
     }
 
     @Override
@@ -107,6 +111,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfoMapper.insert(customerInfo);
             // 同时写入客户特征表
             insetCustomerFeature(customerInfo.getId());
+            // 同时写入客户特征表
+            insetCustomerSummary(customerInfo.getId());
         }
     }
 
@@ -147,6 +153,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.setSoftwarePurchaseAttitude(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
 
         customerFeatureMapper.insert(customerFeature);
+    }
+
+    @Override
+    public void insetCustomerSummary(String id) {
+        CustomerSummary customerSummary = new CustomerSummary();
+        customerSummary.setId(id);
+        CustomerProcessSummaryResponse customerProcessSummaryResponse = JsonUtil.readValue(JsonUtil.summary_string, new TypeReference<CustomerProcessSummaryResponse>() {
+        });
+        customerSummary.setSummaryAdvantage(customerProcessSummaryResponse.getSummary().getAdvantage());
+        customerSummary.setSummaryQuestions(customerProcessSummaryResponse.getSummary().getQuestions());
+        customerSummary.setInfoExplanation(customerProcessSummaryResponse.getInfoExplanation());
+
+        customerSummary.setApprovalAnalysisMethod(customerProcessSummaryResponse.getApprovalAnalysis().getMethod());
+        customerSummary.setApprovalAnalysisIssue(customerProcessSummaryResponse.getApprovalAnalysis().getIssue());
+        customerSummary.setApprovalAnalysisPrice(customerProcessSummaryResponse.getApprovalAnalysis().getPrice());
+        customerSummary.setApprovalAnalysisValue(customerProcessSummaryResponse.getApprovalAnalysis().getValue());
+        customerSummary.setApprovalAnalysisPurchase(customerProcessSummaryResponse.getApprovalAnalysis().getPurchase());
+
+        customerSummaryMapper.insert(customerSummary);
     }
 
     public Object getRandomElement(Object[] array, Random random) {
@@ -213,5 +238,31 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setNote(customerFeature.getNote());
 
         return customerFeatureResponse;
+    }
+
+    public CustomerProcessSummaryResponse convert2CustomerProcessSummaryResponse(CustomerSummary customerSummary) {
+        if (Objects.isNull(customerSummary)) {
+            return null;
+        }
+        CustomerProcessSummaryResponse customerSummaryResponse = new CustomerProcessSummaryResponse();
+
+        CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
+        processSummary.setAdvantage(customerSummary.getSummaryAdvantage());
+        processSummary.setQuestions(customerSummary.getSummaryQuestions());
+        customerSummaryResponse.setSummary(processSummary);
+
+
+        CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = customerSummary.getInfoExplanation();
+        customerSummaryResponse.setInfoExplanation(infoExplanation);
+
+        CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = new CustomerProcessSummaryResponse.ProcessApprovalAnalysis();
+        approvalAnalysis.setMethod(customerSummary.getApprovalAnalysisMethod());
+        approvalAnalysis.setIssue(customerSummary.getApprovalAnalysisIssue());
+        approvalAnalysis.setPrice(customerSummary.getApprovalAnalysisPrice());
+        approvalAnalysis.setPurchase(customerSummary.getApprovalAnalysisPurchase());
+        approvalAnalysis.setPrice(customerSummary.getApprovalAnalysisPrice());
+        customerSummaryResponse.setApprovalAnalysis(approvalAnalysis);
+
+        return customerSummaryResponse;
     }
 }

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JsonUtil {
-    private static ObjectMapper DEFAULT_OBJECT_MAPPER = new com.fasterxml.jackson.databind.ObjectMapper();
+    private static ObjectMapper DEFAULT_OBJECT_MAPPER = new ObjectMapper();
 
     static {
         // 容忍json中出现未知的列
