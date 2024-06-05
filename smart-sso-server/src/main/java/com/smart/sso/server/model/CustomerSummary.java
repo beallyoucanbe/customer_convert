@@ -5,7 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.smart.sso.server.handler.CommaSeparatedStringTypeHandler;
-import com.smart.sso.server.handler.JsonTypeHandler;
+import com.smart.sso.server.handler.ProcessContentTypeHandler;
+import com.smart.sso.server.handler.ProcessInfoExplanationTypeHandler;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import lombok.Data;
 
@@ -25,17 +26,17 @@ public class CustomerSummary implements Serializable {
     private List<String> summaryAdvantage;
     @TableField(typeHandler = CommaSeparatedStringTypeHandler.class)
     private List<String> summaryQuestions;
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ProcessInfoExplanationTypeHandler.class)
     private CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation;
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ProcessContentTypeHandler.class)
     private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisMethod;
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ProcessContentTypeHandler.class)
     private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisIssue;
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ProcessContentTypeHandler.class)
     private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisValue;
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ProcessContentTypeHandler.class)
     private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisPrice;
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ProcessContentTypeHandler.class)
     private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisPurchase;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

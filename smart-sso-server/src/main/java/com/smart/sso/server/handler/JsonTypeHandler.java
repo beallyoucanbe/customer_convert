@@ -13,11 +13,15 @@ import java.sql.SQLException;
 public class JsonTypeHandler<T> extends BaseTypeHandler<T> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final Class<T> type;
+    private Class<T> type;
 
     public JsonTypeHandler(Class<T> type) {
         if (type == null) throw new IllegalArgumentException("Type argument cannot be null");
         this.type = type;
+    }
+
+    public JsonTypeHandler() {
+
     }
 
     @Override
