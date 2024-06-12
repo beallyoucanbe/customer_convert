@@ -15,7 +15,7 @@ public class PageRequest {
     public PageRequest(int page, int limit, String sortBy, String order) {
         this.page = page;
         this.limit = limit;
-        this.sortBy = sortBy;
+        this.sortBy = "last_update".equals(sortBy) ? "update_time" : sortBy;
         this.order = order;
     }
 }

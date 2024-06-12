@@ -62,7 +62,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String sortOrder = params.getSortBy();
         boolean isAsc = "asc".equalsIgnoreCase(params.getOrder());
         if ("conversion_rate".equals(sortOrder)) {
-            queryWrapper.last("ORDER BY FIELD(test, 'high', 'medium', 'low') " + (isAsc ? "ASC" : "DESC"));
+            queryWrapper.last("ORDER BY FIELD(conversion_rate, 'low', 'medium', 'high') " + (isAsc ? "ASC" : "DESC"));
         } else {
             queryWrapper.orderBy(true, isAsc, sortOrder);
         }
