@@ -58,7 +58,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!StringUtils.isEmpty(params.getCurrentCampaign())) {
             queryWrapper.eq("current_campaign", params.getCurrentCampaign());
         }
-        queryWrapper.orderBy(Boolean.TRUE, "asc".equals(params.getOrder()), params.getSortBy());
+
+        String sortOrder = params.getSortBy();
+        boolean isAsc = "asc".equalsIgnoreCase(params.getOrder());
+        if ("conversion_rate".equals(sortOrder)) {
+            queryWrapper.last("ORDER BY FIELD(test, 'high', 'medium', 'low') " + (isAsc ? "ASC" : "DESC"));
+        } else {
+            queryWrapper.orderBy(true, isAsc, sortOrder);
+        }
         Page<CustomerInfo> resultPage = customerInfoMapper.selectPage(selectPage, queryWrapper);
         CustomerInfoListResponse result = new CustomerInfoListResponse();
         result.setTotal(resultPage.getTotal());
