@@ -28,11 +28,11 @@ public class CustomerController {
                                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit,
                                                                   @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
                                                                   @RequestParam(value = "order", defaultValue = "desc") String order,
-                                                                  @RequestParam(value = "name", required = false) String name,
-                                                                  @RequestParam(value = "owner", required = false) String owner,
+                                                                  @RequestParam(value = "name", required = false) String customerName,
+                                                                  @RequestParam(value = "owner", required = false) String ownerName,
                                                                   @RequestParam(value = "conversion_rate", required = false) String conversionRate,
                                                                   @RequestParam(value = "current_campaign", required = false) String currentCampaign) {
-        CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order, name, owner, conversionRate, currentCampaign);
+        CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order, customerName, ownerName, conversionRate, currentCampaign);
         CustomerInfoListResponse commonPageList = customerInfoService.queryCustomerInfoList(params);
         return ResultUtils.success(commonPageList);
     }

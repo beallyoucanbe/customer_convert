@@ -9,8 +9,10 @@ import java.time.LocalDateTime;
 @Data
 public class CustomerListVO {
     private String id ;
-    private String name ;
-    private String owner ;
+    @JsonProperty("name")
+    private String customerName ;
+    @JsonProperty("owner")
+    private String ownerName ;
     private String currentCampaign ;
     private String conversionRate ;
     @JsonProperty("last_update")

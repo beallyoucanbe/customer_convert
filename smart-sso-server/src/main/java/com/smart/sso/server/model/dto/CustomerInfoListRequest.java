@@ -9,16 +9,16 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 public class CustomerInfoListRequest extends PageRequest implements Serializable {
-    private String name;
-    private String owner;
+    private String customerName;
+    private String ownerName;
     private String conversionRate;
     private String currentCampaign;
 
     public CustomerInfoListRequest(int page, int limit, String sortBy, String order,
-                                   String name, String owner, String conversionRate, String currentCampaign) {
+                                   String customerName, String ownerName, String conversionRate, String currentCampaign) {
         super(page, limit, sortBy, order);
-        this.name = name;
-        this.owner = owner;
+        this.customerName = customerName;
+        this.ownerName = ownerName;
         this.conversionRate = conversionRate;
         this.currentCampaign = currentCampaign;
     }

@@ -22,14 +22,18 @@ public class CustomerInfo implements Serializable {
     @TableId
     private String id;
     // 客户名称
-    private String name;
-    // 责任人
-    private String owner;
+    private String customerName;
+    // 客户id
+    private String customerId;
+    // 责任人名称
+    private String ownerName;
+    // 责任人Id
+    private String ownerId;
     // 当前归属活动
     private String currentCampaign;
     // 转化概率，枚举值
     private String conversionRate;
-    // 客户阶段，0-4
+    // 客户阶段，0-5
     private Integer customerStage;
     // 沟通轮次
     private Integer communicationRounds;
@@ -37,6 +41,12 @@ public class CustomerInfo implements Serializable {
     private Date lastCommunicationDate;
     // 沟通总时长，单位s
     private Long totalDuration;
+    // 租户Id
+    private String tenantId;
+    // 预留信息
+    private String reservedInfo;
+    // 预留属性
+    private String reservedProperty;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT)

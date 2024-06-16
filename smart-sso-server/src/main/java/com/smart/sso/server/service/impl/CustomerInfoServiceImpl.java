@@ -46,11 +46,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         Page<CustomerInfo> selectPage = new Page<>(params.getPage(), params.getLimit());
         QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
 
-        if (!StringUtils.isEmpty(params.getName())) {
-            queryWrapper.like("name", params.getName());
+        if (!StringUtils.isEmpty(params.getCustomerName())) {
+            queryWrapper.like("customer_name", params.getCustomerName());
         }
-        if (!StringUtils.isEmpty(params.getOwner())) {
-            queryWrapper.like("owner", params.getOwner());
+        if (!StringUtils.isEmpty(params.getOwnerName())) {
+            queryWrapper.like("owner_name", params.getOwnerName());
         }
         if (!StringUtils.isEmpty(params.getConversionRate())) {
             queryWrapper.eq("conversion_rate", params.getConversionRate());
@@ -107,8 +107,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (int i = 0; i < 100; i++) {
             CustomerInfo customerInfo = new CustomerInfo();
             customerInfo.setId(CommonUtils.generatePrimaryKey());
-            customerInfo.setName(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
-            customerInfo.setOwner(getRandomElement(owners, random).toString());
+            customerInfo.setCustomerName(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
+            customerInfo.setOwnerName(getRandomElement(owners, random).toString());
             customerInfo.setCurrentCampaign(getRandomElement(campaigns, random).toString());
             customerInfo.setConversionRate(getRandomElement(conversionRates, random).toString());
             customerInfo.setCustomerStage((Integer) getRandomElement(customerStages, random));
