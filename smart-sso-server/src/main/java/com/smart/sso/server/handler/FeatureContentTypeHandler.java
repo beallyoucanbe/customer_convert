@@ -52,7 +52,7 @@ public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
 
     private String convertToJson(FeatureContent featureContent) {
         try {
-            return convertInquiredField(objectMapper.writeValueAsString(featureContent));
+            return objectMapper.writeValueAsString(featureContent);
         } catch (IOException e) {
             throw new RuntimeException("Failed to convert FeatureContent to JSON", e);
         }

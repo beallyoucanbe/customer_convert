@@ -139,7 +139,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.setClassCount(random.nextInt(10) + 1);
         customerFeature.setPasswordEarnest(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
         customerFeature.setUsageFrequency(getRandomElement(useFrequency, random).toString());
-
+/**
         customerFeature.setFundsVolume(new FeatureContent(random.nextBoolean(), random.nextInt(9999) + 1, getRandomElement(saleMark, random).toString()));
         customerFeature.setProfitLossSituation(new FeatureContent(random.nextBoolean(), getRandomElement(profit, random).toString(), getRandomElement(saleMark, random).toString()));
         customerFeature.setEarningDesire(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
@@ -157,7 +157,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.setSelfIssueRecognition(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
         customerFeature.setSoftwareValueApproval(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
         customerFeature.setSoftwarePurchaseAttitude(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-
+**/
         customerFeatureMapper.insert(customerFeature);
     }
 
@@ -218,28 +218,28 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setProfile(profile);
         // Basic
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(customerFeature.getFundsVolume());
-        basic.setProfitLossSituation(customerFeature.getProfitLossSituation());
-        basic.setEarningDesire(customerFeature.getEarningDesire());
-        customerFeatureResponse.setBasic(basic);
-        // TradingMethod
-        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
-        tradingMethod.setCurrentStocks(customerFeature.getCurrentStocks());
-        tradingMethod.setStockPurchaseReason(customerFeature.getStockPurchaseReason());
-        tradingMethod.setTradeTimingDecision(customerFeature.getTradeTimingDecision());
-        tradingMethod.setTradingStyle(customerFeature.getTradingStyle());
-        tradingMethod.setStockMarketAge(customerFeature.getStockMarketAge());
-        tradingMethod.setLearningAbility(customerFeature.getLearningAbility());
-        customerFeatureResponse.setTradingMethod(tradingMethod);
-        // Recognition
-        CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
-        recognition.setCourseTeacherApproval(customerFeature.getCourseTeacherApproval());
-        recognition.setSoftwareFunctionClarity(customerFeature.getSoftwareFunctionClarity());
-        recognition.setStockSelectionMethod(customerFeature.getStockSelectionMethod());
-        recognition.setSelfIssueRecognition(customerFeature.getSelfIssueRecognition());
-        recognition.setSoftwareValueApproval(customerFeature.getSoftwareValueApproval());
-        recognition.setSoftwarePurchaseAttitude(customerFeature.getSoftwarePurchaseAttitude());
-        customerFeatureResponse.setRecognition(recognition);
+//        basic.setFundsVolume(customerFeature.getFundsVolume());
+//        basic.setProfitLossSituation(customerFeature.getProfitLossSituation());
+//        basic.setEarningDesire(customerFeature.getEarningDesire());
+//        customerFeatureResponse.setBasic(basic);
+//        // TradingMethod
+//        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
+//        tradingMethod.setCurrentStocks(customerFeature.getCurrentStocks());
+//        tradingMethod.setStockPurchaseReason(customerFeature.getStockPurchaseReason());
+//        tradingMethod.setTradeTimingDecision(customerFeature.getTradeTimingDecision());
+//        tradingMethod.setTradingStyle(customerFeature.getTradingStyle());
+//        tradingMethod.setStockMarketAge(customerFeature.getStockMarketAge());
+//        tradingMethod.setLearningAbility(customerFeature.getLearningAbility());
+//        customerFeatureResponse.setTradingMethod(tradingMethod);
+//        // Recognition
+//        CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
+//        recognition.setCourseTeacherApproval(customerFeature.getCourseTeacherApproval());
+//        recognition.setSoftwareFunctionClarity(customerFeature.getSoftwareFunctionClarity());
+//        recognition.setStockSelectionMethod(customerFeature.getStockSelectionMethod());
+//        recognition.setSelfIssueRecognition(customerFeature.getSelfIssueRecognition());
+//        recognition.setSoftwareValueApproval(customerFeature.getSoftwareValueApproval());
+//        recognition.setSoftwarePurchaseAttitude(customerFeature.getSoftwarePurchaseAttitude());
+//        customerFeatureResponse.setRecognition(recognition);
         // Note
         customerFeatureResponse.setNote(customerFeature.getNote());
 
