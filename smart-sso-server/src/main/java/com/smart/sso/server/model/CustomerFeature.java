@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @TableName(autoResultMap = true)
@@ -24,39 +25,75 @@ public class CustomerFeature implements Serializable {
     private String passwordEarnest;
     private String usageFrequency;
     private Long classLength;
+    private Boolean understandSaleExplain;
 
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent fundsVolume;
+    private FeatureContent fundsVolumeModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent profitLossSituation;
+    private FeatureContent fundsVolumeSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent earningDesire;
+    private FeatureContent profitLossSituationModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent currentStocks;
+    private FeatureContent profitLossSituationSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockPurchaseReason;
+    private FeatureContent earningDesireModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent tradeTimingDecision;
+    private FeatureContent earningDesireSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent tradingStyle;
+    private FeatureContent currentStocksModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockMarketAge;
+    private FeatureContent currentStocksSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent learningAbility;
+    private FeatureContent stockPurchaseReasonModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent courseTeacherApproval;
+    private FeatureContent stockPurchaseReasonSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwareFunctionClarity;
+    private FeatureContent tradeTimingDecisionModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockSelectionMethod;
+    private FeatureContent tradeTimingDecisionSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent selfIssueRecognition;
+    private FeatureContent tradingStyleModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwareValueApproval;
+    private FeatureContent tradingStyleSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwarePurchaseAttitude;
-
+    private FeatureContent stockMarketAgeModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent stockMarketAgeSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent learningAbilityModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent learningAbilitySales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent courseTeacherApprovalModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent courseTeacherApprovalSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent softwareFunctionClarityModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent softwareFunctionClaritySales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent stockSelectionMethodModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent stockSelectionMethodSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent selfIssueRecognitionModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent selfIssueRecognitionSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent softwareValueApprovalModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent softwareValueApprovalSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent softwarePurchaseAttitudeModel;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private FeatureContent softwarePurchaseAttitudeSales;
     private String note;
+    // 租户Id
+    private String tenantId;
+    // 预留信息
+    private String reservedFeature;
+    // 预留属性
+    private String reservedProperty;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT)

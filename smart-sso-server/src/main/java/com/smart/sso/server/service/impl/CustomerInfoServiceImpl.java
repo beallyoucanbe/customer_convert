@@ -9,7 +9,6 @@ import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.model.CustomerFeature;
 import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.CustomerSummary;
-import com.smart.sso.server.model.FeatureContent;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
