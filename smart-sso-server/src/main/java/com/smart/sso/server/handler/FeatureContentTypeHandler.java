@@ -2,6 +2,7 @@ package com.smart.sso.server.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.smart.sso.server.model.FeatureContent;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -14,17 +15,21 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
-public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
+public class FeatureContentTypeHandler extends BaseTypeHandler<List<FeatureContent>> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    static {
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+    }
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, FeatureContent parameter, JdbcType jdbcType) throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, List<FeatureContent> parameter, JdbcType jdbcType) throws SQLException {
         ps.setString(i, convertToJson(parameter));
     }
 
     @Override
-    public FeatureContent getNullableResult(ResultSet rs, String columnName) throws SQLException {
+    public List<FeatureContent> getNullableResult(ResultSet rs, String columnName) throws SQLException {
         String json = rs.getString(columnName);
         if (json == null || json.isEmpty()) {
             return null;
@@ -33,7 +38,7 @@ public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
     }
 
     @Override
-    public FeatureContent getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+    public List<FeatureContent> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
         String json = rs.getString(columnIndex);
         if (json == null || json.isEmpty()) {
             return null;
@@ -42,7 +47,7 @@ public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
     }
 
     @Override
-    public FeatureContent getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+    public List<FeatureContent> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
         String json = cs.getString(columnIndex);
         if (json == null || json.isEmpty()) {
             return null;
@@ -50,7 +55,7 @@ public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
         return convertToFeatureContent(cs.getString(columnIndex));
     }
 
-    private String convertToJson(FeatureContent featureContent) {
+    private String convertToJson(List<FeatureContent> featureContent) {
         try {
             return objectMapper.writeValueAsString(featureContent);
         } catch (IOException e) {
@@ -58,9 +63,9 @@ public class FeatureContentTypeHandler extends BaseTypeHandler<FeatureContent> {
         }
     }
 
-    private FeatureContent convertToFeatureContent(String json) {
+    private List<FeatureContent> convertToFeatureContent(String json) {
         try {
-            return objectMapper.readValue(json, new TypeReference<FeatureContent>() {
+            return objectMapper.readValue(json, new TypeReference<List<FeatureContent>>() {
             });
         } catch (IOException e) {
             throw new RuntimeException("Failed to convert JSON to FeatureContent", e);

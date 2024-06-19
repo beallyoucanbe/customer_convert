@@ -1,6 +1,7 @@
 package com.smart.sso.server.model.dto;
 
-import com.smart.sso.server.model.FeatureContent;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.smart.sso.server.handler.InquiredSerializer;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,30 +29,39 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Basic {
-        private FeatureContent fundsVolume;
-        private FeatureContent profitLossSituation;
-        private FeatureContent earningDesire;
+        private Feature fundsVolume;
+        private Feature profitLossSituation;
+        private Feature earningDesire;
     }
 
     @Getter
     @Setter
     public static class TradingMethod {
-        private FeatureContent currentStocks;
-        private FeatureContent stockPurchaseReason;
-        private FeatureContent tradeTimingDecision;
-        private FeatureContent tradingStyle;
-        private FeatureContent stockMarketAge;
-        private FeatureContent learningAbility;
+        private Feature currentStocks;
+        private Feature stockPurchaseReason;
+        private Feature tradeTimingDecision;
+        private Feature tradingStyle;
+        private Feature stockMarketAge;
+        private Feature learningAbility;
     }
 
     @Getter
     @Setter
     public static class Recognition {
-        private FeatureContent courseTeacherApproval;
-        private FeatureContent softwareFunctionClarity;
-        private FeatureContent stockSelectionMethod;
-        private FeatureContent selfIssueRecognition;
-        private FeatureContent softwareValueApproval;
-        private FeatureContent softwarePurchaseAttitude;
+        private Feature courseTeacherApproval;
+        private Feature softwareFunctionClarity;
+        private Feature stockSelectionMethod;
+        private Feature selfIssueRecognition;
+        private Feature softwareValueApproval;
+        private Feature softwarePurchaseAttitude;
+    }
+
+    @Getter
+    @Setter
+    public static class Feature {
+        @JsonSerialize(using = InquiredSerializer.class)
+        private Boolean inquired;
+        private Object modelRecord;
+        private String salesRecord;
     }
 }

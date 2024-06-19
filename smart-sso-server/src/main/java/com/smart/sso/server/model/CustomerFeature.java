@@ -28,65 +28,65 @@ public class CustomerFeature implements Serializable {
     private Boolean understandSaleExplain;
 
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent fundsVolumeModel;
+    private List<FeatureContent> fundsVolumeModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent fundsVolumeSales;
+    private List<FeatureContent> fundsVolumeSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent profitLossSituationModel;
+    private List<FeatureContent> profitLossSituationModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent profitLossSituationSales;
+    private List<FeatureContent> profitLossSituationSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent earningDesireModel;
+    private List<FeatureContent> earningDesireModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent earningDesireSales;
+    private List<FeatureContent> earningDesireSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent currentStocksModel;
+    private List<FeatureContent> currentStocksModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent currentStocksSales;
+    private List<FeatureContent> currentStocksSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockPurchaseReasonModel;
+    private List<FeatureContent> stockPurchaseReasonModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockPurchaseReasonSales;
+    private List<FeatureContent> stockPurchaseReasonSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent tradeTimingDecisionModel;
+    private List<FeatureContent> tradeTimingDecisionModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent tradeTimingDecisionSales;
+    private List<FeatureContent> tradeTimingDecisionSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent tradingStyleModel;
+    private List<FeatureContent> tradingStyleModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent tradingStyleSales;
+    private List<FeatureContent> tradingStyleSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockMarketAgeModel;
+    private List<FeatureContent> stockMarketAgeModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockMarketAgeSales;
+    private List<FeatureContent> stockMarketAgeSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent learningAbilityModel;
+    private List<FeatureContent> learningAbilityModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent learningAbilitySales;
+    private List<FeatureContent> learningAbilitySales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent courseTeacherApprovalModel;
+    private List<FeatureContent> courseTeacherApprovalModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent courseTeacherApprovalSales;
+    private List<FeatureContent> courseTeacherApprovalSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwareFunctionClarityModel;
+    private List<FeatureContent> softwareFunctionClarityModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwareFunctionClaritySales;
+    private List<FeatureContent> softwareFunctionClaritySales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockSelectionMethodModel;
+    private List<FeatureContent> stockSelectionMethodModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent stockSelectionMethodSales;
+    private List<FeatureContent> stockSelectionMethodSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent selfIssueRecognitionModel;
+    private List<FeatureContent> selfIssueRecognitionModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent selfIssueRecognitionSales;
+    private List<FeatureContent> selfIssueRecognitionSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwareValueApprovalModel;
+    private List<FeatureContent> softwareValueApprovalModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwareValueApprovalSales;
+    private List<FeatureContent> softwareValueApprovalSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwarePurchaseAttitudeModel;
+    private List<FeatureContent> softwarePurchaseAttitudeModel;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
-    private FeatureContent softwarePurchaseAttitudeSales;
+    private List<FeatureContent> softwarePurchaseAttitudeSales;
     private String note;
     // 租户Id
     private String tenantId;

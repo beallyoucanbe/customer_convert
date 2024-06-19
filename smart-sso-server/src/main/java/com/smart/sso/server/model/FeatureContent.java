@@ -8,16 +8,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeatureContent {
-
-    private List<ContentItem> contentList;
-
-    @Getter
-    @Setter
-    public static class ContentItem {
-        private String callId;
-        private String question;
-        private String answer;
-    }
+    private String callId;
+    private String question;
+    private String answer;
 }
 
 
