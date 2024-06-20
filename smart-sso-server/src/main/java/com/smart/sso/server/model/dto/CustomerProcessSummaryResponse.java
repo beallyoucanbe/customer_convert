@@ -34,15 +34,15 @@ public class CustomerProcessSummaryResponse {
         // 客户信息收集及判断完毕
         private String infoCollection;
         // 销售有结合客户的股票举例
-        private Boolean stock;
+        private String stock;
         // 销售有基于客户交易风格做针对性的功能介绍
-        private Boolean tradeBasedIntro;
+        private String tradeBasedIntro;
         // 客户交易风格了解完毕
         private String tradeStyleUnderstanding;
         // 销售有点评客户的选股方法
-        private Boolean stockPickReview;
+        private String stockPickReview;
         // 销售有点评客户的选股时机
-        private Boolean stockTimingReview;
+        private String stockTimingReview;
     }
 
     @Getter

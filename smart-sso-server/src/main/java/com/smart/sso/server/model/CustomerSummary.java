@@ -37,20 +37,24 @@ public class CustomerSummary implements Serializable {
     // 销售有点评客户的选股时机
     @TableField(typeHandler = SummaryContentTypeHandler.class)
     private List<SummaryContent> stockPickTimingReview;
-
-
-    @TableField(typeHandler = ProcessContentTypeHandler.class)
-    private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisMethod;
-    @TableField(typeHandler = ProcessContentTypeHandler.class)
-    private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisIssue;
-    @TableField(typeHandler = ProcessContentTypeHandler.class)
-    private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisValue;
-    @TableField(typeHandler = ProcessContentTypeHandler.class)
-    private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisPrice;
-    @TableField(typeHandler = ProcessContentTypeHandler.class)
-    private CustomerProcessSummaryResponse.ProcessContent approvalAnalysisPurchase;
-    @TableField(typeHandler = ProcessContentTypeHandler.class)
-    private CustomerProcessSummaryResponse.ProcessContent invitAttendCourses;
+    // 方法认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisMethod;
+    // 问题认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisIssue;
+    // 价值认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisValue;
+    // 价格认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisPrice;
+    // 购买认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisPurchase;
+    //邀请客户参加课程
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> invitAttendCourses;
     // 租户Id
     private String tenantId;
     // 预留信息
