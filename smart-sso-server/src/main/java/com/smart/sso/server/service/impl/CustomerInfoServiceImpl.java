@@ -9,6 +9,7 @@ import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.model.CustomerFeature;
 import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.CustomerSummary;
+import com.smart.sso.server.model.FeatureContent;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -22,9 +23,12 @@ import com.smart.sso.server.util.JsonUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
@@ -127,9 +131,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeature customerFeature = new CustomerFeature();
 
         String[] useFrequency = {"high", "medium", "low"};
-        String[] profit = {"profit", "loss", "break_even"};
-
-        String[] saleMark = {"这是一条测试的说明", "this is a test", "测试数据", "hahahahaha", "中文特殊字符：%￥%#%……￥", "英文符号:!@%%%^&"};
 
         Random random = new Random();
         customerFeature.setId(id);
@@ -139,25 +140,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.setClassCount(random.nextInt(10) + 1);
         customerFeature.setPasswordEarnest(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
         customerFeature.setUsageFrequency(getRandomElement(useFrequency, random).toString());
-/**
-        customerFeature.setFundsVolume(new FeatureContent(random.nextBoolean(), random.nextInt(9999) + 1, getRandomElement(saleMark, random).toString()));
-        customerFeature.setProfitLossSituation(new FeatureContent(random.nextBoolean(), getRandomElement(profit, random).toString(), getRandomElement(saleMark, random).toString()));
-        customerFeature.setEarningDesire(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-
-        customerFeature.setCurrentStocks(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setStockPurchaseReason(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setTradeTimingDecision(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setTradingStyle(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setStockMarketAge(new FeatureContent(random.nextBoolean(), random.nextInt(9999) + 1, getRandomElement(saleMark, random).toString()));
-        customerFeature.setLearningAbility(new FeatureContent(random.nextBoolean(), getRandomElement(useFrequency, random).toString(), getRandomElement(saleMark, random).toString()));
-
-        customerFeature.setCourseTeacherApproval(new FeatureContent(random.nextBoolean(), UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSoftwareFunctionClarity(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-        customerFeature.setStockSelectionMethod(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSelfIssueRecognition(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSoftwareValueApproval(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-        customerFeature.setSoftwarePurchaseAttitude(new FeatureContent(random.nextBoolean(), random.nextBoolean(), getRandomElement(saleMark, random).toString()));
-**/
         customerFeatureMapper.insert(customerFeature);
     }
 
@@ -216,30 +198,32 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         profile.setUsageFrequency(customerFeature.getUsageFrequency());
         profile.setClassLength(customerFeature.getClassLength());
         customerFeatureResponse.setProfile(profile);
-        // Basic
+        // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-//        basic.setFundsVolume(customerFeature.getFundsVolume());
-//        basic.setProfitLossSituation(customerFeature.getProfitLossSituation());
-//        basic.setEarningDesire(customerFeature.getEarningDesire());
-//        customerFeatureResponse.setBasic(basic);
-//        // TradingMethod
-//        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
-//        tradingMethod.setCurrentStocks(customerFeature.getCurrentStocks());
-//        tradingMethod.setStockPurchaseReason(customerFeature.getStockPurchaseReason());
-//        tradingMethod.setTradeTimingDecision(customerFeature.getTradeTimingDecision());
-//        tradingMethod.setTradingStyle(customerFeature.getTradingStyle());
-//        tradingMethod.setStockMarketAge(customerFeature.getStockMarketAge());
-//        tradingMethod.setLearningAbility(customerFeature.getLearningAbility());
-//        customerFeatureResponse.setTradingMethod(tradingMethod);
-//        // Recognition
-//        CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
-//        recognition.setCourseTeacherApproval(customerFeature.getCourseTeacherApproval());
-//        recognition.setSoftwareFunctionClarity(customerFeature.getSoftwareFunctionClarity());
-//        recognition.setStockSelectionMethod(customerFeature.getStockSelectionMethod());
-//        recognition.setSelfIssueRecognition(customerFeature.getSelfIssueRecognition());
-//        recognition.setSoftwareValueApproval(customerFeature.getSoftwareValueApproval());
-//        recognition.setSoftwarePurchaseAttitude(customerFeature.getSoftwarePurchaseAttitude());
-//        customerFeatureResponse.setRecognition(recognition);
+        basic.setFundsVolume(convertByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales()));
+        basic.setProfitLossSituation(convertByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales()));
+        basic.setEarningDesire(convertByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales()));
+        basic.setCourseTeacherApproval(convertByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales()));
+        customerFeatureResponse.setBasic(basic);
+
+        // TradingMethod 客户自己的交易方法
+        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
+        tradingMethod.setCurrentStocks(convertByAppend(customerFeature.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
+        tradingMethod.setStockPurchaseReason(convertByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
+        tradingMethod.setTradeTimingDecision(convertByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
+        tradingMethod.setTradingStyle(convertByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales()));
+        tradingMethod.setStockMarketAge(convertByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales()));
+        tradingMethod.setLearningAbility(convertByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales()));
+        customerFeatureResponse.setTradingMethod(tradingMethod);
+
+        // Recognition 客户认可度
+        CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
+        recognition.setSoftwareFunctionClarity(convertByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales()));
+        recognition.setStockSelectionMethod(convertByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales()));
+        recognition.setSelfIssueRecognition(convertByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales()));
+        recognition.setSoftwareValueApproval(convertByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales()));
+        recognition.setSoftwarePurchaseAttitude(convertByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales()));
+        customerFeatureResponse.setRecognition(recognition);
         // Note
         customerFeatureResponse.setNote(customerFeature.getNote());
 
@@ -257,7 +241,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         processSummary.setQuestions(customerSummary.getSummaryQuestions());
         customerSummaryResponse.setSummary(processSummary);
 
-
         CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = customerSummary.getInfoExplanation();
         customerSummaryResponse.setInfoExplanation(infoExplanation);
 
@@ -271,4 +254,44 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         return customerSummaryResponse;
     }
+
+
+    private CustomerFeatureResponse.Feature convertByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
+        CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
+        // 多通电话覆盖+规则加工
+        featureVO.setModelRecord(CollectionUtils.isEmpty(featureContentByModel) ? null : featureContentByModel.get(featureContentByModel.size() - 1).getAnswer());
+        featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null : featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
+        //“已询问”有三个值：“是”、“否”、“不需要”。
+        // “是”代表模型提取出了销售有询问，“否”代表模型提取出了销售没询问，“不需要”代表“客户情况（模型记录）或（销售补充）”有值且销售没询问（即客户主动说了，销售不需要询问了）
+        return featureVO;
+    }
+
+    private CustomerFeatureResponse.Feature convertByAppend(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
+        CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
+        // 多通电话追加+规则加工
+         List<String> modelRecord =  new ArrayList<>();
+         if (!CollectionUtils.isEmpty(featureContentByModel)) {
+             ListIterator<FeatureContent> iterator = featureContentByModel.listIterator(featureContentByModel.size());
+             while (iterator.hasPrevious()) {
+                 FeatureContent item = iterator.previous();
+                 modelRecord.add(item.getAnswer());
+             }
+         }
+
+        List<String> sailRecord =  new ArrayList<>();
+        if (!CollectionUtils.isEmpty(featureContentBySales)) {
+            ListIterator<FeatureContent> iterator = featureContentBySales.listIterator(featureContentBySales.size());
+            while (iterator.hasPrevious()) {
+                FeatureContent item = iterator.previous();
+                sailRecord.add(item.getAnswer());
+            }
+        }
+
+        featureVO.setModelRecord(CollectionUtils.isEmpty(modelRecord) ? null : JsonUtil.serialize(modelRecord));
+        featureVO.setSalesRecord(CollectionUtils.isEmpty(sailRecord) ? null : JsonUtil.serialize(sailRecord));
+        //“已询问”有三个值：“是”、“否”、“不需要”。
+        // “是”代表模型提取出了销售有询问，“否”代表模型提取出了销售没询问，“不需要”代表“客户情况（模型记录）或（销售补充）”有值且销售没询问（即客户主动说了，销售不需要询问了）
+        return featureVO;
+    }
+
 }

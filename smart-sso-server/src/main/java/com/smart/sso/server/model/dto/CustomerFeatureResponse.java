@@ -1,7 +1,5 @@
 package com.smart.sso.server.model.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.smart.sso.server.handler.InquiredSerializer;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +30,7 @@ public class CustomerFeatureResponse {
         private Feature fundsVolume;
         private Feature profitLossSituation;
         private Feature earningDesire;
+        private Feature courseTeacherApproval;
     }
 
     @Getter
@@ -48,7 +47,6 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Recognition {
-        private Feature courseTeacherApproval;
         private Feature softwareFunctionClarity;
         private Feature stockSelectionMethod;
         private Feature selfIssueRecognition;
@@ -59,8 +57,7 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Feature {
-        @JsonSerialize(using = InquiredSerializer.class)
-        private Boolean inquired;
+        private String inquired = "no-need";
         private Object modelRecord;
         private String salesRecord;
     }

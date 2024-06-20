@@ -1,5 +1,6 @@
 package com.smart.sso.server.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -27,6 +28,16 @@ public class JsonUtil {
             log.error("failed to parse content to list. [type={}]", valueTypeRef.getType(), e);
             throw new RuntimeException("failed to read value by specified type", e);
         }
+    }
+
+    public static String serialize(Object object) {
+        String serialization = null;
+        try {
+            serialization = DEFAULT_OBJECT_MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("failed to serialize object", e);
+        }
+        return serialization;
     }
 
     public static final String summary_string = "{\n" +
