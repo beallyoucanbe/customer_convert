@@ -36,7 +36,7 @@ public class SchedulTask {
     private CustomerInfoService customerInfoService;
 
 
-    @Scheduled(cron = "0 */1 * * * ?")
+    @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
         // 是否有任务再执行
         log.error("开始执行客户匹配度刷新任务！");
