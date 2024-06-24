@@ -22,4 +22,6 @@ public interface CustomerInfoService {
     void insetCustomerFeature(String id);
 
     void insetCustomerSummary(String id);
+
+    String getConversionRate(CustomerFeature customerFeature);
 }

@@ -3,6 +3,7 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.CustomerSummaryMapper;
@@ -152,6 +153,42 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerSummaryMapper.insert(customerSummary);
     }
 
+    @Override
+    public String getConversionRate(CustomerFeature customerFeature) {
+        // "high", "medium", "low"
+        // -较高：资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“高”
+        // -中等：(资金体量=“匮乏”或“小于10万” and 赚钱欲望=“高”) or (资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“低”)
+        // -较低：资金体量=“匮乏”或“小于10万” and 赚钱欲望=“低”
+        // -未完成判断：资金体量=空 or 赚钱欲望=空
+        String result = null;
+        List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
+        List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
+        if (CollectionUtils.isEmpty(fundsVolumeModel) || CollectionUtils.isEmpty(earningDesireModel)) {
+            return result;
+        }
+        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("充裕")
+                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("大于等于10万"))
+                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("高")) {
+            return "high";
+        }
+        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("匮乏")
+                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("小于10万"))
+                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("高")) {
+            return "medium";
+        }
+        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("充裕")
+                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("大于等于10万"))
+                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("低")) {
+            return "medium";
+        }
+        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("匮乏")
+                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("小于10万"))
+                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("低")) {
+            return "low";
+        }
+        return result;
+    }
+
     public Object getRandomElement(Object[] array, Random random) {
         int randomIndex = random.nextInt(array.length);
         return array[randomIndex];
@@ -190,10 +227,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setProfile(profile);
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales()));
-        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales()));
-        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales()));
-        basic.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales()));
+        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), AppConstant.fundsVolume));
+        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), null));
+        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), AppConstant.earningDesire));
+        basic.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales(), null));
         customerFeatureResponse.setBasic(basic);
 
         // TradingMethod 客户自己的交易方法
@@ -201,18 +238,18 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         tradingMethod.setCurrentStocks(converFeaturetByAppend(customerFeature.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
         tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
         tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
-        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales()));
-        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales()));
-        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales()));
+        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null));
+        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null));
+        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), null));
         customerFeatureResponse.setTradingMethod(tradingMethod);
 
         // Recognition 客户认可度
         CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
-        recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales()));
-        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales()));
-        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales()));
-        recognition.setSoftwareValueApproval(convertFeatureByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales()));
-        recognition.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales()));
+        recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales(), null));
+        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales(), null));
+        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales(), null));
+        recognition.setSoftwareValueApproval(convertFeatureByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales(), null));
+        recognition.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales(), null));
         customerFeatureResponse.setRecognition(recognition);
         // Note
         customerFeatureResponse.setNote(customerFeature.getNote());
@@ -250,29 +287,42 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
 
-    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
+    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales,
+                                                                      List<String> candidateValues) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
-        featureVO.setModelRecord(CollectionUtils.isEmpty(featureContentByModel) ? null : featureContentByModel.get(featureContentByModel.size() - 1).getAnswer());
+        String resultAnswer = null;
+        // 没有候选值筛选列表，直接返回最后一个记录值
+        if (!CollectionUtils.isEmpty(featureContentByModel) && CollectionUtils.isEmpty(candidateValues)) {
+            resultAnswer = featureContentByModel.get(featureContentByModel.size() - 1).getAnswer();
+        }
+        // 有候选值筛选列表，需要比较最后一个记录值是否跟候选值相同，不同则返回为空
+        if (!CollectionUtils.isEmpty(featureContentByModel) && !CollectionUtils.isEmpty(candidateValues)) {
+            if (candidateValues.contains(featureContentByModel.get(featureContentByModel.size() - 1).getAnswer())) {
+                resultAnswer = featureContentByModel.get(featureContentByModel.size() - 1).getAnswer();
+            }
+        }
+        featureVO.setModelRecord(resultAnswer);
         featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null : featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
         //“已询问”有三个值：“是”、“否”、“不需要”。
         // “是”代表模型提取出了销售有询问，“否”代表模型提取出了销售没询问，“不需要”代表“客户情况（模型记录）或（销售补充）”有值且销售没询问（即客户主动说了，销售不需要询问了）
         return featureVO;
     }
 
-    private CustomerFeatureResponse.Feature converFeaturetByAppend(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
+    private CustomerFeatureResponse.Feature converFeaturetByAppend
+            (List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话追加+规则加工
-         List<String> modelRecord =  new ArrayList<>();
-         if (!CollectionUtils.isEmpty(featureContentByModel)) {
-             ListIterator<FeatureContent> iterator = featureContentByModel.listIterator(featureContentByModel.size());
-             while (iterator.hasPrevious()) {
-                 FeatureContent item = iterator.previous();
-                 modelRecord.add(item.getAnswer());
-             }
-         }
+        List<String> modelRecord = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(featureContentByModel)) {
+            ListIterator<FeatureContent> iterator = featureContentByModel.listIterator(featureContentByModel.size());
+            while (iterator.hasPrevious()) {
+                FeatureContent item = iterator.previous();
+                modelRecord.add(item.getAnswer());
+            }
+        }
 
-        List<String> sailRecord =  new ArrayList<>();
+        List<String> sailRecord = new ArrayList<>();
         if (!CollectionUtils.isEmpty(featureContentBySales)) {
             ListIterator<FeatureContent> iterator = featureContentBySales.listIterator(featureContentBySales.size());
             while (iterator.hasPrevious()) {
