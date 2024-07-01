@@ -335,13 +335,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerFeatureResponse.Feature converFeaturetByAppend
             (List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
-        // 多通电话追加+规则加工
+        // 多通电话追加+规则加工，跳过null值
         List<String> modelRecord = new ArrayList<>();
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             ListIterator<FeatureContent> iterator = featureContentByModel.listIterator(featureContentByModel.size());
             while (iterator.hasPrevious()) {
                 FeatureContent item = iterator.previous();
-                modelRecord.add(item.getAnswer());
+                if (!StringUtils.isEmpty(item.getAnswer())) {
+                    modelRecord.add(item.getAnswer());
+                }
             }
         }
 
@@ -350,7 +352,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             ListIterator<FeatureContent> iterator = featureContentBySales.listIterator(featureContentBySales.size());
             while (iterator.hasPrevious()) {
                 FeatureContent item = iterator.previous();
-                sailRecord.add(item.getAnswer());
+                if (!StringUtils.isEmpty(item)) {
+                    sailRecord.add(item.getAnswer());
+                }
             }
         }
 
