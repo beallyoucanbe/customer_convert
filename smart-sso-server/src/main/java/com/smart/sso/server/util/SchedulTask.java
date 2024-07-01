@@ -51,17 +51,10 @@ public class SchedulTask {
         }
         // 插入新的任务
         ScheduledTask newTasks = new ScheduledTask();
-
         newTasks.setId(CommonUtils.generatePrimaryKey());
         newTasks.setTaskName(AppConstant.REFRESH_CONVERSION_RATE);
         newTasks.setStatus("in_progress");
         scheduledTasksMapper.insert(newTasks);
-
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
         // 获取最后一次执行成功的开始时间， 来决定该次任务的筛选条件
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
@@ -92,10 +85,9 @@ public class SchedulTask {
                 // 将转化概率更新到info 表中
                 customerInfoMapper.updateConversionRateById(customerFeature.getId(), conversionRate);
             } catch (Exception e) {
-                log.error("客户{0}匹配度更新失败", customerFeature.getId(), e);
+                log.error("客户{}匹配度更新失败，错误信息：{}", customerFeature.getId(), e.getMessage());
                 newTasks.setStatus("failed");
                 scheduledTasksMapper.updateById(newTasks);
-                return;
             }
         }
         // 更新成功，更新任务状态

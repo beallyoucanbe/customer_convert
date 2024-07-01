@@ -57,13 +57,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             queryWrapper.eq("conversion_rate", params.getConversionRate());
         }
         if (!StringUtils.isEmpty(params.getCurrentCampaign())) {
-            queryWrapper.eq("current_campaign", params.getCurrentCampaign());
+            queryWrapper.like("current_campaign", params.getCurrentCampaign());
         }
 
         String sortOrder = params.getSortBy();
         boolean isAsc = "asc".equalsIgnoreCase(params.getOrder());
         if ("conversion_rate".equals(sortOrder)) {
-            queryWrapper.last("ORDER BY FIELD(conversion_rate, 'low', 'medium', 'high') " + (isAsc ? "ASC" : "DESC"));
+            queryWrapper.last("ORDER BY FIELD(conversion_rate, 'incomplete', 'low', 'medium', 'high') " + (isAsc ? "ASC" : "DESC"));
         } else {
             queryWrapper.orderBy(true, isAsc, sortOrder);
         }
@@ -155,35 +155,47 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public String getConversionRate(CustomerFeature customerFeature) {
-        // "high", "medium", "low"
+        // "high", "medium", "low", "incomplete"
         // -较高：资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“高”
         // -中等：(资金体量=“匮乏”或“小于10万” and 赚钱欲望=“高”) or (资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“低”)
         // -较低：资金体量=“匮乏”或“小于10万” and 赚钱欲望=“低”
         // -未完成判断：资金体量=空 or 赚钱欲望=空
-        String result = null;
+        String result = "incomplete";
         List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
         List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
         if (CollectionUtils.isEmpty(fundsVolumeModel) || CollectionUtils.isEmpty(earningDesireModel)) {
             return result;
         }
-        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("充裕")
-                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("大于等于10万"))
-                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("高")) {
+        String fundsVolume = null;
+        String earningDesire = null;
+
+        // 找到最后一个非null的值
+        for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
+            if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
+                fundsVolume = fundsVolumeModel.get(i).getAnswer();
+                break;
+            }
+        }
+        for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
+            if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
+                earningDesire = earningDesireModel.get(i).getAnswer();
+                break;
+            }
+        }
+        if (StringUtils.isEmpty(fundsVolume) || StringUtils.isEmpty(earningDesire)) {
+            return result;
+        }
+
+        if ((fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) && earningDesire.equals("高")) {
             return "high";
         }
-        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("匮乏")
-                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("小于10万"))
-                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("高")) {
+        if ((fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) && earningDesire.equals("高")) {
             return "medium";
         }
-        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("充裕")
-                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("大于等于10万"))
-                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("低")) {
+        if ((fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) && earningDesire.equals("低")) {
             return "medium";
         }
-        if ((fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("匮乏")
-                || fundsVolumeModel.get(fundsVolumeModel.size() - 1).getAnswer().equals("小于10万"))
-                && earningDesireModel.get(earningDesireModel.size() - 1).getAnswer().equals("低")) {
+        if ((fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) && earningDesire.equals("低")) {
             return "low";
         }
         return result;
@@ -292,14 +304,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
-        // 没有候选值筛选列表，直接返回最后一个记录值
-        if (!CollectionUtils.isEmpty(featureContentByModel) && CollectionUtils.isEmpty(candidateValues)) {
-            resultAnswer = featureContentByModel.get(featureContentByModel.size() - 1).getAnswer();
+        String resultAnswerLatest = null;
+        // 获取最后一个非空值
+        if (!CollectionUtils.isEmpty(featureContentByModel)) {
+            for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())) {
+                    resultAnswerLatest = featureContentByModel.get(i).getAnswer();
+                    break;
+                }
+            }
         }
-        // 有候选值筛选列表，需要比较最后一个记录值是否跟候选值相同，不同则返回为空
+
+        // 没有候选值筛选列表，直接返回最后一个非空（如果存在）记录值
+        if (!CollectionUtils.isEmpty(featureContentByModel) && CollectionUtils.isEmpty(candidateValues)) {
+            resultAnswer = resultAnswerLatest;
+        }
+        // 有候选值筛选列表，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
         if (!CollectionUtils.isEmpty(featureContentByModel) && !CollectionUtils.isEmpty(candidateValues)) {
-            if (candidateValues.contains(featureContentByModel.get(featureContentByModel.size() - 1).getAnswer())) {
-                resultAnswer = featureContentByModel.get(featureContentByModel.size() - 1).getAnswer();
+            if (candidateValues.contains(resultAnswerLatest)) {
+                resultAnswer = resultAnswerLatest;
             }
         }
         featureVO.setModelRecord(resultAnswer);
