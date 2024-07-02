@@ -203,6 +203,37 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return result;
     }
 
+    @Override
+    public CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary) {
+
+        CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
+        CustomerStageStatus stageStatus = new CustomerStageStatus();
+        // 客户匹配度判断 值不为“未完成判断”
+        if (!"incomplete".equals(getConversionRate(customerFeature))) {
+            stageStatus.setMatchingJudgment(1);
+        }
+        // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
+        CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
+        if (Objects.nonNull(tradingMethod.getCurrentStocks().getModelRecord())
+                && Objects.nonNull(tradingMethod.getStockPurchaseReason().getModelRecord())
+                && Objects.nonNull(tradingMethod.getTradeTimingDecision().getModelRecord())
+                && Objects.nonNull(tradingMethod.getTradingStyle().getModelRecord())
+                && Objects.nonNull(tradingMethod.getStockMarketAge().getModelRecord())) {
+            stageStatus.setTransactionStyle(1);
+        }
+        // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
+        // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
+        CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
+        if ((Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()
+                && (Boolean) recognition.getStockSelectionMethod().getModelRecord()
+                && (Boolean) recognition.getSelfIssueRecognition().getModelRecord()
+                && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+            stageStatus.setConfirmValue(1);
+        }
+        // 客户确认购买 客户对购买软件的态度”的值为“是” or 已支付定金（天网系统取值）
+        return stageStatus;
+    }
+
     public Object getRandomElement(Object[] array, Random random) {
         int randomIndex = random.nextInt(array.length);
         return array[randomIndex];
@@ -351,7 +382,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
             //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’；
-            if (featureVO.getInquired().equals("no")){
+            if (featureVO.getInquired().equals("no")) {
                 for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
                     if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())
                             && !featureContentByModel.get(i).getAnswer().equals("无")

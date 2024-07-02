@@ -1,6 +1,8 @@
 package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.CustomerFeature;
+import com.smart.sso.server.model.CustomerStageStatus;
+import com.smart.sso.server.model.CustomerSummary;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
@@ -24,4 +26,7 @@ public interface CustomerInfoService {
     void insetCustomerSummary(String id);
 
     String getConversionRate(CustomerFeature customerFeature);
+
+    CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary);
+
 }
