@@ -84,7 +84,6 @@ public class SchedulTask {
                 String conversionRate = customerInfoService.getConversionRate(customerFeature);
                 // 将转化概率更新到info 表中
                 customerInfoMapper.updateConversionRateById(customerFeature.getId(), conversionRate);
-                // 计算当前客户的阶段信息
             } catch (Exception e) {
                 log.error("客户{}匹配度更新失败，错误信息：{}", customerFeature.getId(), e.getMessage());
                 newTasks.setStatus("failed");

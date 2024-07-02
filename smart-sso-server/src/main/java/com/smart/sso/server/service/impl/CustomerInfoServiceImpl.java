@@ -82,7 +82,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerProfile queryCustomerById(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        return convert2CustomerProfile(customerInfo);
+        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
+        CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
+        CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
+        customerProfile.setCustomerStage(getCustomerStageStatus(customerFeature, customerSummary));
+        return customerProfile;
     }
 
     @Override
@@ -290,6 +294,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         // Recognition 客户认可度
         CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
+
         recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales(), null));
         recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales(), null));
         recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales(), null));
