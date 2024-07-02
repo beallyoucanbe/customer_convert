@@ -341,7 +341,30 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         featureVO.setModelRecord(resultAnswer);
         featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null : featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
         //“已询问”有三个值：“是”、“否”、“不需要”。
-        // “是”代表模型提取出了销售有询问，“否”代表模型提取出了销售没询问，“不需要”代表“客户情况（模型记录）或（销售补充）”有值且销售没询问（即客户主动说了，销售不需要询问了）
+
+        if (!CollectionUtils.isEmpty(featureContentByModel)) {
+            //如果 funds_volume_model json list 中有一个 question 有值，就是 ‘是’;
+            for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion())
+                        && !featureContentByModel.get(i).getQuestion().equals("无")
+                        && !featureContentByModel.get(i).getQuestion().equals("null")) {
+                    featureVO.setInquired("yes");
+                    break;
+                }
+            }
+            //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’；
+            if (featureVO.getInquired().equals("no")){
+                for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
+                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())
+                            && !featureContentByModel.get(i).getAnswer().equals("无")
+                            && !featureContentByModel.get(i).getAnswer().equals("null")) {
+                        featureVO.setInquired("no-need");
+                        break;
+                    }
+                }
+            }
+        }
+        //否则就是 ‘否’
         return featureVO;
     }
 

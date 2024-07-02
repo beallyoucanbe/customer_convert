@@ -57,7 +57,7 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Feature {
-        private String inquired = "no-need";
+        private String inquired = "no"; // no-need, no, yes
         private Object modelRecord;
         private String salesRecord;
     }
