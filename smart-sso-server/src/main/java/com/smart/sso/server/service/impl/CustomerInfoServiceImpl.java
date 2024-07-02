@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
+import com.smart.sso.server.enums.EarningDesireEnum;
+import com.smart.sso.server.enums.FundsVolumeEnum;
+import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.CustomerSummaryMapper;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -239,9 +243,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setProfile(profile);
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), AppConstant.fundsVolume));
-        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), null));
-        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), AppConstant.earningDesire));
+        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), FundsVolumeEnum.class));
+        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), ProfitLossEnum.class));
+        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), EarningDesireEnum.class));
         basic.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales(), null));
         customerFeatureResponse.setBasic(basic);
 
@@ -300,7 +304,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
 
     private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales,
-                                                                      List<String> candidateValues) {
+                                                                      Class<? extends Enum<?>> enumClass) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
@@ -308,21 +312,30 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 获取最后一个非空值
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())
+                        && !featureContentByModel.get(i).getAnswer().equals("无")
+                        && !featureContentByModel.get(i).getAnswer().equals("null")) {
                     resultAnswerLatest = featureContentByModel.get(i).getAnswer();
                     break;
                 }
             }
         }
 
-        // 没有候选值筛选列表，直接返回最后一个非空（如果存在）记录值
-        if (!CollectionUtils.isEmpty(featureContentByModel) && CollectionUtils.isEmpty(candidateValues)) {
+        // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
+        if (!CollectionUtils.isEmpty(featureContentByModel) && Objects.isNull(enumClass)) {
             resultAnswer = resultAnswerLatest;
         }
-        // 有候选值筛选列表，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
-        if (!CollectionUtils.isEmpty(featureContentByModel) && !CollectionUtils.isEmpty(candidateValues)) {
-            if (candidateValues.contains(resultAnswerLatest)) {
-                resultAnswer = resultAnswerLatest;
+        // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
+        if (!CollectionUtils.isEmpty(featureContentByModel) && !Objects.isNull(enumClass)) {
+            for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
+                // 获取枚举对象的 `value` 和 `text` 字段值
+                String value = getFieldValue(enumConstant, "value");
+                String enumText = getFieldValue(enumConstant, "text");
+                // 判断文本是否匹配`text`
+                if (resultAnswerLatest.trim().equals(enumText)) {
+                    resultAnswer = value;
+                    break;
+                }
             }
         }
         featureVO.setModelRecord(resultAnswer);
@@ -330,6 +343,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         //“已询问”有三个值：“是”、“否”、“不需要”。
         // “是”代表模型提取出了销售有询问，“否”代表模型提取出了销售没询问，“不需要”代表“客户情况（模型记录）或（销售补充）”有值且销售没询问（即客户主动说了，销售不需要询问了）
         return featureVO;
+    }
+
+
+    private String getFieldValue(Enum<?> enumConstant, String fieldName) {
+        try {
+            Field field = enumConstant.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true); // 设置字段的可访问性
+            return (String) field.get(enumConstant);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private CustomerFeatureResponse.Feature converFeaturetByAppend
