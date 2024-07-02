@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.smart.sso.server.handler.CustomerStageStatusTypeHandler;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -34,7 +35,8 @@ public class CustomerInfo implements Serializable {
     // 转化概率，枚举值
     private String conversionRate;
     // 客户阶段，0-5
-    private Integer customerStage;
+    @TableField(typeHandler = CustomerStageStatusTypeHandler.class)
+    private CustomerStageStatus customerStage;
     // 沟通轮次
     private Integer communicationRounds;
     // 最近沟通日期

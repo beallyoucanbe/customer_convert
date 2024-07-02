@@ -1,5 +1,6 @@
 package com.smart.sso.server.model.VO;
 
+import com.smart.sso.server.model.CustomerStageStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -15,6 +16,6 @@ public class CustomerProfile {
     private Integer communicationRounds ;
     private Date lastCommunicationDate ;
     private Long totalDuration ;
-    private Integer customerStage ;
+    private CustomerStageStatus customerStage ;
     private String conversionRate ;
 }

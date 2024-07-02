@@ -3,7 +3,6 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.ProfitLossEnum;
@@ -116,7 +115,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfo.setOwnerName(getRandomElement(owners, random).toString());
             customerInfo.setCurrentCampaign(getRandomElement(campaigns, random).toString());
             customerInfo.setConversionRate(getRandomElement(conversionRates, random).toString());
-            customerInfo.setCustomerStage((Integer) getRandomElement(customerStages, random));
             customerInfo.setCommunicationRounds(random.nextInt(10) + 1);
             customerInfo.setLastCommunicationDate(DateUtil.getDateObj());
             customerInfo.setTotalDuration((long) (random.nextInt(9999) + 1));
