@@ -230,10 +230,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
         // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
         CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if ((Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()
-                && (Boolean) recognition.getStockSelectionMethod().getModelRecord()
-                && (Boolean) recognition.getSelfIssueRecognition().getModelRecord()
-                && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) && (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()
+                && Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) && (Boolean) recognition.getStockSelectionMethod().getModelRecord()
+                && Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) && (Boolean) recognition.getSelfIssueRecognition().getModelRecord()
+                && Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
             stageStatus.setConfirmValue(1);
         }
         // 客户确认购买 客户对购买软件的态度”的值为“是” or 已支付定金（天网系统取值）
@@ -278,9 +278,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setProfile(profile);
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), FundsVolumeEnum.class, false));
-        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), ProfitLossEnum.class, false));
-        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), EarningDesireEnum.class, false));
+        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), ProfitLossEnum.class, String.class));
+        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), EarningDesireEnum.class, String.class));
         customerFeatureResponse.setBasic(basic);
 
         // TradingMethod 客户自己的交易方法
@@ -288,19 +288,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         tradingMethod.setCurrentStocks(converFeaturetByAppend(customerFeature.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
         tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
         tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
-        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null, false));
-        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null, false));
-        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), null, false));
+        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null, String.class));
+        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null, String.class));
+        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), null, String.class));
         customerFeatureResponse.setTradingMethod(tradingMethod);
 
         // Recognition 客户认可度
         CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
-        recognition.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales(), null, true));
-        recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales(), null, true));
-        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales(), null, true));
-        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales(), null, true));
-        recognition.setSoftwareValueApproval(convertFeatureByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales(), null, true));
-        recognition.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales(), null, true));
+        recognition.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales(), null, Boolean.class));
+        recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales(), null, Boolean.class));
+        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales(), null, Boolean.class));
+        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales(), null, Boolean.class));
+        recognition.setSoftwareValueApproval(convertFeatureByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales(), null, Boolean.class));
+        recognition.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
         customerFeatureResponse.setRecognition(recognition);
         // Note
         customerFeatureResponse.setNote(customerFeature.getNote());
@@ -327,11 +327,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerSummaryResponse.setInfoExplanation(infoExplanation);
 
         CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = new CustomerProcessSummaryResponse.ProcessApprovalAnalysis();
-//        approvalAnalysis.setMethod(customerSummary.getApprovalAnalysisMethod());
-//        approvalAnalysis.setIssue(customerSummary.getApprovalAnalysisIssue());
-//        approvalAnalysis.setPrice(customerSummary.getApprovalAnalysisPrice());
-//        approvalAnalysis.setPurchase(customerSummary.getApprovalAnalysisPurchase());
-//        approvalAnalysis.setPrice(customerSummary.getApprovalAnalysisPrice());
+        approvalAnalysis.setMethod(convertProcessContent(customerSummary.getApprovalAnalysisMethod()));
+        approvalAnalysis.setIssue(convertProcessContent(customerSummary.getApprovalAnalysisIssue()));
+        approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
+        approvalAnalysis.setPurchase(convertProcessContent(customerSummary.getApprovalAnalysisPurchase()));
+        approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
         customerSummaryResponse.setApprovalAnalysis(approvalAnalysis);
 
         return customerSummaryResponse;
@@ -340,7 +340,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales,
                                                                       Class<? extends Enum<?>> enumClass,
-                                                                      boolean needFilter) {
+                                                                      Class type) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
@@ -374,10 +374,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
         }
-        if (needFilter){
+        if (type == Boolean.class) {
             resultAnswer = deletePunctuation(resultAnswer);
+            if ("是".equals(resultAnswer)) {
+                featureVO.setModelRecord(Boolean.TRUE);
+            } else if ("否".equals(resultAnswer)) {
+                featureVO.setModelRecord(Boolean.FALSE);
+            }
+        } else {
+            featureVO.setModelRecord(resultAnswer);
         }
-        featureVO.setModelRecord(resultAnswer);
         featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null : featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
         //“已询问”有三个值：“是”、“否”、“不需要”。
 
@@ -454,6 +460,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private String convertSummaryByOverwrite(List<SummaryContent> summaryContent) {
         // 多通电话覆盖+规则加工
         return CollectionUtils.isEmpty(summaryContent) ? null : summaryContent.get(summaryContent.size() - 1).getContent();
+    }
+
+    private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
+        CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
+        List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
+        for (SummaryContent item : summaryContentList){
+            CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
+            List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
+            CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
+            message.setContent(item.getContent());
+            messageList.add(message);
+            chat.setMessages(messageList);
+            chatList.add(chat);
+        }
+        processContent.setChats(chatList);
+        return processContent;
     }
 
 }
