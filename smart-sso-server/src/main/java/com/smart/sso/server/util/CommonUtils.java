@@ -1,5 +1,7 @@
 package com.smart.sso.server.util;
 
+import org.springframework.util.StringUtils;
+
 import java.util.Random;
 
 public class CommonUtils {
@@ -19,5 +21,21 @@ public class CommonUtils {
         String primaryKey = String.format("%010d%05d", timeComponent, randomComponent);
 
         return primaryKey;
+    }
+
+    /**
+     * 删除文本中的标点符号
+     *
+     * @param text
+     * @return
+     */
+    public static String deletePunctuation(Object text) {
+        if (StringUtils.isEmpty(text)) {
+            return (String) text;
+        }
+        // 定义一个正则表达式来匹配所有中英文标点符号
+        String regex = "[\\p{P}\\p{S}]";
+        // 使用replaceAll方法将匹配到的标点符号替换为空字符串
+        return text.toString().replaceAll(regex, "");
     }
 }

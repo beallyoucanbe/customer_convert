@@ -30,7 +30,6 @@ public class CustomerFeatureResponse {
         private Feature fundsVolume;
         private Feature profitLossSituation;
         private Feature earningDesire;
-        private Feature courseTeacherApproval;
     }
 
     @Getter
@@ -47,6 +46,7 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Recognition {
+        private Feature courseTeacherApproval;
         private Feature softwareFunctionClarity;
         private Feature stockSelectionMethod;
         private Feature selfIssueRecognition;
