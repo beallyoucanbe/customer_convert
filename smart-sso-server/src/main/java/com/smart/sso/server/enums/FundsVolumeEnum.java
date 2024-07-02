@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum FundsVolumeEnum {
-    GREAT_EQUAL_TEN_MILLION("great_equal_one_w", "大于等于10万"),
-    LESS_TEN_MILLION("less_one_w", "小于10万"),
+    GREAT_EQUAL_TEN_MILLION("great_equal_ten_w", "大于等于10万"),
+    LESS_TEN_MILLION("less_ten_w", "小于10万"),
     ABUNDANT("abundant", "充裕"),
     DEFICIENT("deficient", "匮乏");
 
