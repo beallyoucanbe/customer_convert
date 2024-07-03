@@ -473,14 +473,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
         CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
         List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
-        for (SummaryContent item : summaryContentList) {
-            CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
-            List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
-            CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
-            message.setContent(item.getContent());
-            messageList.add(message);
-            chat.setMessages(messageList);
-            chatList.add(chat);
+        if (!CollectionUtils.isEmpty(summaryContentList)) {
+            for (SummaryContent item : summaryContentList) {
+                CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
+                List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
+                CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
+                message.setContent(item.getContent());
+                messageList.add(message);
+                chat.setMessages(messageList);
+                chatList.add(chat);
+            }
         }
         processContent.setChats(chatList);
         return processContent;
