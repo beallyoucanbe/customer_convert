@@ -457,15 +457,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return featureVO;
     }
 
-    private String convertSummaryByOverwrite(List<SummaryContent> summaryContent) {
+    private Object convertSummaryByOverwrite(List<SummaryContent> summaryContentList) {
+        if (CollectionUtils.isEmpty(summaryContentList)) {
+            return Boolean.FALSE;
+        }
         // 多通电话覆盖+规则加工
-        return CollectionUtils.isEmpty(summaryContent) ? null : summaryContent.get(summaryContent.size() - 1).getContent();
+        for (SummaryContent item : summaryContentList) {
+            if (!StringUtils.isEmpty(item.getContent().trim())) {
+                return Boolean.TRUE;
+            }
+        }
+        return Boolean.FALSE;
     }
 
     private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
         CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
         List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
-        for (SummaryContent item : summaryContentList){
+        for (SummaryContent item : summaryContentList) {
             CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
             List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
             CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();

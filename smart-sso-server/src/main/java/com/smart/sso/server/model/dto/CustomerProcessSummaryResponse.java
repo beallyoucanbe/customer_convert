@@ -31,18 +31,14 @@ public class CustomerProcessSummaryResponse {
     @Getter
     @Setter
     public static class ProcessInfoExplanation {
-        // 客户信息收集及判断完毕
-        private String infoCollection;
         // 销售有结合客户的股票举例
-        private String stock;
+        private Object stock;
         // 销售有基于客户交易风格做针对性的功能介绍
-        private String tradeBasedIntro;
-        // 客户交易风格了解完毕
-        private String tradeStyleUnderstanding;
+        private Object tradeBasedIntro;
         // 销售有点评客户的选股方法
-        private String stockPickReview;
+        private Object stockPickReview;
         // 销售有点评客户的选股时机
-        private String stockTimingReview;
+        private Object stockTimingReview;
     }
 
     @Getter
