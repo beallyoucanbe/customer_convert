@@ -63,7 +63,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String sortOrder = params.getSortBy();
         boolean isAsc = "asc".equalsIgnoreCase(params.getOrder());
         if ("conversion_rate".equals(sortOrder)) {
-            queryWrapper.last("ORDER BY FIELD(conversion_rate, 'incomplete', 'low', 'medium', 'high') " + (isAsc ? "ASC" : "DESC"));
+            queryWrapper.last("ORDER BY FIELD(conversion_rate, 'incomplete', 'low', 'medium', 'high') " + (isAsc ?
+                    "ASC" : "DESC"));
         } else {
             queryWrapper.orderBy(true, isAsc, sortOrder);
         }
@@ -151,7 +152,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary) {
+    public CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature,
+                                                      CustomerSummary customerSummary) {
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
@@ -161,21 +163,41 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
         CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
-        if (Objects.nonNull(tradingMethod.getCurrentStocks().getModelRecord()) && Objects.nonNull(tradingMethod.getStockPurchaseReason().getModelRecord()) && Objects.nonNull(tradingMethod.getTradeTimingDecision().getModelRecord()) && Objects.nonNull(tradingMethod.getTradingStyle().getModelRecord()) && Objects.nonNull(tradingMethod.getStockMarketAge().getModelRecord())) {
+        if (Objects.nonNull(tradingMethod.getCurrentStocks().getModelRecord()) &&
+                Objects.nonNull(tradingMethod.getStockPurchaseReason().getModelRecord()) &&
+                Objects.nonNull(tradingMethod.getTradeTimingDecision().getModelRecord()) &&
+                Objects.nonNull(tradingMethod.getTradingStyle().getModelRecord()) &&
+                Objects.nonNull(tradingMethod.getStockMarketAge().getModelRecord())) {
             stageStatus.setTransactionStyle(1);
         }
         // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
         CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-        if (Objects.nonNull(infoExplanation.getStock()) && (Boolean) infoExplanation.getStock() && Objects.nonNull(infoExplanation.getStockPickReview()) && (Boolean) infoExplanation.getStockPickReview() && Objects.nonNull(infoExplanation.getStockTimingReview()) && (Boolean) infoExplanation.getStockTimingReview() && Objects.nonNull(infoExplanation.getTradeBasedIntro()) && (Boolean) infoExplanation.getTradeBasedIntro()) {
+        if (Objects.nonNull(infoExplanation.getStock()) &&
+                (Boolean) infoExplanation.getStock() &&
+                Objects.nonNull(infoExplanation.getStockPickReview()) &&
+                (Boolean) infoExplanation.getStockPickReview() &&
+                Objects.nonNull(infoExplanation.getStockTimingReview()) &&
+                (Boolean) infoExplanation.getStockTimingReview() &&
+                Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
+                (Boolean) infoExplanation.getTradeBasedIntro()) {
             stageStatus.setFunctionIntroduction(1);
         }
         // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
         CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) && (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() && Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) && (Boolean) recognition.getStockSelectionMethod().getModelRecord() && Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) && (Boolean) recognition.getSelfIssueRecognition().getModelRecord() && Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
+                (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
+                Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
+                (Boolean) recognition.getStockSelectionMethod().getModelRecord() &&
+                Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
+                (Boolean) recognition.getSelfIssueRecognition().getModelRecord() &&
+                Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
+                (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
             stageStatus.setConfirmValue(1);
         }
         // 客户确认购买 客户对购买软件的态度”的值为“是” or 已支付定金（天网系统取值）
-        if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) && !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) && "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
+        if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) &&
+                !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) &&
+                "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
             stageStatus.setConfirmPurchase(1);
         }
         return stageStatus;
@@ -214,27 +236,38 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setProfile(profile);
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
-        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), ProfitLossEnum.class, String.class));
-        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), EarningDesireEnum.class, String.class));
+        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(),
+                customerFeature.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(),
+                customerFeature.getProfitLossSituationSales(), ProfitLossEnum.class, String.class));
+        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(),
+                customerFeature.getEarningDesireSales(), EarningDesireEnum.class, String.class));
         customerFeatureResponse.setBasic(basic);
 
         // TradingMethod 客户自己的交易方法
         CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
-        tradingMethod.setCurrentStocks(converFeaturetByAppend(customerFeature.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
-        tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
-        tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
-        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null, String.class));
-        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null, String.class));
-        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), null, String.class));
+        tradingMethod.setCurrentStocks(converFeaturetByAppend(customerFeature.getCurrentStocksModel(),
+                customerFeature.getCurrentStocksSales()));
+        tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(),
+                customerFeature.getStockPurchaseReasonSales()));
+        tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(),
+                customerFeature.getTradeTimingDecisionSales()));
+        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(),
+                customerFeature.getTradingStyleSales(), null, String.class));
+        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(),
+                customerFeature.getStockMarketAgeSales(), null, String.class));
+        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(),
+                customerFeature.getLearningAbilitySales(), null, String.class));
         customerFeatureResponse.setTradingMethod(tradingMethod);
 
         // Recognition 客户认可度
         CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
         recognition.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales(), null, Boolean.class));
         recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales(), null, Boolean.class));
-        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales(), null, Boolean.class));
-        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales(), null, Boolean.class));
+        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(),
+                customerFeature.getStockSelectionMethodSales(), null, Boolean.class));
+        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(),
+                customerFeature.getSelfIssueRecognitionSales(), null, Boolean.class));
         recognition.setSoftwareValueApproval(convertFeatureByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales(), null, Boolean.class));
         recognition.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
         customerFeatureResponse.setRecognition(recognition);
@@ -250,19 +283,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerProcessSummaryResponse customerSummaryResponse = new CustomerProcessSummaryResponse();
 
-        CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
+        CustomerProcessSummaryResponse.ProcessSummary processSummary =
+                new CustomerProcessSummaryResponse.ProcessSummary();
         processSummary.setAdvantage(customerSummary.getSummaryAdvantage());
         processSummary.setQuestions(customerSummary.getSummaryQuestions());
         customerSummaryResponse.setSummary(processSummary);
 
-        CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = new CustomerProcessSummaryResponse.ProcessInfoExplanation();
+        CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation =
+                new CustomerProcessSummaryResponse.ProcessInfoExplanation();
         infoExplanation.setStock(convertSummaryByOverwrite(customerSummary.getIllustrateBasedStock()));
         infoExplanation.setTradeBasedIntro(convertSummaryByOverwrite(customerSummary.getTradeStyleIntroduce()));
         infoExplanation.setStockPickReview(convertSummaryByOverwrite(customerSummary.getStockPickMethodReview()));
         infoExplanation.setStockTimingReview(convertSummaryByOverwrite(customerSummary.getStockPickTimingReview()));
         customerSummaryResponse.setInfoExplanation(infoExplanation);
 
-        CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = new CustomerProcessSummaryResponse.ProcessApprovalAnalysis();
+        CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis =
+                new CustomerProcessSummaryResponse.ProcessApprovalAnalysis();
         approvalAnalysis.setMethod(convertProcessContent(customerSummary.getApprovalAnalysisMethod()));
         approvalAnalysis.setIssue(convertProcessContent(customerSummary.getApprovalAnalysisIssue()));
         approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
@@ -274,7 +310,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
 
-    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
+    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel,
+                                                                      List<FeatureContent> featureContentBySales,
+                                                                      Class<? extends Enum<?>> enumClass, Class type) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
@@ -282,7 +320,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 获取
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) && !featureContentByModel.get(i).getAnswer().equals("无") && !featureContentByModel.get(i).getAnswer().equals("null")) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
+                        !featureContentByModel.get(i).getAnswer().equals("无") &&
+                        !featureContentByModel.get(i).getAnswer().equals("null")) {
                     resultAnswerLatest = featureContentByModel.get(i).getAnswer();
                     break;
                 }
@@ -311,20 +351,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 resultAnswer = deletePunctuation(resultAnswer);
                 if ("是".equals(resultAnswer)) {
                     featureVO.setModelRecord(Boolean.TRUE);
-                } else if ("否".equals(resultAnswer)) {
-                    featureVO.setModelRecord(Boolean.FALSE);
+                } else {
+                    if ("否".equals(resultAnswer)) {
+                        featureVO.setModelRecord(Boolean.FALSE);
+                    }
                 }
             } else {
                 featureVO.setModelRecord(resultAnswer);
             }
         }
-        featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null : featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
+        featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null :
+                featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
         //“已询问”有三个值：“是”、“否”、“不需要”。
 
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             //如果 funds_volume_model json list 中有一个 question 有值，就是 ‘是’;
             for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion()) && !featureContentByModel.get(i).getQuestion().equals("无") && !featureContentByModel.get(i).getQuestion().equals("null")) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion()) &&
+                        !featureContentByModel.get(i).getQuestion().equals("无") &&
+                        !featureContentByModel.get(i).getQuestion().equals("null")) {
                     featureVO.setInquired("yes");
                     break;
                 }
@@ -332,7 +377,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’；
             if (featureVO.getInquired().equals("no")) {
                 for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) && !featureContentByModel.get(i).getAnswer().equals("无") && !featureContentByModel.get(i).getAnswer().equals("null")) {
+                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
+                            !featureContentByModel.get(i).getAnswer().equals("无") &&
+                            !featureContentByModel.get(i).getAnswer().equals("null")) {
                         featureVO.setInquired("no-need");
                         break;
                     }
@@ -354,7 +401,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
-    private CustomerFeatureResponse.Feature converFeaturetByAppend(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
+    private CustomerFeatureResponse.Feature converFeaturetByAppend(List<FeatureContent> featureContentByModel,
+                                                                   List<FeatureContent> featureContentBySales) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话追加+规则加工，跳过null值
         List<String> modelRecord = new ArrayList<>();
@@ -400,7 +448,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
-        CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
+        CustomerProcessSummaryResponse.ProcessContent processContent =
+                new CustomerProcessSummaryResponse.ProcessContent();
         List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(summaryContentList)) {
             for (SummaryContent item : summaryContentList) {
@@ -417,8 +466,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return processContent;
     }
 
-    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo) {
-        CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
+    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature,
+                                                                            CustomerInfo customerInfo) {
+        CustomerProcessSummaryResponse.ProcessSummary processSummary =
+                new CustomerProcessSummaryResponse.ProcessSummary();
 
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
         List<String> advantage = new ArrayList<>();
@@ -429,12 +480,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
         // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
         // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
-        if (Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds().equals(0) && !conversionRate.equals("incomplete")) {
+        if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                customerInfo.getCommunicationRounds().equals(0) &&
+                !conversionRate.equals("incomplete")) {
             advantage.add("提前完成客户匹配度判断");
-        } else if (!conversionRate.equals("incomplete")) {
-            advantage.add("完成客户匹配度判断");
-        } else if (conversionRate.equals("incomplete") && Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds() >= 1 && Objects.nonNull(customerInfo.getTotalDuration()) && customerInfo.getTotalDuration() >= 120) {
-            questions.add("未完成客户匹配度判断");
+        } else {
+            if (!conversionRate.equals("incomplete")) {
+                advantage.add("完成客户匹配度判断");
+            } else {
+                if (conversionRate.equals("incomplete") &&
+                        Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                        customerInfo.getCommunicationRounds() >= 1 &&
+                        Objects.nonNull(customerInfo.getTotalDuration()) &&
+                        customerInfo.getTotalDuration() >= 120) {
+                    questions.add("未完成客户匹配度判断");
+                }
+            }
         }
 
         // 客户交易风格了解
@@ -442,12 +503,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
         // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
         String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
-        if (Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds().equals(0) && "yes".equals(tradingStyleInquired)) {
+        if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                customerInfo.getCommunicationRounds().equals(0) &&
+                "yes".equals(tradingStyleInquired)) {
             advantage.add("提前完成客户交易风格了解");
-        } else if ("yes".equals(tradingStyleInquired)) {
-            advantage.add("完成客户交易风格了解");
-        } else if ("no".equals(tradingStyleInquired) && Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds() >= 1 && Objects.nonNull(customerInfo.getTotalDuration()) && customerInfo.getTotalDuration() >= 120) {
-            questions.add("未完成客户交易风格了解");
+        } else {
+            if ("yes".equals(tradingStyleInquired)) {
+                advantage.add("完成客户交易风格了解");
+            } else {
+                if ("no".equals(tradingStyleInquired) &&
+                        Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                        customerInfo.getCommunicationRounds() >= 1 &&
+                        Objects.nonNull(customerInfo.getTotalDuration()) &&
+                        customerInfo.getTotalDuration() >= 120) {
+                    questions.add("未完成客户交易风格了解");
+                }
+            }
         }
 
         // 跟进的客户
@@ -462,7 +533,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 功能讲解
         // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
         // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
-        if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) && (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
+        if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
+                (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
             advantage.add("功能讲解让客户理解");
         } else {
             questions.add("功能讲解未让客户理解");
@@ -472,7 +544,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
         // 缺点：-未让客户认可价值：相关字段不全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪个字段不为“是”
         CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) && (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() && Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) && (Boolean) recognition.getStockSelectionMethod().getModelRecord() && Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) && (Boolean) recognition.getSelfIssueRecognition().getModelRecord() && Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
+                (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
+                Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
+                (Boolean) recognition.getStockSelectionMethod().getModelRecord() &&
+                Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
+                (Boolean) recognition.getSelfIssueRecognition().getModelRecord() &&
+                Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
+                (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
             advantage.add("成功让客户认可价值");
         } else {
             questions.add("未让客户认可价值");
