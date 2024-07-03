@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,13 +55,6 @@ public class CustomerController {
     public BaseResponse<CustomerProcessSummaryResponse> getCustomerSummary(@PathVariable(value = "id") String id) {
         CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         return ResultUtils.success(customerSummary);
-    }
-
-    @ApiOperation(value = "插入客户信息")
-    @PostMapping("/customer_list")
-    public BaseResponse<String> insertCustomerInfo() {
-        customerInfoService.insetCustomerInfoList();
-        return ResultUtils.success("success");
     }
 
 }

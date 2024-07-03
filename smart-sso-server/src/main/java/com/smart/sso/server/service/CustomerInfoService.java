@@ -19,12 +19,6 @@ public interface CustomerInfoService {
 
     CustomerProcessSummaryResponse queryCustomerProcessSummaryById(String id);
 
-    void insetCustomerInfoList();
-
-    void insetCustomerFeature(String id);
-
-    void insetCustomerSummary(String id);
-
     String getConversionRate(CustomerFeature customerFeature);
 
     CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary);

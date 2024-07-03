@@ -2,7 +2,6 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.ProfitLossEnum;
@@ -17,8 +16,6 @@ import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.util.CommonUtils;
-import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
@@ -105,64 +100,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo));
         return summaryResponse;
-    }
-
-    @Override
-    public void insetCustomerInfoList() {
-        // 定义客户名称
-        String[] owners = {"张三", "李四", "王五", "tom", "gerge"};
-        // 当前归属活动
-        String[] campaigns = {"第一期活动", "第二期活动", "五月活动", "六月活动", "第三期活动"};
-        // 转化概率
-        String[] conversionRates = {"high", "medium", "low"};
-        // 客户阶段
-        Integer[] customerStages = {0, 1, 2, 3, 4};
-        Random random = new Random();
-        for (int i = 0; i < 100; i++) {
-            CustomerInfo customerInfo = new CustomerInfo();
-            customerInfo.setId(CommonUtils.generatePrimaryKey());
-            customerInfo.setCustomerName(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
-            customerInfo.setOwnerName(getRandomElement(owners, random).toString());
-            customerInfo.setCurrentCampaign(getRandomElement(campaigns, random).toString());
-            customerInfo.setConversionRate(getRandomElement(conversionRates, random).toString());
-            customerInfo.setCommunicationRounds(random.nextInt(10) + 1);
-            customerInfo.setLastCommunicationDate(DateUtil.getDateObj());
-            customerInfo.setTotalDuration((long) (random.nextInt(9999) + 1));
-            customerInfoMapper.insert(customerInfo);
-            // 同时写入客户特征表
-            insetCustomerFeature(customerInfo.getId());
-            // 同时写入客户特征表
-            insetCustomerSummary(customerInfo.getId());
-        }
-    }
-
-    @Override
-    public void insetCustomerFeature(String id) {
-        CustomerFeature customerFeature = new CustomerFeature();
-
-        String[] useFrequency = {"high", "medium", "low"};
-
-        Random random = new Random();
-        customerFeature.setId(id);
-        customerFeature.setCustomerLifecycle(UUID.randomUUID().toString().substring(0, 6).replaceAll("-", ""));
-        customerFeature.setHasComputerVersion(random.nextBoolean());
-        customerFeature.setClassLength((long) (random.nextInt(9999) + 1));
-        customerFeature.setClassCount(random.nextInt(10) + 1);
-        customerFeature.setPasswordEarnest(UUID.randomUUID().toString().substring(0, 10).replaceAll("-", ""));
-        customerFeature.setUsageFrequency(getRandomElement(useFrequency, random).toString());
-        customerFeatureMapper.insert(customerFeature);
-    }
-
-    @Override
-    public void insetCustomerSummary(String id) {
-        CustomerSummary customerSummary = new CustomerSummary();
-        customerSummary.setId(id);
-        CustomerProcessSummaryResponse customerProcessSummaryResponse = JsonUtil.readValue(JsonUtil.summary_string, new TypeReference<CustomerProcessSummaryResponse>() {
-        });
-        customerSummary.setSummaryAdvantage(customerProcessSummaryResponse.getSummary().getAdvantage());
-        customerSummary.setSummaryQuestions(customerProcessSummaryResponse.getSummary().getQuestions());
-
-        customerSummaryMapper.insert(customerSummary);
     }
 
     @Override
@@ -242,11 +179,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             stageStatus.setConfirmPurchase(1);
         }
         return stageStatus;
-    }
-
-    public Object getRandomElement(Object[] array, Random random) {
-        int randomIndex = random.nextInt(array.length);
-        return array[randomIndex];
     }
 
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {
