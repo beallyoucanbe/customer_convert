@@ -271,11 +271,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerProcessSummaryResponse customerSummaryResponse = new CustomerProcessSummaryResponse();
 
-        CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
-        processSummary.setAdvantage(customerSummary.getSummaryAdvantage());
-        processSummary.setQuestions(customerSummary.getSummaryQuestions());
-        customerSummaryResponse.setSummary(processSummary);
-
         CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = new CustomerProcessSummaryResponse.ProcessInfoExplanation();
         infoExplanation.setStock(convertSummaryByOverwrite(customerSummary.getIllustrateBasedStock()));
         infoExplanation.setTradeBasedIntro(convertSummaryByOverwrite(customerSummary.getTradeStyleIntroduce()));

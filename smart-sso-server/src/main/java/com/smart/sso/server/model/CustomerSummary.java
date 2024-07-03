@@ -20,11 +20,6 @@ public class CustomerSummary implements Serializable {
      */
     @TableId
     private String id;
-    @TableField(typeHandler = CommaSeparatedStringTypeHandler.class)
-    private List<String> summaryAdvantage;
-    @TableField(typeHandler = CommaSeparatedStringTypeHandler.class)
-    private List<String> summaryQuestions;
-
     // 销售有结合客户的股票举例
     @TableField(typeHandler = SummaryContentTypeHandler.class)
     private List<SummaryContent> illustrateBasedStock;
