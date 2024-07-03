@@ -100,7 +100,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerProcessSummaryResponse queryCustomerProcessSummaryById(String id) {
         CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
-        return convert2CustomerProcessSummaryResponse(customerSummary);
+        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
+        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
+        CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
+        summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo));
+        return summaryResponse;
     }
 
     @Override
@@ -211,8 +215,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary) {
-
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
+        CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
         // 客户匹配度判断 值不为“未完成判断”
         if (!"incomplete".equals(getConversionRate(customerFeature))) {
@@ -220,23 +224,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
         CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
-        if (Objects.nonNull(tradingMethod.getCurrentStocks().getModelRecord())
-                && Objects.nonNull(tradingMethod.getStockPurchaseReason().getModelRecord())
-                && Objects.nonNull(tradingMethod.getTradeTimingDecision().getModelRecord())
-                && Objects.nonNull(tradingMethod.getTradingStyle().getModelRecord())
-                && Objects.nonNull(tradingMethod.getStockMarketAge().getModelRecord())) {
+        if (Objects.nonNull(tradingMethod.getCurrentStocks().getModelRecord()) && Objects.nonNull(tradingMethod.getStockPurchaseReason().getModelRecord()) && Objects.nonNull(tradingMethod.getTradeTimingDecision().getModelRecord()) && Objects.nonNull(tradingMethod.getTradingStyle().getModelRecord()) && Objects.nonNull(tradingMethod.getStockMarketAge().getModelRecord())) {
             stageStatus.setTransactionStyle(1);
         }
         // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
+        CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
+        if (Objects.nonNull(infoExplanation.getStock()) && (Boolean) infoExplanation.getStock() && Objects.nonNull(infoExplanation.getStockPickReview()) && (Boolean) infoExplanation.getStockPickReview() && Objects.nonNull(infoExplanation.getStockTimingReview()) && (Boolean) infoExplanation.getStockTimingReview() && Objects.nonNull(infoExplanation.getTradeBasedIntro()) && (Boolean) infoExplanation.getTradeBasedIntro()) {
+            stageStatus.setFunctionIntroduction(1);
+        }
         // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
         CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) && (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()
-                && Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) && (Boolean) recognition.getStockSelectionMethod().getModelRecord()
-                && Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) && (Boolean) recognition.getSelfIssueRecognition().getModelRecord()
-                && Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) && (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() && Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) && (Boolean) recognition.getStockSelectionMethod().getModelRecord() && Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) && (Boolean) recognition.getSelfIssueRecognition().getModelRecord() && Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
             stageStatus.setConfirmValue(1);
         }
         // 客户确认购买 客户对购买软件的态度”的值为“是” or 已支付定金（天网系统取值）
+        if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) && !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) && "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
+            stageStatus.setConfirmPurchase(1);
+        }
         return stageStatus;
     }
 
@@ -338,51 +342,49 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
 
-    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales,
-                                                                      Class<? extends Enum<?>> enumClass,
-                                                                      Class type) {
+    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
         String resultAnswerLatest = null;
-        // 获取最后一个非空值
+        // 获取
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())
-                        && !featureContentByModel.get(i).getAnswer().equals("无")
-                        && !featureContentByModel.get(i).getAnswer().equals("null")) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) && !featureContentByModel.get(i).getAnswer().equals("无") && !featureContentByModel.get(i).getAnswer().equals("null")) {
                     resultAnswerLatest = featureContentByModel.get(i).getAnswer();
                     break;
                 }
             }
         }
-
-        // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
-        if (!CollectionUtils.isEmpty(featureContentByModel) && Objects.isNull(enumClass)) {
-            resultAnswer = resultAnswerLatest;
-        }
-        // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
-        if (!CollectionUtils.isEmpty(featureContentByModel) && !Objects.isNull(enumClass)) {
-            for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
-                // 获取枚举对象的 `value` 和 `text` 字段值
-                String value = getFieldValue(enumConstant, "value");
-                String enumText = getFieldValue(enumConstant, "text");
-                // 判断文本是否匹配`text`
-                if (resultAnswerLatest.trim().equals(enumText)) {
-                    resultAnswer = value;
-                    break;
+        // 如果最后一个非空值为null，结果就是null
+        if (!StringUtils.isEmpty(resultAnswerLatest)) {
+            // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
+            if (Objects.isNull(enumClass)) {
+                resultAnswer = resultAnswerLatest;
+            } else {
+                // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
+                for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
+                    // 获取枚举对象的 `value` 和 `text` 字段值
+                    String value = getFieldValue(enumConstant, "value");
+                    String enumText = getFieldValue(enumConstant, "text");
+                    // 判断文本是否匹配`text`
+                    if (resultAnswerLatest.trim().equals(enumText)) {
+                        resultAnswer = value;
+                        break;
+                    }
                 }
             }
-        }
-        if (type == Boolean.class) {
-            resultAnswer = deletePunctuation(resultAnswer);
-            if ("是".equals(resultAnswer)) {
-                featureVO.setModelRecord(Boolean.TRUE);
-            } else if ("否".equals(resultAnswer)) {
-                featureVO.setModelRecord(Boolean.FALSE);
+            // 返回值类型是boolen
+            if (type == Boolean.class) {
+                resultAnswer = deletePunctuation(resultAnswer);
+                if ("是".equals(resultAnswer)) {
+                    featureVO.setModelRecord(Boolean.TRUE);
+                } else if ("否".equals(resultAnswer)) {
+                    featureVO.setModelRecord(Boolean.FALSE);
+                }
+            } else {
+                featureVO.setModelRecord(resultAnswer);
             }
-        } else {
-            featureVO.setModelRecord(resultAnswer);
         }
         featureVO.setSalesRecord(CollectionUtils.isEmpty(featureContentBySales) ? null : featureContentBySales.get(featureContentBySales.size() - 1).getAnswer());
         //“已询问”有三个值：“是”、“否”、“不需要”。
@@ -390,9 +392,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             //如果 funds_volume_model json list 中有一个 question 有值，就是 ‘是’;
             for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion())
-                        && !featureContentByModel.get(i).getQuestion().equals("无")
-                        && !featureContentByModel.get(i).getQuestion().equals("null")) {
+                if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion()) && !featureContentByModel.get(i).getQuestion().equals("无") && !featureContentByModel.get(i).getQuestion().equals("null")) {
                     featureVO.setInquired("yes");
                     break;
                 }
@@ -400,9 +400,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’；
             if (featureVO.getInquired().equals("no")) {
                 for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer())
-                            && !featureContentByModel.get(i).getAnswer().equals("无")
-                            && !featureContentByModel.get(i).getAnswer().equals("null")) {
+                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) && !featureContentByModel.get(i).getAnswer().equals("无") && !featureContentByModel.get(i).getAnswer().equals("null")) {
                         featureVO.setInquired("no-need");
                         break;
                     }
@@ -424,8 +422,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
-    private CustomerFeatureResponse.Feature converFeaturetByAppend
-            (List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
+    private CustomerFeatureResponse.Feature converFeaturetByAppend(List<FeatureContent> featureContentByModel, List<FeatureContent> featureContentBySales) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话追加+规则加工，跳过null值
         List<String> modelRecord = new ArrayList<>();
@@ -486,6 +483,81 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         processContent.setChats(chatList);
         return processContent;
+    }
+
+    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo) {
+        CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
+
+        CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
+        List<String> advantage = new ArrayList<>();
+        List<String> questions = new ArrayList<>();
+
+        // 客户客户匹配度判断
+        String conversionRate = customerInfo.getConversionRate();
+        // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
+        // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
+        // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
+        if (Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds().equals(0) && !conversionRate.equals("incomplete")) {
+            advantage.add("提前完成客户匹配度判断");
+        } else if (!conversionRate.equals("incomplete")) {
+            advantage.add("完成客户匹配度判断");
+        } else if (conversionRate.equals("incomplete") && Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds() >= 1 && Objects.nonNull(customerInfo.getTotalDuration()) && customerInfo.getTotalDuration() >= 120) {
+            questions.add("未完成客户匹配度判断");
+        }
+
+        // 客户交易风格了解
+        // 优点：-提前完成客户交易风格了解：通话次数等于0 and “客户交易风格了解”的值为“完成”
+        // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
+        // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
+        String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
+        if (Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds().equals(0) && "yes".equals(tradingStyleInquired)) {
+            advantage.add("提前完成客户交易风格了解");
+        } else if ("yes".equals(tradingStyleInquired)) {
+            advantage.add("完成客户交易风格了解");
+        } else if ("no".equals(tradingStyleInquired) && Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds() >= 1 && Objects.nonNull(customerInfo.getTotalDuration()) && customerInfo.getTotalDuration() >= 120) {
+            questions.add("未完成客户交易风格了解");
+        }
+
+        // 跟进的客户
+        // 优点：-跟进对的客户：销售跟进的不是客户匹配度判断的值为“较低”的客户（通话次数有增加）
+        // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户（通话次数有增加）
+        if (!conversionRate.equals("low")) {
+            advantage.add("跟进对的客户");
+        } else {
+            questions.add("跟进错的客户");
+        }
+
+        // 功能讲解
+        // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
+        // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
+        if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) && (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
+            advantage.add("功能讲解让客户理解");
+        } else {
+            questions.add("功能讲解未让客户理解");
+        }
+
+        // 让客户认可价值
+        // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
+        // 缺点：-未让客户认可价值：相关字段不全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪个字段不为“是”
+        CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
+        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) && (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() && Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) && (Boolean) recognition.getStockSelectionMethod().getModelRecord() && Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) && (Boolean) recognition.getSelfIssueRecognition().getModelRecord() && Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) && (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+            advantage.add("成功让客户认可价值");
+        } else {
+            questions.add("未让客户认可价值");
+        }
+
+
+        //-收集信息快（涉及时间戳，可考虑先去掉）
+        //-邀约听课成功：“客户回答自己是否会参加课程”的值为“是”（或者用听课次数和听课时长来判断？）
+        //-SOP 执行顺序正确：阶段是逐个按顺序完成的
+
+        //-收集信息慢（涉及时间戳，可考虑先去掉）
+        //-邀约听课失败：“客户回答自己是否会参加课程”的值为“否”或空（或者用听课次数和听课时长来判断？）（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
+        //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
+        //-质疑应对失败：单个类别的质疑不认可的对话组数大于等于5，并列出是哪几类的质疑应对失败
+        processSummary.setAdvantage(advantage);
+        processSummary.setQuestions(questions);
+        return processSummary;
     }
 
 }
