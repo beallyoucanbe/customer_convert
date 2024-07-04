@@ -2,6 +2,7 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.ProfitLossEnum;
@@ -27,7 +28,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
@@ -452,7 +455,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
+        summaryContentList = dataPreprocess(summaryContentList);
         CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
+        String recognition = null;
         List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(summaryContentList)) {
             for (SummaryContent item : summaryContentList) {
@@ -460,14 +465,44 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
                 CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
                 message.setContent(item.getContent());
+                if (!StringUtils.isEmpty(item.getRecognition())) {
+                    if ("是".equals(item.getRecognition())){
+                        recognition = CustomerRecognition.APPROVED.getText();
+                    } else if ("否".equals(item.getRecognition())) {
+                        recognition = CustomerRecognition.NOT_APPROVED.getText();
+                    }
+                }
                 messageList.add(message);
                 chat.setMessages(messageList);
+                chat.setRecognition(recognition);
                 chatList.add(chat);
             }
         }
         processContent.setChats(chatList);
+        processContent.setRecognition(recognition);
         return processContent;
     }
+
+    private List<SummaryContent> dataPreprocess(List<SummaryContent> summaryContentList) {
+        if (CollectionUtils.isEmpty(summaryContentList)) {
+            return summaryContentList;
+        }
+        Map<String, SummaryContent> keySummaryContent = new TreeMap<>();
+        for (SummaryContent item : summaryContentList) {
+            if (keySummaryContent.containsKey(item.getCallId())) {
+                if (!StringUtils.isEmpty(item.getContent())) {
+                    keySummaryContent.get(item.getCallId()).setContent(item.getContent());
+                }
+                if (!StringUtils.isEmpty(item.getRecognition())) {
+                    keySummaryContent.get(item.getCallId()).setRecognition(item.getRecognition());
+                }
+            } else {
+                keySummaryContent.put(item.getCallId(), item);
+            }
+        }
+        return new ArrayList<>(keySummaryContent.values());
+    }
+
 
     private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo) {
         CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
