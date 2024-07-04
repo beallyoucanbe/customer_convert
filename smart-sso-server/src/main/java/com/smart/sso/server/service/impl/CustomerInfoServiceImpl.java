@@ -61,6 +61,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 
         String sortOrder = params.getSortBy();
+        if (sortOrder.equals("owner")) {
+            sortOrder = "owner_name";
+        } else if (sortOrder.equals("name")) {
+            sortOrder = "customer_name";
+        }
         boolean isAsc = "asc".equalsIgnoreCase(params.getOrder());
         if ("conversion_rate".equals(sortOrder)) {
             queryWrapper.last("ORDER BY FIELD(conversion_rate, 'incomplete', 'low', 'medium', 'high') " +
