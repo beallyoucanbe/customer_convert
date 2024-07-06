@@ -2,6 +2,7 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
@@ -18,6 +19,7 @@ import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.JsonUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,17 +27,15 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 
 @Service
+@Slf4j
 public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Autowired
@@ -44,6 +44,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerFeatureMapper customerFeatureMapper;
     @Autowired
     private CustomerSummaryMapper customerSummaryMapper;
+
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
 
     @Override
     public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -457,29 +460,49 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
         summaryContentList = dataPreprocess(summaryContentList);
         CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
-        String recognition = null;
+        String recognitionOverall = null;
         List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(summaryContentList)) {
             for (SummaryContent item : summaryContentList) {
-                CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
-                List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
-                CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
-                message.setContent(item.getContent());
-                if (!StringUtils.isEmpty(item.getRecognition())) {
-                    if ("是".equals(item.getRecognition())){
-                        recognition = CustomerRecognition.APPROVED.getText();
-                    } else if ("否".equals(item.getRecognition())) {
-                        recognition = CustomerRecognition.NOT_APPROVED.getText();
+                try {
+                    SummaryContentChats contentChats = null;
+                    contentChats = JsonUtil.readValue(item.getContent().replace("\n", ""), new TypeReference<SummaryContentChats>() {
+                    });
+                    String dateString = contentChats.getTime();
+                    for (SummaryContentChats.Chat chatFromDb : contentChats.getChats()) {
+                        List<SummaryContentChats.Message> dbMessages = chatFromDb.getMessages();
+                        String chatRecognition = null;
+                        if (!StringUtils.isEmpty(chatFromDb.getRecognition())) {
+                            if ("是".equals(chatFromDb.getRecognition())) {
+                                chatRecognition = CustomerRecognition.APPROVED.getText();
+                            } else if ("否".equals(chatFromDb.getRecognition())) {
+                                chatRecognition = CustomerRecognition.NOT_APPROVED.getText();
+                            }
+                        }
+                        if (!StringUtils.isEmpty(chatRecognition)) {
+                            recognitionOverall = chatRecognition;
+                        }
+                        CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
+                        chat.setRecognition(chatRecognition);
+                        List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
+                        for (SummaryContentChats.Message dbmessage : dbMessages) {
+                            CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
+                            message.setRole(dbmessage.getRole());
+                            message.setContent(dbmessage.getContent());
+                            message.setTime(dateFormat.parse(dateString));
+                            messageList.add(message);
+                        }
+                        chat.setMessages(messageList);
+                        chat.setTime(dateFormat.parse(dateString));
+                        chatList.add(chat);
                     }
+                } catch (ParseException e) {
+                    log.error("格式转化失败：{}", JsonUtil.serialize(item));
                 }
-                messageList.add(message);
-                chat.setMessages(messageList);
-                chat.setRecognition(recognition);
-                chatList.add(chat);
             }
         }
         processContent.setChats(chatList);
-        processContent.setRecognition(recognition);
+        processContent.setRecognition(recognitionOverall);
         return processContent;
     }
 
@@ -489,20 +512,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         Map<String, SummaryContent> keySummaryContent = new TreeMap<>();
         for (SummaryContent item : summaryContentList) {
-            if (keySummaryContent.containsKey(item.getCallId())) {
-                if (!StringUtils.isEmpty(item.getContent())) {
-                    keySummaryContent.get(item.getCallId()).setContent(item.getContent());
-                }
-                if (!StringUtils.isEmpty(item.getRecognition())) {
-                    keySummaryContent.get(item.getCallId()).setRecognition(item.getRecognition());
-                }
-            } else {
+            if (!keySummaryContent.containsKey(item.getCallId())) {
                 keySummaryContent.put(item.getCallId(), item);
             }
         }
         return new ArrayList<>(keySummaryContent.values());
     }
-
 
     private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo) {
         CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();

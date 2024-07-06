@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class SummaryContent {
     private String callId;
     private String content;
-    private String recognition;
 }
 
 

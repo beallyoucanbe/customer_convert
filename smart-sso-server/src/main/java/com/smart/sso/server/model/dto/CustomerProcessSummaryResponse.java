@@ -68,6 +68,8 @@ public class CustomerProcessSummaryResponse {
     public static class Chat {
         private String recognition;
         private List<Message> messages;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        private Date time;
     }
 
     @Getter

@@ -2,8 +2,6 @@ package com.smart.sso.server.model;
 
 import lombok.*;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
