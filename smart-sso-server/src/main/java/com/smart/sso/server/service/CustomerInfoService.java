@@ -23,4 +23,6 @@ public interface CustomerInfoService {
 
     CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary);
 
+    void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeature);
+
 }

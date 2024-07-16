@@ -12,6 +12,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,7 +47,7 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户特征信息")
     @GetMapping("/customer/{id}/features")
-    public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "id") String id) {
+    public BaseResponse<CustomerFeatureResponse> c(@PathVariable(value = "id") String id) {
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(id);
         return ResultUtils.success(FeatureProfile);
     }
@@ -55,6 +57,14 @@ public class CustomerController {
     public BaseResponse<CustomerProcessSummaryResponse> getCustomerSummary(@PathVariable(value = "id") String id) {
         CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         return ResultUtils.success(customerSummary);
+    }
+
+    @ApiOperation(value = "获取客户过程总结")
+    @PostMapping("/customer/{id}/features")
+    public BaseResponse<CustomerProcessSummaryResponse> modifyCustomerFeatures(@PathVariable(value = "id") String id,
+                                                                               @RequestBody CustomerFeatureResponse customerFeatureRequest) {
+        customerInfoService.modifyCustomerFeatureById(id, customerFeatureRequest);
+        return ResultUtils.success(null);
     }
 
 }

@@ -213,6 +213,44 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return stageStatus;
     }
 
+    @Override
+    public void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeatureRequest) {
+        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
+
+        if (Objects.nonNull(customerFeatureRequest.getBasic())) {
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getSalesRecord())) {
+                customerFeature.setFundsVolumeSales(null);
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesRecord())) {
+                customerFeature.setProfitLossSituationSales(null);
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getSalesRecord())) {
+                customerFeature.setEarningDesireSales(null);
+            }
+        }
+
+        if (Objects.nonNull(customerFeatureRequest.getTradingMethod())) {
+            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks()) &&
+                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesRecord())) {
+                customerFeature.setFundsVolumeSales(null);
+            }
+            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason()) &&
+                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesRecord())) {
+                customerFeature.setProfitLossSituationSales(null);
+            }
+            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision()) &&
+                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesRecord())) {
+                customerFeature.setEarningDesireSales(null);
+            }
+        }
+
+        customerFeatureMapper.updateById(customerFeature);
+
+    }
+
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {
         return customerInfoList.stream().map(item -> {
             CustomerListVO customerListVO = new CustomerListVO();
