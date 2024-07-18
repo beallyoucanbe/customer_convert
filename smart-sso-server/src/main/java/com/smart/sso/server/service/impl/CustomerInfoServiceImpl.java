@@ -287,9 +287,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerFeature.setCourseTeacherApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesRecord()));
             }
         }
-
+        if (Objects.nonNull(customerFeatureRequest.getNote())) {
+            customerFeature.setNote(customerFeatureRequest.getNote());
+        }
         customerFeatureMapper.updateById(customerFeature);
-
     }
 
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {

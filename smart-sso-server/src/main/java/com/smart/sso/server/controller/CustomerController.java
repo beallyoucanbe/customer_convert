@@ -59,7 +59,7 @@ public class CustomerController {
         return ResultUtils.success(customerSummary);
     }
 
-    @ApiOperation(value = "获取客户过程总结")
+    @ApiOperation(value = "修改客户过程总结")
     @PostMapping("/customer/{id}/features")
     public BaseResponse<CustomerProcessSummaryResponse> modifyCustomerFeatures(@PathVariable(value = "id") String id,
                                                                                @RequestBody CustomerFeatureResponse customerFeatureRequest) {
