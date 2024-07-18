@@ -216,7 +216,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeatureRequest) {
         CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
-
+        if (Objects.isNull(customerFeature)) {
+            throw new RuntimeException("客户不存在");
+        }
         if (Objects.nonNull(customerFeatureRequest.getBasic())) {
             if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
                     Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getSalesRecord())) {
