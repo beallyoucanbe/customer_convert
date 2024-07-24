@@ -4,10 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.smart</groupId>
-		<artifactId>smart-sso</artifactId>
+		<artifactId>customer-convert</artifactId>
 		<version>2.1.1</version>
 	</parent>
-	<artifactId>smart-sso-client-redis</artifactId>
+	<artifactId>customer-convert-client-redis</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	
@@ -22,7 +22,7 @@
 		<!-- sso单点登录客户端 -->
 		<dependency>
 			<groupId>com.smart</groupId>
-			<artifactId>smart-sso-client</artifactId>
+			<artifactId>customer-convert-client</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		
