@@ -13,12 +13,14 @@ import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
+import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.JsonUtil;
+import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -291,6 +294,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setNote(customerFeatureRequest.getNote());
         }
         customerFeatureMapper.updateById(customerFeature);
+    }
+
+    @Override
+    public void callback(CallBackRequest callBackRequest) {
+        String sourceId = callBackRequest.getSourceId();
+        try {
+            // 执行shell脚本
+            ShellUtils.bashRun("", new HashMap<>());
+            // 执行python脚本
+            ShellUtils.saPythonRun("", 2);
+        } catch (IOException e) {
+            // 这里只负责调用对用的脚本
+            log.error("执行脚本报错");
+        }
     }
 
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {

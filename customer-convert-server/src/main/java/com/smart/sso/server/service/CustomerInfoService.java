@@ -4,6 +4,7 @@ import com.smart.sso.server.model.CustomerFeature;
 import com.smart.sso.server.model.CustomerStageStatus;
 import com.smart.sso.server.model.CustomerSummary;
 import com.smart.sso.server.model.VO.CustomerProfile;
+import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
@@ -24,5 +25,7 @@ public interface CustomerInfoService {
     CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary);
 
     void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeature);
+
+    void callback(CallBackRequest callBackRequest);
 
 }

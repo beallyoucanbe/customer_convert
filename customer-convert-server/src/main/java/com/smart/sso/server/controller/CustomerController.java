@@ -3,6 +3,7 @@ package com.smart.sso.server.controller;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.model.VO.CustomerProfile;
+import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
@@ -64,6 +65,19 @@ public class CustomerController {
     public BaseResponse<CustomerProcessSummaryResponse> modifyCustomerFeatures(@PathVariable(value = "id") String id,
                                                                                @RequestBody CustomerFeatureResponse customerFeatureRequest) {
         customerInfoService.modifyCustomerFeatureById(id, customerFeatureRequest);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "客户识别回调")
+    @PostMapping("/customer/callback")
+    public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
+        customerInfoService.callback(callBackRequest);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "存活检查接口")
+    @GetMapping("/customer/check")
+    public BaseResponse<Void> checkAlive() {
         return ResultUtils.success(null);
     }
 
