@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +47,15 @@ public class SchedulTask {
 
         ScheduledTask tasks = scheduledTasksMapper.selectOne(taskQueryWrapper);
         if (Objects.nonNull(tasks)) {
+            // 这里判断时间，防止意外崩溃的情况
+            LocalDateTime dateTimeToCompare = tasks.getCreateTime();
+            // 计算时间差
+            Duration duration = Duration.between(dateTimeToCompare, LocalDateTime.now());
+            // 超过半小时就强制退出
+            if (duration.getSeconds() > 1800) {
+                tasks.setStatus("abort");
+                scheduledTasksMapper.updateById(tasks);
+            }
             log.error("有任务正在执行，该次不执行");
             return;
         }

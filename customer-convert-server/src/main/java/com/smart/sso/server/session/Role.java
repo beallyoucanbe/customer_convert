@@ -12,8 +12,10 @@ import java.time.LocalDateTime;
 @TableName(autoResultMap = true)
 public class Role {
     @TableId
-    private String user_id;
-    private String role_id;
+    private String id;
+    private String role;
+    private String permission;
+    private String description;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

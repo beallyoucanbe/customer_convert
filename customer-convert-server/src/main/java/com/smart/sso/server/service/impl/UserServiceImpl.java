@@ -1,37 +1,46 @@
 package com.smart.sso.server.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.smart.sso.server.mapper.UserMapper;
+import com.smart.sso.server.mapper.UserRoleMapper;
+import com.smart.sso.server.session.User;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.smart.sso.client.rpc.Result;
 import com.smart.sso.client.rpc.SsoUser;
-import com.smart.sso.server.model.User;
 import com.smart.sso.server.service.UserService;
 
 @Service("userService")
+@Slf4j
 public class UserServiceImpl implements UserService {
-	
-	private static List<User> userList;
-	
-	static {
-		userList = new ArrayList<>();
-		userList.add(new User(1, "管理员", "admin", "123456"));
-	}
-	
-	@Override
-	public Result<SsoUser> login(String username, String password) {
-		for (User user : userList) {
-			if (user.getUsername().equals(username)) {
-				if(user.getPassword().equals(password)) {
-					return Result.createSuccess(new SsoUser(user.getId(), user.getUsername()));
-				}
-				else {
-					return Result.createError("密码有误");
-				}
-			}
-		}
-		return Result.createError("用户不存在");
-	}
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+
+    @Override
+    public Result<SsoUser> login(String username, String password) {
+
+        // 根据username 查询
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        User user = userMapper.selectOne(queryWrapper);
+        // 判断用户是否正确
+        if (Objects.isNull(user)) {
+            log.error("用户不存在");
+        }
+        // 检查密码是否在正确
+        if (!user.getPassword().equals(password)) {
+            log.error("用户名密码错误");
+        }
+        // 查询用户的角色
+        String userRole = userRoleMapper.getUserRole(user.getId());
+        return Result.createSuccess(new SsoUser());
+    }
 }

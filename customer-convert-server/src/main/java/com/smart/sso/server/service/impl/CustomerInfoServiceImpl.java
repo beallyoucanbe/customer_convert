@@ -611,85 +611,89 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         List<String> questions = new ArrayList<>();
 
         // 客户客户匹配度判断
-        String conversionRate = customerInfo.getConversionRate();
-        // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
-        // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
-        // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
-        if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                customerInfo.getCommunicationRounds().equals(0) &&
-                !conversionRate.equals("incomplete")) {
-            advantage.add("提前完成客户匹配度判断");
-        } else {
-            if (!conversionRate.equals("incomplete")) {
-                advantage.add("完成客户匹配度判断");
+        try {
+            String conversionRate = customerInfo.getConversionRate();
+            // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
+            // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
+            // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
+            if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                    customerInfo.getCommunicationRounds().equals(0) &&
+                    !conversionRate.equals("incomplete")) {
+                advantage.add("提前完成客户匹配度判断");
             } else {
-                if (conversionRate.equals("incomplete") &&
-                        Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                        customerInfo.getCommunicationRounds() >= 1 &&
-                        Objects.nonNull(customerInfo.getTotalDuration()) &&
-                        customerInfo.getTotalDuration() >= 120) {
-                    questions.add("未完成客户匹配度判断");
+                if (!conversionRate.equals("incomplete")) {
+                    advantage.add("完成客户匹配度判断");
+                } else {
+                    if (conversionRate.equals("incomplete") &&
+                            Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                            customerInfo.getCommunicationRounds() >= 1 &&
+                            Objects.nonNull(customerInfo.getTotalDuration()) &&
+                            customerInfo.getTotalDuration() >= 120) {
+                        questions.add("未完成客户匹配度判断");
+                    }
                 }
             }
-        }
 
-        // 客户交易风格了解
-        // 优点：-提前完成客户交易风格了解：通话次数等于0 and “客户交易风格了解”的值为“完成”
-        // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
-        // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
-        String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
-        if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                customerInfo.getCommunicationRounds().equals(0) &&
-                "yes".equals(tradingStyleInquired)) {
-            advantage.add("提前完成客户交易风格了解");
-        } else {
-            if ("yes".equals(tradingStyleInquired)) {
-                advantage.add("完成客户交易风格了解");
+            // 客户交易风格了解
+            // 优点：-提前完成客户交易风格了解：通话次数等于0 and “客户交易风格了解”的值为“完成”
+            // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
+            // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
+            String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
+            if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                    customerInfo.getCommunicationRounds().equals(0) &&
+                    "yes".equals(tradingStyleInquired)) {
+                advantage.add("提前完成客户交易风格了解");
             } else {
-                if ("no".equals(tradingStyleInquired) &&
-                        Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                        customerInfo.getCommunicationRounds() >= 1 &&
-                        Objects.nonNull(customerInfo.getTotalDuration()) &&
-                        customerInfo.getTotalDuration() >= 120) {
-                    questions.add("未完成客户交易风格了解");
+                if ("yes".equals(tradingStyleInquired)) {
+                    advantage.add("完成客户交易风格了解");
+                } else {
+                    if ("no".equals(tradingStyleInquired) &&
+                            Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                            customerInfo.getCommunicationRounds() >= 1 &&
+                            Objects.nonNull(customerInfo.getTotalDuration()) &&
+                            customerInfo.getTotalDuration() >= 120) {
+                        questions.add("未完成客户交易风格了解");
+                    }
                 }
             }
-        }
 
-        // 跟进的客户
-        // 优点：-跟进对的客户：销售跟进的不是客户匹配度判断的值为“较低”的客户（通话次数有增加）
-        // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户（通话次数有增加）
-        if (!conversionRate.equals("low")) {
-            advantage.add("跟进对的客户");
-        } else {
-            questions.add("跟进错的客户");
-        }
+            // 跟进的客户
+            // 优点：-跟进对的客户：销售跟进的不是客户匹配度判断的值为“较低”的客户（通话次数有增加）
+            // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户（通话次数有增加）
+            if (!conversionRate.equals("low")) {
+                advantage.add("跟进对的客户");
+            } else {
+                questions.add("跟进错的客户");
+            }
 
-        // 功能讲解
-        // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
-        // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
-        if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
-                (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
-            advantage.add("功能讲解让客户理解");
-        } else {
-            questions.add("功能讲解未让客户理解");
-        }
+            // 功能讲解
+            // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
+            // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
+            if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
+                    (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
+                advantage.add("功能讲解让客户理解");
+            } else {
+                questions.add("功能讲解未让客户理解");
+            }
 
-        // 让客户认可价值
-        // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
-        // 缺点：-未让客户认可价值：相关字段不全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪个字段不为“是”
-        CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
-                (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
-                Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
-                (Boolean) recognition.getStockSelectionMethod().getModelRecord() &&
-                Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
-                (Boolean) recognition.getSelfIssueRecognition().getModelRecord() &&
-                Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
-                (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
-            advantage.add("成功让客户认可价值");
-        } else {
-            questions.add("未让客户认可价值");
+            // 让客户认可价值
+            // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
+            // 缺点：-未让客户认可价值：相关字段不全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪个字段不为“是”
+            CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
+            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
+                    (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
+                    Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
+                    (Boolean) recognition.getStockSelectionMethod().getModelRecord() &&
+                    Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
+                    (Boolean) recognition.getSelfIssueRecognition().getModelRecord() &&
+                    Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
+                    (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+                advantage.add("成功让客户认可价值");
+            } else {
+                questions.add("未让客户认可价值");
+            }
+        } catch (Exception e) {
+            log.error("获取优缺点失败");
         }
 
         // 优点：-收集信息快（涉及时间戳，可考虑先去掉）

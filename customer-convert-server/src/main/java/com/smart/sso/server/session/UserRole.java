@@ -1,6 +1,5 @@
 package com.smart.sso.server.session;
 
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -13,9 +12,8 @@ import java.time.LocalDateTime;
 @TableName(autoResultMap = true)
 public class UserRole {
     @TableId
-    private String id;
-    private String permissionName;
-    private String description;
+    private String user_id;
+    private String role_id;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
