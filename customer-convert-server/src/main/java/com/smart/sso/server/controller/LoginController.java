@@ -18,7 +18,6 @@ import com.smart.sso.client.constant.SsoConstant;
 import com.smart.sso.client.rpc.Result;
 import com.smart.sso.client.rpc.SsoUser;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.service.AppService;
 import com.smart.sso.server.service.UserService;
 import com.smart.sso.server.session.CodeManager;
 import com.smart.sso.server.session.SessionManager;
@@ -38,8 +37,6 @@ public class LoginController{
 	private SessionManager sessionManager;
 	@Autowired
 	private UserService userService;
-	@Autowired
-	private AppService appService;
 
 	/**
 	 * 登录页
@@ -80,11 +77,6 @@ public class LoginController{
 			@RequestParam String username, 
 			@RequestParam String password,
 			HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
-
-		if(!appService.exists(appId)) {
-			request.setAttribute("errorMessage", "非法应用");
-			return goLoginPath(redirectUri, appId, request);
-		}
 		
 		Result<SsoUser> result = userService.login(username, password);
 		if (!result.isSuccess()) {
