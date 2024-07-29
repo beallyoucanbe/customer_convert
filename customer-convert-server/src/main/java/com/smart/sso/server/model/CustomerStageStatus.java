@@ -9,4 +9,5 @@ public class CustomerStageStatus {
     private Integer functionIntroduction = 0;
     private Integer confirmValue = 0;
     private Integer confirmPurchase = 0;
+    private Integer completePurchase = 0;
 }

@@ -207,7 +207,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
             stageStatus.setConfirmValue(1);
         }
-        // 客户确认购买 客户对购买软件的态度”的值为“是” or 已支付定金（天网系统取值）
+        // 客户确认购买 客户对购买软件的态度”的值为“是”
+        if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) &&
+                !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) &&
+                "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
+            stageStatus.setConfirmPurchase(1);
+        }
+        // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
+        // TODO
         if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) &&
                 !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) &&
                 "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
@@ -616,7 +623,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
             // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
             // - 未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
-            if ((Objects.isNull(customerInfo.getCommunicationRounds()) || customerInfo.getCommunicationRounds().equals(0))
+            if ((Objects.isNull(customerInfo.getCommunicationRounds()) ||
+                    customerInfo.getCommunicationRounds().equals(0))
                     && !conversionRate.equals("incomplete")) {
                 advantage.add("提前完成客户匹配度判断");
             } else {
@@ -636,7 +644,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
             // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
             String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
-            if ((Objects.isNull(customerInfo.getCommunicationRounds()) || customerInfo.getCommunicationRounds().equals(0))
+            if ((Objects.isNull(customerInfo.getCommunicationRounds()) ||
+                    customerInfo.getCommunicationRounds().equals(0))
                     && "yes".equals(tradingStyleInquired)) {
                 advantage.add("提前完成客户交易风格了解");
             } else {
@@ -666,7 +675,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
                     (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
                 advantage.add("功能讲解让客户理解");
-            } else {
+            } else if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
+                    !(Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
                 questions.add("功能讲解未让客户理解");
             }
 
@@ -685,16 +695,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 advantage.add("成功让客户认可价值");
             } else {
                 StringBuilder ttt = new StringBuilder("未让客户认可价值(");
-                if (Objects.isNull(recognition.getSoftwareFunctionClarity().getModelRecord()) || !(Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
+                if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) ||
+                        !(Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
                     ttt.append("客户对软件功能的清晰度,");
                 }
-                if (Objects.isNull(recognition.getStockSelectionMethod().getModelRecord()) || !(Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
+                if (Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) ||
+                        !(Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
                     ttt.append("客户对销售讲的选股方法的认可度,");
                 }
-                if (Objects.isNull(recognition.getSelfIssueRecognition().getModelRecord()) || !(Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
+                if (Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) ||
+                        !(Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
                     ttt.append("客户对自身问题及影响的认可度,");
                 }
-                if (Objects.isNull(recognition.getSoftwareValueApproval().getModelRecord()) || !(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+                if (Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) ||
+                        !(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
                     ttt.append("客户对软件价值的认可度,");
                 }
                 ttt.deleteCharAt(ttt.length() - 1);
