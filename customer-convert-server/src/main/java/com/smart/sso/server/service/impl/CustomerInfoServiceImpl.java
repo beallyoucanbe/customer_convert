@@ -615,10 +615,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             String conversionRate = customerInfo.getConversionRate();
             // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
             // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
-            // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
-            if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                    customerInfo.getCommunicationRounds().equals(0) &&
-                    !conversionRate.equals("incomplete")) {
+            // - 未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
+            if ((Objects.isNull(customerInfo.getCommunicationRounds()) || customerInfo.getCommunicationRounds().equals(0))
+                    && !conversionRate.equals("incomplete")) {
                 advantage.add("提前完成客户匹配度判断");
             } else {
                 if (!conversionRate.equals("incomplete")) {
@@ -626,9 +625,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     if (conversionRate.equals("incomplete") &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                            customerInfo.getCommunicationRounds() >= 1 &&
-                            Objects.nonNull(customerInfo.getTotalDuration()) &&
-                            customerInfo.getTotalDuration() >= 120) {
+                            customerInfo.getCommunicationRounds() >= 1) {
                         questions.add("未完成客户匹配度判断");
                     }
                 }
@@ -637,11 +634,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 客户交易风格了解
             // 优点：-提前完成客户交易风格了解：通话次数等于0 and “客户交易风格了解”的值为“完成”
             // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
-            // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
+            // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
             String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
-            if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                    customerInfo.getCommunicationRounds().equals(0) &&
-                    "yes".equals(tradingStyleInquired)) {
+            if ((Objects.isNull(customerInfo.getCommunicationRounds()) || customerInfo.getCommunicationRounds().equals(0))
+                    && "yes".equals(tradingStyleInquired)) {
                 advantage.add("提前完成客户交易风格了解");
             } else {
                 if ("yes".equals(tradingStyleInquired)) {
@@ -649,20 +645,18 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     if ("no".equals(tradingStyleInquired) &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                            customerInfo.getCommunicationRounds() >= 1 &&
-                            Objects.nonNull(customerInfo.getTotalDuration()) &&
-                            customerInfo.getTotalDuration() >= 120) {
+                            customerInfo.getCommunicationRounds() >= 1) {
                         questions.add("未完成客户交易风格了解");
                     }
                 }
             }
 
             // 跟进的客户
-            // 优点：-跟进对的客户：销售跟进的不是客户匹配度判断的值为“较低”的客户（通话次数有增加）
-            // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户（通话次数有增加）
-            if (!conversionRate.equals("low")) {
+            // 优点：-跟进对的客户：销售跟进的是客户匹配度判断的值为“较高”或“中等”的客户
+            // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户
+            if (conversionRate.equals("high") || conversionRate.equals("medium")) {
                 advantage.add("跟进对的客户");
-            } else {
+            } else if (conversionRate.equals("low")) {
                 questions.add("跟进错的客户");
             }
 
@@ -678,7 +672,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
             // 让客户认可价值
             // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
-            // 缺点：-未让客户认可价值：相关字段不全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪个字段不为“是”
+            // 缺点：-未让客户认可价值：相关字段有一个以上为“否”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪一项不为“是”（可以用括号放在后面显示）
             CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
             if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
                     (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
@@ -690,7 +684,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
                 advantage.add("成功让客户认可价值");
             } else {
-                questions.add("未让客户认可价值");
+                StringBuilder ttt = new StringBuilder("未让客户认可价值(");
+                if (Objects.isNull(recognition.getSoftwareFunctionClarity().getModelRecord()) || !(Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
+                    ttt.append("客户对软件功能的清晰度,");
+                }
+                if (Objects.isNull(recognition.getStockSelectionMethod().getModelRecord()) || !(Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
+                    ttt.append("客户对销售讲的选股方法的认可度,");
+                }
+                if (Objects.isNull(recognition.getSelfIssueRecognition().getModelRecord()) || !(Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
+                    ttt.append("客户对自身问题及影响的认可度,");
+                }
+                if (Objects.isNull(recognition.getSoftwareValueApproval().getModelRecord()) || !(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+                    ttt.append("客户对软件价值的认可度,");
+                }
+                ttt.deleteCharAt(ttt.length() - 1);
+                ttt.append(")");
+                questions.add(ttt.toString());
             }
         } catch (Exception e) {
             log.error("获取优缺点失败");
