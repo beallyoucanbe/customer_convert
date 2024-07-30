@@ -28,4 +28,6 @@ public interface CustomerInfoService {
 
     void callback(CallBackRequest callBackRequest);
 
+    String getRedirectUrl(String customerId, String activeId);
+
 }

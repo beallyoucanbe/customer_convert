@@ -317,6 +317,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
+    @Override
+    public String getRedirectUrl(String customerId, String activeId) {
+        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("customer_id", customerId);
+        queryWrapper.eq("current_campaign", activeId);
+
+        CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper);
+        if (Objects.isNull(customerInfo)) {
+            log.error("获取客户失败");
+        }
+        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
+        return String.format(urlFormatter, customerInfo.getId());
+    }
+
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {
         return customerInfoList.stream().map(item -> {
             CustomerListVO customerListVO = new CustomerListVO();

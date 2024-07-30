@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 @RestController
 public class CustomerController {
 
@@ -78,6 +81,18 @@ public class CustomerController {
     @ApiOperation(value = "存活检查接口")
     @GetMapping("/customer/check")
     public BaseResponse<Void> checkAlive() {
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "跳转接口")
+    @GetMapping("/customer/redirect")
+    public BaseResponse<Void> redirect(@RequestParam(value = "customer_id") String customerId,
+                                       @RequestParam(value = "active_id") String activeId,
+                                       HttpServletResponse response) throws IOException {
+        String targetUrl = customerInfoService.getRedirectUrl(customerId, activeId);
+        // 使用HttpServletResponse进行重定向
+        response.sendRedirect(targetUrl);
+        response.setStatus(302);
         return ResultUtils.success(null);
     }
 
