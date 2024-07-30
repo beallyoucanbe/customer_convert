@@ -671,7 +671,28 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     if (tradingStyle == 0 &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                             customerInfo.getCommunicationRounds() >= 1) {
-                        questions.add("未完成客户交易风格了解");
+
+                        StringBuilder ttt = new StringBuilder("未完成客户交易风格了解(");
+                        // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
+                        CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
+                        if (Objects.isNull(tradingMethod.getCurrentStocks().getModelRecord())) {
+                            ttt.append("客户当前持仓或关注的股票,");
+                        }
+                        if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
+                            ttt.append("客户为什么买这些股票,");
+                        }
+                        if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
+                            ttt.append("客户怎么决定的买卖这些股票的时机,");
+                        }
+                        if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
+                            ttt.append("客户的交易风格,");
+                        }
+                        if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
+                            ttt.append("客户的股龄,");
+                        }
+                        ttt.deleteCharAt(ttt.length() - 1);
+                        ttt.append(")");
+                        questions.add(ttt.toString());
                     }
                 }
             }
