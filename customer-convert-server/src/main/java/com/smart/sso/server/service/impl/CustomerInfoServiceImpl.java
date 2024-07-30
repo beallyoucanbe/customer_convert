@@ -113,7 +113,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
-        summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo));
+        CustomerStageStatus stageStatus = getCustomerStageStatus(customerFeature, customerSummary);
+        summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus));
         return summaryResponse;
     }
 
@@ -327,7 +328,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.isNull(customerInfo)) {
             log.error("获取客户失败");
         }
-        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
+//        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
+        String urlFormatter = "http://172.16.192.60/customer?id=%s&embed=true";
         return String.format(urlFormatter, customerInfo.getId());
     }
 
@@ -624,7 +626,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return new ArrayList<>(keySummaryContent.values());
     }
 
-    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo) {
+    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus) {
         CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
 
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
@@ -657,16 +659,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-提前完成客户交易风格了解：通话次数等于0 and “客户交易风格了解”的值为“完成”
             // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
             // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
-            String tradingStyleInquired = customerFeatureResponse.getTradingMethod().getTradingStyle().getInquired();
+            int tradingStyle = stageStatus.getTransactionStyle();
             if ((Objects.isNull(customerInfo.getCommunicationRounds()) ||
                     customerInfo.getCommunicationRounds().equals(0))
-                    && "yes".equals(tradingStyleInquired)) {
+                    && tradingStyle == 1) {
                 advantage.add("提前完成客户交易风格了解");
             } else {
-                if ("yes".equals(tradingStyleInquired)) {
+                if (tradingStyle == 1) {
                     advantage.add("完成客户交易风格了解");
                 } else {
-                    if ("no".equals(tradingStyleInquired) &&
+                    if (tradingStyle == 0 &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                             customerInfo.getCommunicationRounds() >= 1) {
                         questions.add("未完成客户交易风格了解");
