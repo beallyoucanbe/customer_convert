@@ -24,7 +24,7 @@ public class SessionUtils {
 	    return Optional.ofNullable(getAccessToken(request)).map(u -> u.getUser()).orElse(null);
 	}
 	
-	public static Integer getUserId(HttpServletRequest request) {
+	public static String getUserId(HttpServletRequest request) {
         return Optional.ofNullable(getUser(request)).map(u -> u.getId()).orElse(null);
     }
 

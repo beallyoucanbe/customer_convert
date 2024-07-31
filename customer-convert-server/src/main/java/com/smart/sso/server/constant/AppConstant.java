@@ -1,12 +1,7 @@
 package com.smart.sso.server.constant;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * 应用常量
- *
- * @author Joe
  */
 public class AppConstant {
 

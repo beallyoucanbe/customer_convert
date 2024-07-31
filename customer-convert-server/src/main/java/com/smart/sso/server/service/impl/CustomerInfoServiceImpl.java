@@ -19,6 +19,7 @@ import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
 import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -320,11 +321,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public void callback(CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
         try {
-            // 执行shell脚本
-            ShellUtils.bashRun("", new HashMap<>());
-            // 执行python脚本
-            ShellUtils.saPythonRun("", 2);
-        } catch (IOException e) {
+            // 将sourceId 写入文件
+            String filePath = "/opt/customer-convert/callback/sourceid.txt";
+            CommonUtils.appendTextToFile(filePath, sourceId);
+//            ShellUtils.bashRun("", new HashMap<>());
+//            ShellUtils.saPythonRun("", 2);
+        } catch (Exception e) {
             // 这里只负责调用对用的脚本
             log.error("执行脚本报错");
         }
@@ -811,14 +813,39 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             log.error("获取优缺点失败");
         }
 
+        //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
+        //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
+        if (stageStatus.getMatchingJudgment() == 1 && stageStatus.getTransactionStyle() == 1 && stageStatus.getFunctionIntroduction() == 1) {
+            if (((stageStatus.getConfirmValue() == 0 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
+                    ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
+                    ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))){
+                advantage.add("SOP执行顺序正确");
+            }
+        }
+        if (stageStatus.getCompletePurchase() == 1 &&
+            (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase()) < 5){
+            advantage.add("SOP执行顺序错误");
+        } else if (stageStatus.getConfirmPurchase() == 1 &&
+                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue()) < 4) {
+            advantage.add("SOP执行顺序错误");
+        } else if (stageStatus.getConfirmValue() == 1 &&
+                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction()) < 3) {
+            advantage.add("SOP执行顺序错误");
+        } else if (stageStatus.getFunctionIntroduction() == 1 &&
+                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle()) < 2) {
+            advantage.add("SOP执行顺序错误");
+        } else if (stageStatus.getTransactionStyle() == 1 && stageStatus.getMatchingJudgment() != 1) {
+            advantage.add("SOP执行顺序错误");
+        }
+
         // 优点：-收集信息快（涉及时间戳，可考虑先去掉）
         // 缺点：-收集信息慢（涉及时间戳，可考虑先去掉）
 
         //-邀约听课成功：“客户回答自己是否会参加课程”的值为“是”（或者用听课次数和听课时长来判断？）
-        //-SOP 执行顺序正确：阶段是逐个按顺序完成的
+
 
         //-邀约听课失败：“客户回答自己是否会参加课程”的值为“否”或空（或者用听课次数和听课时长来判断？）（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
-        //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
+
         //-质疑应对失败：单个类别的质疑不认可的对话组数大于等于5，并列出是哪几类的质疑应对失败
         processSummary.setAdvantage(advantage);
         processSummary.setQuestions(questions);

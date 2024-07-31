@@ -47,10 +47,11 @@ public class UserController {
      * @throws UnsupportedEncodingException
      */
     @PostMapping("/login")
-    public String login( @RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+    public BaseResponse<SsoUser> login(@RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         SsoUser user = userService.login(username, password);
         String tgt = sessionManager.setUser(user, request, response);
-        return generateCodeAndRedirect(redirectUri, tgt);
+        generateCodeAndRedirect("", tgt);
+        return ResultUtils.success(null);
     }
 
     @RequestMapping(method = RequestMethod.GET)

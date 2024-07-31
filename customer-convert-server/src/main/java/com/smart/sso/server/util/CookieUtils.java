@@ -62,10 +62,7 @@ public class CookieUtils {
 
 	/**
 	 * 清除cookie
-	 * 
-	 * @param request
-	 * @param response
-	 * @param string
+	 *
 	 */
 	public static void removeCookie(String name, String path, HttpServletResponse response) {
 
