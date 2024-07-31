@@ -669,7 +669,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
                                 if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
                                     fundsVolume = fundsVolumeModel.get(i).getAnswer();
-                                    break;
+                                    if (!fundsVolume.equals("无") && !fundsVolume.equals("null")){
+                                        break;
+                                    }
                                 }
                             }
                             if (StringUtils.isEmpty(fundsVolume)) {
@@ -683,7 +685,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
                                 if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
                                     earningDesire = earningDesireModel.get(i).getAnswer();
-                                    break;
+                                    if (!earningDesire.equals("无") && !earningDesire.equals("null")){
+                                        break;
+                                    }
                                 }
                             }
                             if (StringUtils.isEmpty(earningDesire)) {
