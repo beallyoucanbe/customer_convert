@@ -16,7 +16,6 @@ public interface CodeManager extends Expiration {
 	 * 生成授权码
 	 * 
 	 * @param tgt
-	 * @param clientType
 	 * @param redirectUri
 	 * @return
 	 */
