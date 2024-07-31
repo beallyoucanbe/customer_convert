@@ -101,6 +101,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.isNull(customerProfile.getCommunicationRounds())){
             customerProfile.setCommunicationRounds(0);
         }
+        // 重新判断一下匹配度，防止更新不及时的情况
+        String conversionRate = getConversionRate(customerFeature);
+        if (!customerInfo.getConversionRate().equals(conversionRate)) {
+            customerInfoMapper.updateConversionRateById(id, conversionRate);
+            customerProfile.setConversionRate(conversionRate);
+        }
         return customerProfile;
     }
 

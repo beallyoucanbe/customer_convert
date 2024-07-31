@@ -53,8 +53,7 @@ public class SchedulTask {
             Duration duration = Duration.between(dateTimeToCompare, LocalDateTime.now());
             // 超过半小时就强制退出
             if (duration.getSeconds() > 1800) {
-                tasks.setStatus("abort");
-                scheduledTasksMapper.updateById(tasks);
+                scheduledTasksMapper.updateStatusById(tasks.getId(), "abort");
             }
             log.error("有任务正在执行，该次不执行");
             return;
@@ -84,8 +83,7 @@ public class SchedulTask {
         List<CustomerFeature> customerFeatureList = customerFeatureMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(customerFeatureList)) {
             log.error("没有客户匹配度需要更新，直接返回");
-            newTasks.setStatus("success");
-            scheduledTasksMapper.updateById(newTasks);
+            scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
             return;
         }
         for (CustomerFeature customerFeature : customerFeatureList) {
@@ -96,12 +94,10 @@ public class SchedulTask {
                 customerInfoMapper.updateConversionRateById(customerFeature.getId(), conversionRate);
             } catch (Exception e) {
                 log.error("客户{}匹配度更新失败，错误信息：{}", customerFeature.getId(), e.getMessage());
-                newTasks.setStatus("failed");
-                scheduledTasksMapper.updateById(newTasks);
+                scheduledTasksMapper.updateStatusById(newTasks.getId(), "failed");
             }
         }
         // 更新成功，更新任务状态
-        newTasks.setStatus("success");
-        scheduledTasksMapper.updateById(newTasks);
+        scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
     }
 }
