@@ -650,7 +650,42 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     if (conversionRate.equals("incomplete") &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                             customerInfo.getCommunicationRounds() >= 1) {
-                        questions.add("未完成客户匹配度判断");
+                        StringBuilder ttt = new StringBuilder("未完成客户匹配度判断(");
+                        List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
+                        List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
+
+                        if (CollectionUtils.isEmpty(fundsVolumeModel)) {
+                            ttt.append("资金体量,");
+                        } else {
+                            String fundsVolume = null;
+                            // 找到最后一个非null的值
+                            for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
+                                if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
+                                    fundsVolume = fundsVolumeModel.get(i).getAnswer();
+                                    break;
+                                }
+                            }
+                            if (StringUtils.isEmpty(fundsVolume)) {
+                                ttt.append("资金体量,");
+                            }
+                        }
+                        if (CollectionUtils.isEmpty(earningDesireModel)) {
+                            ttt.append("赚钱欲望,");
+                        } else {
+                            String earningDesire = null;
+                            for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
+                                if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
+                                    earningDesire = earningDesireModel.get(i).getAnswer();
+                                    break;
+                                }
+                            }
+                            if (StringUtils.isEmpty(earningDesire)) {
+                                ttt.append("赚钱欲望,");
+                            }
+                        }
+                        ttt.deleteCharAt(ttt.length() - 1);
+                        ttt.append(")");
+                        questions.add(ttt.toString());
                     }
                 }
             }
