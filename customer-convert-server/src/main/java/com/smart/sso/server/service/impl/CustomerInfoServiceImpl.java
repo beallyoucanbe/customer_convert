@@ -222,9 +222,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             stageStatus.setConfirmValue(1);
         }
         // 客户确认购买 客户对购买软件的态度”的值为“是”
-        if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) &&
-                !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) &&
-                "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
+        if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getModelRecord()) &&
+                (Boolean) recognition.getSoftwarePurchaseAttitude().getModelRecord()) {
             stageStatus.setConfirmPurchase(1);
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
@@ -744,7 +743,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         }
                         ttt.deleteCharAt(ttt.length() - 1);
                         ttt.append(")");
-                        questions.add(ttt.toString());
+                        if (ttt.length() > 15) {
+                            questions.add(ttt.toString());
+                        }
                     }
                 }
             }
@@ -784,25 +785,27 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 advantage.add("成功让客户认可价值");
             } else {
                 StringBuilder ttt = new StringBuilder("未让客户认可价值(");
-                if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) ||
+                if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
                         !(Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
                     ttt.append("客户对软件功能的清晰度,");
                 }
-                if (Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) ||
+                if (Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
                         !(Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
                     ttt.append("客户对销售讲的选股方法的认可度,");
                 }
-                if (Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) ||
+                if (Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
                         !(Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
                     ttt.append("客户对自身问题及影响的认可度,");
                 }
-                if (Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) ||
+                if (Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
                         !(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
                     ttt.append("客户对软件价值的认可度,");
                 }
                 ttt.deleteCharAt(ttt.length() - 1);
                 ttt.append(")");
-                questions.add(ttt.toString());
+                if (ttt.length() > 15) {
+                    questions.add(ttt.toString());
+                }
             }
         } catch (Exception e) {
             log.error("获取优缺点失败");
