@@ -2,8 +2,6 @@ package com.smart.sso.server.common;
 
 /**
  * 含时效
- * 
- * @author Joe
  */
 public interface Expiration {
 	

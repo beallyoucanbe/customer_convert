@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SsoUser {
-    private Integer id;
+    private String id;
     private String username;
     private String role;
 }

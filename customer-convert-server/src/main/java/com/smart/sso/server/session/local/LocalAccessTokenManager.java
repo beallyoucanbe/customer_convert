@@ -5,8 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,10 +22,10 @@ import com.smart.sso.server.session.AccessTokenManager;
  * @author Joe
  */
 @Component
+@Slf4j
 public class LocalAccessTokenManager implements AccessTokenManager, ExpirationPolicy {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
+
 	@Value("${sso.timeout}")
     private int timeout;
 
@@ -39,7 +38,7 @@ public class LocalAccessTokenManager implements AccessTokenManager, ExpirationPo
 		accessTokenMap.put(accessToken, dat);
 
 		tgtMap.computeIfAbsent(accessTokenContent.getCodeContent().getTgt(), a -> new HashSet<>()).add(accessToken);
-		logger.info("调用凭证生成成功, accessToken:{}", accessToken);
+		log.info("调用凭证生成成功, accessToken:{}", accessToken);
 	}
 	
 	@Override
@@ -78,7 +77,7 @@ public class LocalAccessTokenManager implements AccessTokenManager, ExpirationPo
 			if (codeContent == null || !codeContent.isSendLogoutRequest()) {
 				return;
 			}
-			logger.debug("发起客户端登出请求, accessToken:{}, url:{}", accessToken, codeContent.getRedirectUri());
+			log.debug("发起客户端登出请求, accessToken:{}, url:{}", accessToken, codeContent.getRedirectUri());
 			sendLogoutRequest(codeContent.getRedirectUri(), accessToken);
 		});
 	}
@@ -89,7 +88,7 @@ public class LocalAccessTokenManager implements AccessTokenManager, ExpirationPo
 		accessTokenMap.forEach((accessToken, dummyAt) -> {
 			if (System.currentTimeMillis() > dummyAt.expired) {
 				accessTokenMap.remove(accessToken);
-				logger.debug("调用凭证已失效, accessToken:{}", accessToken);
+				log.debug("调用凭证已失效, accessToken:{}", accessToken);
 			}
 		});
 	}

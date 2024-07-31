@@ -14,12 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import com.smart.sso.client.constant.Oauth2Constant;
-import com.smart.sso.client.constant.SsoConstant;
-import com.smart.sso.client.rpc.Result;
 import com.smart.sso.client.rpc.SsoUser;
-import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.service.UserService;
 import com.smart.sso.server.session.CodeManager;
 import com.smart.sso.server.session.SessionManager;
@@ -30,7 +26,7 @@ import com.smart.sso.server.session.SessionManager;
  * @author Joe
  */
 @Controller
-@RequestMapping("/login")
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
@@ -43,8 +39,6 @@ public class UserController {
     /**
      * 登录提交
      *
-     * @param redirectUri
-     * @param appId
      * @param username
      * @param password
      * @param request
@@ -53,15 +47,9 @@ public class UserController {
      * @throws UnsupportedEncodingException
      */
     @PostMapping("/login")
-    public String login(@RequestParam(value = SsoConstant.REDIRECT_URI, required = true) String redirectUri, @RequestParam(value = Oauth2Constant.APP_ID, required = true) String appId, @RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
-
-        Result<SsoUser> result = userService.login(username, password);
-        if (!result.isSuccess()) {
-            request.setAttribute("errorMessage", result.getMessage());
-            return goLoginPath(redirectUri, appId, request);
-        }
-
-        String tgt = sessionManager.setUser(result.getData(), request, response);
+    public String login( @RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+        SsoUser user = userService.login(username, password);
+        String tgt = sessionManager.setUser(user, request, response);
         return generateCodeAndRedirect(redirectUri, tgt);
     }
 
@@ -69,19 +57,6 @@ public class UserController {
     public BaseResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         sessionManager.invalidate(request, response);
         return ResultUtils.success(null);
-    }
-
-    /**
-     * 设置request的redirectUri和appId参数，跳转到登录页
-     *
-     * @param redirectUri
-     * @param request
-     * @return
-     */
-    private String goLoginPath(String redirectUri, String appId, HttpServletRequest request) {
-        request.setAttribute(SsoConstant.REDIRECT_URI, redirectUri);
-        request.setAttribute(Oauth2Constant.APP_ID, appId);
-        return AppConstant.LOGIN_PATH;
     }
 
     /**

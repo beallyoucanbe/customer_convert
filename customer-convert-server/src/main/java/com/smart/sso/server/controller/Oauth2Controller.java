@@ -110,12 +110,8 @@ public class Oauth2Controller {
 		}
 		else if (GrantTypeEnum.PASSWORD.getValue().equals(grantType)) {
 			// app通过此方式由客户端代理转发http请求到服务端获取accessToken
-			Result<SsoUser> loginResult = userService.login(username, password);
-			if (!loginResult.isSuccess()) {
-				return Result.createError(loginResult.getMessage());
-			}
-			SsoUser user = loginResult.getData();
-			String tgt = ticketGrantingTicketManager.generate(loginResult.getData());
+			SsoUser user = userService.login(username, password);
+			String tgt = ticketGrantingTicketManager.generate(user);
 			CodeContent codeContent = new CodeContent(tgt, false, null);
 			authDto = new AccessTokenContent(codeContent, user, appId);
 		}

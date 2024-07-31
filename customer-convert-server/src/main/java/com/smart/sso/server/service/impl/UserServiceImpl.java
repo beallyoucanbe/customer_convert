@@ -14,7 +14,7 @@ import com.smart.sso.client.rpc.Result;
 import com.smart.sso.client.rpc.SsoUser;
 import com.smart.sso.server.service.UserService;
 
-@Service("userService")
+@Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
@@ -25,8 +25,7 @@ public class UserServiceImpl implements UserService {
     private UserRoleMapper userRoleMapper;
 
     @Override
-    public Result<SsoUser> login(String username, String password) {
-
+    public SsoUser login(String username, String password) {
         // 根据username 查询
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
@@ -34,13 +33,15 @@ public class UserServiceImpl implements UserService {
         // 判断用户是否正确
         if (Objects.isNull(user)) {
             log.error("用户不存在");
+            throw new RuntimeException("用户不存在");
         }
         // 检查密码是否在正确
         if (!user.getPassword().equals(password)) {
             log.error("用户名密码错误");
+            throw new RuntimeException("用户名密码错误");
         }
         // 查询用户的角色
         String userRole = userRoleMapper.getUserRole(user.getId());
-        return Result.createSuccess(new SsoUser());
+        return new SsoUser(user.getId(), user.getUsername(), userRole);
     }
 }
