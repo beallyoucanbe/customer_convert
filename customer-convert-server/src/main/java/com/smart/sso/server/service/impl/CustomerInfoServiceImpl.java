@@ -98,6 +98,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerFeature, customerSummary));
+        if (Objects.isNull(customerProfile.getCommunicationRounds())){
+            customerProfile.setCommunicationRounds(0);
+        }
         return customerProfile;
     }
 
@@ -138,13 +141,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
             if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
                 fundsVolume = fundsVolumeModel.get(i).getAnswer();
-                break;
+                if (!fundsVolume.equals("无") && !fundsVolume.equals("null")){
+                    break;
+                }
             }
         }
         for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
             if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
                 earningDesire = earningDesireModel.get(i).getAnswer();
-                break;
+                if (!earningDesire.equals("无") && !earningDesire.equals("null")){
+                    break;
+                }
             }
         }
         if (StringUtils.isEmpty(fundsVolume) || StringUtils.isEmpty(earningDesire)) {
