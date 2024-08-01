@@ -21,7 +21,6 @@ import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
-import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;

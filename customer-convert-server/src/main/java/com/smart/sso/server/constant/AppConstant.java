@@ -6,7 +6,7 @@ package com.smart.sso.server.constant;
 public class AppConstant {
 
     // 存cookie中TGT名称，和Cas保存一致
-    public static final String TGC = "TGC";
+    public static final String TGC = "cs_token";
 
     // 登录页
     public static final String LOGIN_PATH = "/login";

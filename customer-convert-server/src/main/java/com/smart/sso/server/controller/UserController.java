@@ -50,8 +50,8 @@ public class UserController {
     public BaseResponse<SsoUser> login(@RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         SsoUser user = userService.login(username, password);
         String tgt = sessionManager.setUser(user, request, response);
-        generateCodeAndRedirect("", tgt);
-        return ResultUtils.success(null);
+//        generateCodeAndRedirect("", tgt);
+        return ResultUtils.success(user);
     }
 
     @RequestMapping(method = RequestMethod.GET)

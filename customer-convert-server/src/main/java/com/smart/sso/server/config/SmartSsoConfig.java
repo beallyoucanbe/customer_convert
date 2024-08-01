@@ -37,30 +37,6 @@ public class SmartSsoConfig {
 	}
 
 	/**
-	 * 分布式redis方式注册单点登出Listener
-	 * 
-	 * 注：
-	 * 1.需注入RedisSessionMappingStorage
-	 * 2.需要使用Spring方式注入LogoutListener，使用ServletListenerRegistrationBean方式不生效
-	 */
-//	@Autowired
-//	private SessionMappingStorage sessionMappingStorage;
-//
-//	@Bean
-//	public SessionMappingStorage sessionMappingStorage() {
-//		return new RedisSessionMappingStorage();
-//	}
-//
-//	@Bean
-//	public ApplicationListener<AbstractSessionEvent> LogoutListener() {
-//		List<HttpSessionListener> httpSessionListeners = new ArrayList<>();
-//		LogoutListener logoutListener = new LogoutListener();
-//		logoutListener.setSessionMappingStorage(sessionMappingStorage);
-//		httpSessionListeners.add(logoutListener);
-//		return new SessionEventHttpSessionListenerAdapter(httpSessionListeners);
-//	}
-
-	/**
 	 * 单点登录Filter容器
 	 * 
 	 * @return

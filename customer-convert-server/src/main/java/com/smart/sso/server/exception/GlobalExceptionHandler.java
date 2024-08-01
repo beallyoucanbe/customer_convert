@@ -16,7 +16,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<BaseResponse<?>> businessExceptionHandler(BusinessException e) {
         log.error(e.getMessage());
         BaseResponse<?> response = ResultUtils.error(e.getCode(), e.getMessage());
-        HttpStatus status = (response.getCode() == 50000) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
+        HttpStatus status = HttpStatus.OK;
+        if (response.getCode() == ErrorCode.SYSTEM_ERROR.getCode()) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        } else if (response.getCode() == ErrorCode.NOT_LOGIN_ERROR.getCode()) {
+            status = HttpStatus.UNAUTHORIZED;
+        }
         return new ResponseEntity<>(response, status);
     }
 
@@ -24,7 +29,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<BaseResponse<?>> runtimeExceptionHandler(RuntimeException e) {
         log.error(e.getMessage());
         BaseResponse<?> response = ResultUtils.error(ErrorCode.SYSTEM_ERROR);
-        HttpStatus status = (response.getCode() == 50000) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
+        HttpStatus status = HttpStatus.OK;
+        if (response.getCode() == ErrorCode.SYSTEM_ERROR.getCode()) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        } else if (response.getCode() == ErrorCode.NOT_LOGIN_ERROR.getCode()) {
+            status = HttpStatus.UNAUTHORIZED;
+        }
         return new ResponseEntity<>(response, status);
     }
 }
