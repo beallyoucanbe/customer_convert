@@ -8,24 +8,22 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
+import com.smart.sso.server.session.Role;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.smart.sso.client.constant.Oauth2Constant;
 import com.smart.sso.client.rpc.SsoUser;
 import com.smart.sso.server.service.UserService;
 import com.smart.sso.server.session.CodeManager;
 import com.smart.sso.server.session.SessionManager;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 单点登录管理
- *
- * @author Joe
+ * 用户和登录管理
  */
-@Controller
+@RestController
 @RequestMapping("/user")
 public class UserController {
 
@@ -35,6 +33,7 @@ public class UserController {
     private SessionManager sessionManager;
     @Autowired
     private UserService userService;
+
 
     /**
      * 登录提交
@@ -47,14 +46,26 @@ public class UserController {
      * @throws UnsupportedEncodingException
      */
     @PostMapping("/login")
-    public BaseResponse<SsoUser> login(@RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+    public BaseResponse<SsoUser> login(@RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) {
         SsoUser user = userService.login(username, password);
         String tgt = sessionManager.setUser(user, request, response);
 //        generateCodeAndRedirect("", tgt);
         return ResultUtils.success(user);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @PostMapping("/signup")
+    public BaseResponse<SsoUser> signup(@RequestParam String username, @RequestParam String password, @RequestParam String roleName) {
+        String userId = userService.signup(username, password, roleName);
+        return ResultUtils.success(userService.getUserById(userId));
+    }
+
+    @PostMapping("/role")
+    public BaseResponse<Role> role(@RequestParam String role, @RequestParam String roleName, @RequestParam String permission) {
+        Role result = userService.signRole(role, roleName, permission);
+        return ResultUtils.success(result);
+    }
+
+//    @RequestMapping(method = RequestMethod.GET)
     public BaseResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         sessionManager.invalidate(request, response);
         return ResultUtils.success(null);

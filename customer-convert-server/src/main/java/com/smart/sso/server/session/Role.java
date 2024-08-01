@@ -14,6 +14,7 @@ public class Role {
     @TableId
     private String id;
     private String role;
+    private String roleName;
     private String permission;
     private String description;
     @TableField(fill = FieldFill.INSERT)

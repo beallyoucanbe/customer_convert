@@ -7,7 +7,6 @@ import com.smart.sso.server.exception.BusinessException;
 import com.smart.sso.server.session.SessionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,16 +24,11 @@ public class TokenInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         SsoUser user = sessionManager.getUser(request);
         if (Objects.isNull(user)){
-            log.error("用户没有登陆");
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        String token = request.getHeader("token");// 从 http 请求头中取出 token
-        if (!(handler instanceof HandlerMethod)) {
-            return true;
-        }
-        //验证token
-        if (null == token || "".equals(token)) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            log.error("用户没有登陆，检查token");
+            String token = request.getHeader("token");// 从 http 请求头中取出 token
+            if (null == token || "".equals(token)) {
+                throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            }
         }
         return true;
     }
