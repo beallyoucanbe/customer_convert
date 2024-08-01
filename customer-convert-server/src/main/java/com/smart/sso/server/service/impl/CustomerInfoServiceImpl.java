@@ -661,12 +661,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     if (conversionRate.equals("incomplete") &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                             customerInfo.getCommunicationRounds() >= 1) {
-                        StringBuilder ttt = new StringBuilder("未完成客户匹配度判断(");
+                        StringBuilder ttt = new StringBuilder("未完成客户匹配度判断（");
                         List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
                         List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
 
                         if (CollectionUtils.isEmpty(fundsVolumeModel)) {
-                            ttt.append("资金体量,");
+                            ttt.append("资金体量，");
                         } else {
                             String fundsVolume = null;
                             // 找到最后一个非null的值
@@ -679,11 +679,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                                 }
                             }
                             if (StringUtils.isEmpty(fundsVolume)) {
-                                ttt.append("资金体量,");
+                                ttt.append("资金体量，");
                             }
                         }
                         if (CollectionUtils.isEmpty(earningDesireModel)) {
-                            ttt.append("赚钱欲望,");
+                            ttt.append("赚钱欲望，");
                         } else {
                             String earningDesire = null;
                             for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
@@ -695,11 +695,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                                 }
                             }
                             if (StringUtils.isEmpty(earningDesire)) {
-                                ttt.append("赚钱欲望,");
+                                ttt.append("赚钱欲望，");
                             }
                         }
                         ttt.deleteCharAt(ttt.length() - 1);
-                        ttt.append(")");
+                        ttt.append("）");
                         questions.add(ttt.toString());
                     }
                 }
@@ -722,26 +722,26 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                             customerInfo.getCommunicationRounds() >= 1) {
 
-                        StringBuilder ttt = new StringBuilder("未完成客户交易风格了解(");
+                        StringBuilder ttt = new StringBuilder("未完成客户交易风格了解（");
                         // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
                         CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
                         if (Objects.isNull(tradingMethod.getCurrentStocks().getModelRecord())) {
-                            ttt.append("客户当前持仓或关注的股票,");
+                            ttt.append("客户当前持仓或关注的股票，");
                         }
                         if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
-                            ttt.append("客户为什么买这些股票,");
+                            ttt.append("客户为什么买这些股票，");
                         }
                         if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
-                            ttt.append("客户怎么决定的买卖这些股票的时机,");
+                            ttt.append("客户怎么决定的买卖这些股票的时机，");
                         }
                         if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
-                            ttt.append("客户的交易风格,");
+                            ttt.append("客户的交易风格，");
                         }
                         if (Objects.isNull(tradingMethod.getStockPurchaseReason().getModelRecord())) {
-                            ttt.append("客户的股龄,");
+                            ttt.append("客户的股龄，");
                         }
                         ttt.deleteCharAt(ttt.length() - 1);
-                        ttt.append(")");
+                        ttt.append("）");
                         if (ttt.length() > 15) {
                             questions.add(ttt.toString());
                         }
@@ -783,25 +783,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
                 advantage.add("成功让客户认可价值");
             } else {
-                StringBuilder ttt = new StringBuilder("未让客户认可价值(");
+                StringBuilder ttt = new StringBuilder("未让客户认可价值（");
                 if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
                         !(Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
-                    ttt.append("客户对软件功能的清晰度,");
+                    ttt.append("客户对软件功能的清晰度，");
                 }
                 if (Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
                         !(Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
-                    ttt.append("客户对销售讲的选股方法的认可度,");
+                    ttt.append("客户对销售讲的选股方法的认可度，");
                 }
                 if (Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
                         !(Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
-                    ttt.append("客户对自身问题及影响的认可度,");
+                    ttt.append("客户对自身问题及影响的认可度，");
                 }
                 if (Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
                         !(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
-                    ttt.append("客户对软件价值的认可度,");
+                    ttt.append("客户对软件价值的认可度，");
                 }
                 ttt.deleteCharAt(ttt.length() - 1);
-                ttt.append(")");
+                ttt.append("）");
                 if (ttt.length() > 15) {
                     questions.add(ttt.toString());
                 }
@@ -820,32 +820,33 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
         Set<String> questionStatus = new TreeSet<>();
-        if (stageStatus.getTransactionStyle() == 1 && stageStatus.getMatchingJudgment() != 1) {
+        if (stageStatus.getMatchingJudgment() == 0 &&
+                (stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+            questionStatus.add("客户判断");
+        }
+        if (stageStatus.getTransactionStyle() == 0 &&
+                (stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
             questionStatus.add("交易风格了解");
         }
-        if (stageStatus.getFunctionIntroduction() == 1 &&
-                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle()) < 2) {
+        if (stageStatus.getFunctionIntroduction() == 0 &&
+                (stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
             questionStatus.add("针对性功能介绍");
         }
-        if (stageStatus.getConfirmValue() == 1 &&
-                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction()) < 3) {
+        if (stageStatus.getConfirmValue() == 0 &&
+                (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
             questionStatus.add("客户确认价值");
         }
-        if (stageStatus.getConfirmPurchase() == 1 &&
-                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue()) < 4) {
+        if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0){
             questionStatus.add("客户确认购买");
         }
-        if (stageStatus.getCompletePurchase() == 1 &&
-            (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase()) < 5){
-            questionStatus.add("客户完成购买");
-        }
+
         if (!CollectionUtils.isEmpty(questionStatus)){
-            StringBuilder ttt = new StringBuilder("SOP执行顺序错误(");
+            StringBuilder ttt = new StringBuilder("SOP执行顺序错误（缺失：");
             for (String status : questionStatus){
-                ttt.append(status).append(",");
+                ttt.append(status).append("，");
             }
             ttt.deleteCharAt(ttt.length() - 1);
-            ttt.append(")");
+            ttt.append("）");
             questions.add(ttt.toString());
         }
 
