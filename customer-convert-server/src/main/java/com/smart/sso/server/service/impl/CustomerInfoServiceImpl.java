@@ -617,7 +617,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         chat.setTime(dateFormat.parse(dateString));
                         chatList.add(chat);
                     }
-                } catch (ParseException e) {
+                } catch (Exception e) {
                     log.error("格式转化失败：{}", JsonUtil.serialize(item));
                 }
             }
