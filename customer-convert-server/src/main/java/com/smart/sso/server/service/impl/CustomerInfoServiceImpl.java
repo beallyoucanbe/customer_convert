@@ -822,28 +822,39 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 advantage.add("SOP执行顺序正确");
             }
         }
+        Set<String> questionStatus = new TreeSet<>();
+        if (stageStatus.getTransactionStyle() == 1 && stageStatus.getMatchingJudgment() != 1) {
+            questionStatus.add("交易风格了解");
+        }
+        if (stageStatus.getFunctionIntroduction() == 1 &&
+                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle()) < 2) {
+            questionStatus.add("针对性功能介绍");
+        }
+        if (stageStatus.getConfirmValue() == 1 &&
+                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction()) < 3) {
+            questionStatus.add("客户确认价值");
+        }
+        if (stageStatus.getConfirmPurchase() == 1 &&
+                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue()) < 4) {
+            questionStatus.add("客户确认购买");
+        }
         if (stageStatus.getCompletePurchase() == 1 &&
             (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase()) < 5){
-            advantage.add("SOP执行顺序错误");
-        } else if (stageStatus.getConfirmPurchase() == 1 &&
-                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue()) < 4) {
-            advantage.add("SOP执行顺序错误");
-        } else if (stageStatus.getConfirmValue() == 1 &&
-                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction()) < 3) {
-            advantage.add("SOP执行顺序错误");
-        } else if (stageStatus.getFunctionIntroduction() == 1 &&
-                (stageStatus.getMatchingJudgment() + stageStatus.getTransactionStyle()) < 2) {
-            advantage.add("SOP执行顺序错误");
-        } else if (stageStatus.getTransactionStyle() == 1 && stageStatus.getMatchingJudgment() != 1) {
-            advantage.add("SOP执行顺序错误");
+            questionStatus.add("客户完成购买");
+        }
+        if (!CollectionUtils.isEmpty(questionStatus)){
+            StringBuilder ttt = new StringBuilder("SOP执行顺序错误(");
+            for (String status : questionStatus){
+                ttt.append(status).append(",");
+            }
+            ttt.deleteCharAt(ttt.length() - 1);
+            ttt.append(")");
+            questions.add(ttt.toString());
         }
 
         // 优点：-收集信息快（涉及时间戳，可考虑先去掉）
         // 缺点：-收集信息慢（涉及时间戳，可考虑先去掉）
-
         //-邀约听课成功：“客户回答自己是否会参加课程”的值为“是”（或者用听课次数和听课时长来判断？）
-
-
         //-邀约听课失败：“客户回答自己是否会参加课程”的值为“否”或空（或者用听课次数和听课时长来判断？）（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
 
         //-质疑应对失败：单个类别的质疑不认可的对话组数大于等于5，并列出是哪几类的质疑应对失败
