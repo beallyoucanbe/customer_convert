@@ -268,8 +268,7 @@ public class ShellUtils {
      * 在SP环境中,启动一个Python进程, 默认使用python3执行
      */
     public static Process saPythonRun(String pythonFilePath, int maxArgc, String... params) throws IOException {
-        String pythonPath =
-                String.format("python", "");
+        String pythonPath = "/home/opsuser/miniconda3/bin/python";
         String[] command = null;
         if (maxArgc > 0) {
             int realArgc = Math.min(params.length, maxArgc);
@@ -282,6 +281,7 @@ public class ShellUtils {
         command[1] = pythonFilePath;
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         // 3. 启动进程
+        log.error("执行的python脚本为：" + JsonUtil.serialize(command));
         return processBuilder.start();
     }
 
