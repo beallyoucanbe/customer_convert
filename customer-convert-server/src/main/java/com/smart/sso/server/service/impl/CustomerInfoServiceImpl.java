@@ -21,6 +21,7 @@ import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
+import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -322,7 +323,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             String filePath = "/opt/customer-convert/callback/sourceid.txt";
             CommonUtils.appendTextToFile(filePath, sourceId);
 //            ShellUtils.bashRun("", new HashMap<>());
-//            ShellUtils.saPythonRun("", 2);
+            ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight-main/process_text.py", 2, sourceId);
         } catch (Exception e) {
             // 这里只负责调用对用的脚本
             log.error("执行脚本报错");

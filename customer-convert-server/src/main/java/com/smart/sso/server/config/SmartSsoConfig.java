@@ -49,7 +49,7 @@ public class SmartSsoConfig {
 		smartContainer.setAppSecret(appSecret);
 		
 		// 忽略拦截URL,多个逗号分隔
-        smartContainer.setExcludeUrls("/login,/logout,/oauth2/*,/custom*,/assets/*,/user/*");
+        smartContainer.setExcludeUrls("/login,/logout,/oauth2/*,/customers/*,/customer/*,/assets/*,/user/*");
 
 		smartContainer.setFilters(new LogoutFilter(), new LoginFilter());
 

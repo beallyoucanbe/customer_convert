@@ -269,7 +269,7 @@ public class ShellUtils {
      */
     public static Process saPythonRun(String pythonFilePath, int maxArgc, String... params) throws IOException {
         String pythonPath =
-                String.format("%s/python/bin/python3", "");
+                String.format("python", "");
         String[] command = null;
         if (maxArgc > 0) {
             int realArgc = Math.min(params.length, maxArgc);
