@@ -3,9 +3,11 @@ package com.smart.sso.server.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -32,5 +34,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")  // 允许所有头
                 .allowCredentials(true)  // 允许凭证
                 .maxAge(3600);  // 预检请求的缓存时间
+    }
+
+//    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

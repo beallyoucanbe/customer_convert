@@ -14,6 +14,7 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -44,6 +45,9 @@ public class SchedulTask {
 
     @Autowired
     private CustomerCompleteDescribeMapper customerCompleteDescribeMapper;
+
+    @Autowired
+    private MessageService messageService;
 
 
     @Scheduled(cron = "0 */15 * * * ?")
@@ -177,11 +181,13 @@ public class SchedulTask {
                     newCompleteDescribe.setFeature(featureProfile);
                     newCompleteDescribe.setSummary(customerSummary);
                     customerCompleteDescribeMapper.insert(newCompleteDescribe);
+                    messageService.sendNoticeForSingle(newCompleteDescribe);
                 } else {
                     completeDescribe.setProfile(customerProfile);
                     completeDescribe.setFeature(featureProfile);
                     completeDescribe.setSummary(customerSummary);
                     customerCompleteDescribeMapper.updateById(completeDescribe);
+                    messageService.sendNoticeForSingle(completeDescribe);
                 }
             } catch (Exception e) {
                 log.error("客户{}匹配度更新失败，错误信息：{}", customerInfo.getId(), e.getMessage());
