@@ -13,4 +13,7 @@ public class AppConstant {
 
     public static final String REFRESH_CONVERSION_RATE = "REFRESH_CONVERSION_RATE";
 
+    public static final String REFRESH_CUSTOMER_COMPLETE_DESCRIBE = "REFRESH_CUSTOMER_COMPLETE_DESCRIBE";
+
+
 }
