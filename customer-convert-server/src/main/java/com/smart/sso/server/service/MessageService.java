@@ -1,6 +1,5 @@
 package com.smart.sso.server.service;
 
-import com.smart.sso.server.model.CustomerCompleteDescribe;
 import com.smart.sso.server.model.TextMessage;
 
 public interface MessageService {
@@ -29,9 +28,9 @@ public interface MessageService {
      *          6、客户拒绝购买
      *
      * 详细内容链接：http://xxxxxxxxx（嵌入天网的该客户详情页链接）
-     * @param completeDescribe
+     * @param id
      * @return
      */
-    String sendNoticeForSingle(CustomerCompleteDescribe completeDescribe);
+    void sendNoticeForSingle(String id);
 
 }

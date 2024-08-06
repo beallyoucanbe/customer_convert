@@ -2,11 +2,14 @@ package com.smart.sso.server.service.impl;
 
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
+import com.smart.sso.server.mapper.CustomerCompleteDescribeMapper;
 import com.smart.sso.server.model.CustomerCompleteDescribe;
 import com.smart.sso.server.model.CustomerStageStatus;
 import com.smart.sso.server.model.TextMessage;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
+import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -27,6 +30,10 @@ public class MessageServiceImpl implements MessageService {
 
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private CustomerInfoService customerInfoService;
+    @Autowired
+    private CustomerCompleteDescribeMapper customerCompleteDescribeMapper;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -72,11 +79,34 @@ public class MessageServiceImpl implements MessageService {
      * <p>
      * 详细内容链接：http://xxxxxxxxx（嵌入天网的该客户详情页链接）
      *
-     * @param completeDescribe
+     * @param id
      * @return
      */
     @Override
-    public String sendNoticeForSingle(CustomerCompleteDescribe completeDescribe) {
+    public void sendNoticeForSingle(String id) {
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
+        CustomerFeatureResponse featureProfile = customerInfoService.queryCustomerFeatureById(id);
+        CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
+        CustomerCompleteDescribe completeDescribe = customerCompleteDescribeMapper.selectById(id);
+        if (Objects.isNull(completeDescribe)) {
+            // 新建
+            CustomerCompleteDescribe newCompleteDescribe = new CustomerCompleteDescribe();
+            newCompleteDescribe.setId(id);
+            newCompleteDescribe.setProfile(customerProfile);
+            newCompleteDescribe.setFeature(featureProfile);
+            newCompleteDescribe.setSummary(customerSummary);
+            customerCompleteDescribeMapper.insert(newCompleteDescribe);
+            sendMessage(newCompleteDescribe);
+        } else {
+            completeDescribe.setProfile(customerProfile);
+            completeDescribe.setFeature(featureProfile);
+            completeDescribe.setSummary(customerSummary);
+            customerCompleteDescribeMapper.updateById(completeDescribe);
+            sendMessage(completeDescribe);
+        }
+    }
+
+    private void sendMessage(CustomerCompleteDescribe completeDescribe) {
         CustomerProfile customerProfile = completeDescribe.getProfile();
         CustomerFeatureResponse featureProfile = completeDescribe.getFeature();
         CustomerFeatureResponse.Recognition recognition = featureProfile.getRecognition();
@@ -155,6 +185,5 @@ public class MessageServiceImpl implements MessageService {
         textMessage.setMsgType("markdown");
         textMessage.setMarkdown(textContent);
         sendMessageToChat("", textMessage);
-        return null;
     }
 }

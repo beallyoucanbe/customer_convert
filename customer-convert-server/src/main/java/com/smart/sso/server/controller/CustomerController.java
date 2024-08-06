@@ -9,6 +9,7 @@ import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.service.MessageService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,8 @@ public class CustomerController {
 
     @Autowired
     private CustomerInfoService customerInfoService;
+    @Autowired
+    private MessageService messageService;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -93,6 +96,13 @@ public class CustomerController {
         // 使用HttpServletResponse进行重定向
         response.sendRedirect(targetUrl);
         response.setStatus(302);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "触发给用户发送通知")
+    @GetMapping("/customer/send_message")
+    public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
+        messageService.sendNoticeForSingle(id);
         return ResultUtils.success(null);
     }
 
