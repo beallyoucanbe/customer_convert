@@ -97,7 +97,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerFeature, customerSummary));
-        if (Objects.isNull(customerProfile.getCommunicationRounds())){
+        if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
         // 重新判断一下匹配度，防止更新不及时的情况
@@ -146,7 +146,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
             if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
                 fundsVolume = fundsVolumeModel.get(i).getAnswer();
-                if (!fundsVolume.equals("无") && !fundsVolume.equals("null")){
+                if (!fundsVolume.equals("无") && !fundsVolume.equals("null")) {
                     break;
                 }
             }
@@ -154,7 +154,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
             if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
                 earningDesire = earningDesireModel.get(i).getAnswer();
-                if (!earningDesire.equals("无") && !earningDesire.equals("null")){
+                if (!earningDesire.equals("无") && !earningDesire.equals("null")) {
                     break;
                 }
             }
@@ -337,12 +337,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         queryWrapper.eq("current_campaign", activeId);
 
         CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper);
+        String id = "";
         if (Objects.isNull(customerInfo)) {
             log.error("获取客户失败");
+        } else {
+            id = customerInfo.getId();
         }
 //        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
-        String urlFormatter = "http://172.16.192.60/customer?id=%s&embed=true";
-        return String.format(urlFormatter, customerInfo.getId());
+        String urlFormatter = "https://newcmp.emoney.cn/chat/customer?id=%s&embed=true";
+        return String.format(urlFormatter, id);
     }
 
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {
@@ -674,7 +677,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
                                 if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
                                     fundsVolume = fundsVolumeModel.get(i).getAnswer();
-                                    if (!fundsVolume.equals("无") && !fundsVolume.equals("null")){
+                                    if (!fundsVolume.equals("无") && !fundsVolume.equals("null")) {
                                         break;
                                     }
                                 }
@@ -690,7 +693,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
                                 if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
                                     earningDesire = earningDesireModel.get(i).getAnswer();
-                                    if (!earningDesire.equals("无") && !earningDesire.equals("null")){
+                                    if (!earningDesire.equals("无") && !earningDesire.equals("null")) {
                                         break;
                                     }
                                 }
@@ -834,16 +837,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             questionStatus.add("针对性功能介绍");
         }
         if (stageStatus.getConfirmValue() == 0 &&
-                (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0) {
             questionStatus.add("客户确认价值");
         }
-        if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0){
+        if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0) {
             questionStatus.add("客户确认购买");
         }
 
-        if (!CollectionUtils.isEmpty(questionStatus)){
+        if (!CollectionUtils.isEmpty(questionStatus)) {
             StringBuilder ttt = new StringBuilder("SOP执行顺序错误（缺失：");
-            for (String status : questionStatus){
+            for (String status : questionStatus) {
                 ttt.append(status).append("，");
             }
             ttt.deleteCharAt(ttt.length() - 1);
