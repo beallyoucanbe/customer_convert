@@ -13,7 +13,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         //注册TestInterceptor拦截器
         registry.addInterceptor(tokenInterceptor())//添加不拦截的请求路径
                 .excludePathPatterns("/user/login", "/user/getOpenId", "/user/wxUserLogin",
-                        "/customer/redirect", "/customer/check","/customer/callback","/customer/send_message",
+                        "/customer/redirect", "/customer/check","/customer/callback","/customer/**","/customers/**",
                         "/swagger-ui.html/**", "/swagger-resources/**")
                 .addPathPatterns("/**");                        //添加需要拦截的路径
     }
