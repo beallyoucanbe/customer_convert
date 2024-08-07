@@ -2,8 +2,7 @@ package com.smart.sso.server.service.impl;
 
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.mapper.CustomerCompleteDescribeMapper;
-import com.smart.sso.server.model.CustomerCompleteDescribe;
+import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.model.CustomerStageStatus;
 import com.smart.sso.server.model.TextMessage;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -33,7 +32,7 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private CustomerInfoService customerInfoService;
     @Autowired
-    private CustomerCompleteDescribeMapper customerCompleteDescribeMapper;
+    private CustomerCharacterMapper customerCharacterMapper;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -85,25 +84,8 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void sendNoticeForSingle(String id) {
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
-        CustomerFeatureResponse featureProfile = customerInfoService.queryCustomerFeatureById(id);
-        CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
-        CustomerCompleteDescribe completeDescribe = customerCompleteDescribeMapper.selectById(id);
-        if (Objects.isNull(completeDescribe)) {
-            // 新建
-            CustomerCompleteDescribe newCompleteDescribe = new CustomerCompleteDescribe();
-            newCompleteDescribe.setId(id);
-            newCompleteDescribe.setProfile(customerProfile);
-            newCompleteDescribe.setFeature(featureProfile);
-            newCompleteDescribe.setSummary(customerSummary);
-            customerCompleteDescribeMapper.insert(newCompleteDescribe);
-            sendMessage(newCompleteDescribe);
-        } else {
-            completeDescribe.setProfile(customerProfile);
-            completeDescribe.setFeature(featureProfile);
-            completeDescribe.setSummary(customerSummary);
-            customerCompleteDescribeMapper.updateById(completeDescribe);
-            sendMessage(completeDescribe);
-        }
+        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
+        sendMessage(id, customerProfile, customerFeature);
     }
 
     @Override
@@ -111,10 +93,9 @@ public class MessageServiceImpl implements MessageService {
 
     }
 
-    private void sendMessage(CustomerCompleteDescribe completeDescribe) {
-        CustomerProfile customerProfile = completeDescribe.getProfile();
-        CustomerFeatureResponse featureProfile = completeDescribe.getFeature();
-        CustomerFeatureResponse.Recognition recognition = featureProfile.getRecognition();
+    private void sendMessage(String id, CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
+
+        CustomerFeatureResponse.Recognition recognition = customerFeature.getRecognition();
         List<String> completeStatus = new ArrayList<>();
         List<String> incompleteStatus = new ArrayList<>();
 
@@ -178,7 +159,7 @@ public class MessageServiceImpl implements MessageService {
         for (String item : incompleteStatus) {
             incomplete.append(i++).append(". ").append(item).append("\n");
         }
-        String url = "https://newcmp.emoney.cn/chat/customer?id=" + completeDescribe.getId();
+        String url = "https://newcmp.emoney.cn/chat/customer?id=" + id;
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerProfile.getCustomerName(),
                 conversionRateMap.get(customerProfile.getConversionRate()),
                 complete,
