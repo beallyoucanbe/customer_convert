@@ -106,6 +106,11 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
+    @Override
+    public void sendNoticeForLeader(String id) {
+
+    }
+
     private void sendMessage(CustomerCompleteDescribe completeDescribe) {
         CustomerProfile customerProfile = completeDescribe.getProfile();
         CustomerFeatureResponse featureProfile = completeDescribe.getFeature();

@@ -33,4 +33,6 @@ public interface MessageService {
      */
     void sendNoticeForSingle(String id);
 
+    void sendNoticeForLeader(String id);
+
 }
