@@ -1,7 +1,10 @@
 package com.smart.sso.server.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
+import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -31,6 +35,8 @@ public class CustomerController {
     private CustomerInfoService customerInfoService;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private CustomerInfoMapper customerInfoMapper;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -105,6 +111,20 @@ public class CustomerController {
     @GetMapping("/customer/send_message")
     public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
         messageService.sendNoticeForSingle(id);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "全量初始化")
+    @GetMapping("/customer/init_character")
+    public BaseResponse<Void> initCharacter() {
+        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
+        // 筛选时间
+        queryWrapper.gt("update_time", dateTime);
+        List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapper);
+        for (CustomerInfo item : customerFeatureList) {
+            messageService.sendNoticeForSingle(item.getId());
+        }
         return ResultUtils.success(null);
     }
 

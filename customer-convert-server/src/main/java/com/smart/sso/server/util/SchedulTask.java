@@ -1,7 +1,6 @@
 package com.smart.sso.server.util;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
@@ -9,11 +8,7 @@ import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.ScheduledTasksMapper;
-import com.smart.sso.server.model.Config;
-import com.smart.sso.server.model.CustomerCharacter;
-import com.smart.sso.server.model.CustomerFeature;
-import com.smart.sso.server.model.ScheduledTask;
-import com.smart.sso.server.model.TextMessage;
+import com.smart.sso.server.model.*;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
@@ -143,6 +138,15 @@ public class SchedulTask {
     @Scheduled(cron = "0 0 12,18 * * ?")
     public void performTask() {
         log.error("开始执行客户情况总结任务");
+        // 执行之前先全量更新数据到BI
+        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
+        // 筛选时间
+        queryWrapperInfo.gt("update_time", dateTime);
+        List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
+        for (CustomerInfo item : customerFeatureList) {
+            messageService.sendNoticeForSingle(item.getId());
+        }
         //获取当前阶段的活动
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
