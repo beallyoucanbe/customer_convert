@@ -8,6 +8,7 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class CustomerController {
@@ -104,6 +106,14 @@ public class CustomerController {
     public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
         messageService.sendNoticeForSingle(id);
         return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "更新组长和组员的关系（增量）")
+    @PostMapping("/customer/leader_members")
+    public BaseResponse<List<LeadMemberRequest>> leaderMembers(@RequestBody List<LeadMemberRequest> members,
+                                                                 @RequestParam(value = "overwrite", defaultValue = "true") boolean overwrite) {
+        List<LeadMemberRequest> newMembers = customerInfoService.addLeaderMember(members, overwrite);
+        return ResultUtils.success(newMembers);
     }
 
 }

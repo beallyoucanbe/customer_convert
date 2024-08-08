@@ -3,10 +3,12 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.ProfitLossEnum;
+import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.CustomerSummaryMapper;
@@ -18,6 +20,7 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
@@ -46,7 +49,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerFeatureMapper customerFeatureMapper;
     @Autowired
     private CustomerSummaryMapper customerSummaryMapper;
-
+    @Autowired
+    private ConfigMapper configMapper;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 
@@ -346,6 +350,48 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 //        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
         String urlFormatter = "https://newcmp.emoney.cn/chat/customer?id=%s&embed=true";
         return String.format(urlFormatter, id);
+    }
+
+    @Override
+    public List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite) {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            // 覆盖写入 或者 第一次配置，直接写入
+            Config newConfig = new Config();
+            newConfig.setType(ConfigTypeEnum.COMMON.getValue());
+            newConfig.setName(ConfigTypeEnum.LEADER.getValue());
+            newConfig.setValue(JsonUtil.serialize(members));
+            configMapper.insert(newConfig);
+        } else if (overwrite) {
+            config.setValue(JsonUtil.serialize(members));
+            configMapper.updateById(config);
+        }
+//        else {
+//            // 增量写入
+//            List<LeadMemberRequest> listMap = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
+//            });
+//            HashMap<String, LeadMemberRequest> areaSet = listMap.stream().map(LeadMemberRequest::getArea).collect(Collectors.toSet());
+//            for (LeadMemberRequest item : members) {
+//                if (areaSet.contains(item.getArea())) {
+//
+//                    List<String> membersOld = listMap.get(entry.getKey());
+//                    for (String member : entry.getValue()) {
+//                        if (!membersOld.contains(member)) {
+//                            membersOld.add(member);
+//                        }
+//                    }
+//                } else {
+//                    listMap.add(item);
+//                }
+//            }
+//            config.setValue(JsonUtil.serialize(listMap));
+//            configMapper.updateById(config);
+//        }
+        return JsonUtil.readValue(configMapper.selectOne(queryWrapper).getValue(), new TypeReference<List<LeadMemberRequest>>() {
+        });
     }
 
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {

@@ -9,6 +9,9 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.model.dto.LeadMemberRequest;
+
+import java.util.List;
 
 public interface CustomerInfoService {
 
@@ -29,5 +32,7 @@ public interface CustomerInfoService {
     void callback(CallBackRequest callBackRequest);
 
     String getRedirectUrl(String customerId, String activeId);
+
+    List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite);
 
 }

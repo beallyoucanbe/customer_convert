@@ -104,72 +104,14 @@ public class MessageServiceImpl implements MessageService {
         if (Objects.isNull(customerCharacter)) {
             // 新建
             CustomerCharacter newCustomerCharacter = new CustomerCharacter();
-            newCustomerCharacter.setId(id);
-            newCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
-            newCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
-            newCustomerCharacter.setCurrentCampaign(customerProfile.getCurrentCampaign());
-            newCustomerCharacter.setConversionRate(customerProfile.getConversionRate());
-
-            newCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);
-            newCustomerCharacter.setTransactionStyleStage(customerProfile.getCustomerStage().getTransactionStyle() == 1);
-            newCustomerCharacter.setFunctionIntroductionStage(customerProfile.getCustomerStage().getFunctionIntroduction() == 1);
-            newCustomerCharacter.setConfirmValueStage(customerProfile.getCustomerStage().getConfirmValue() == 1);
-            newCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
-            newCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
-
-            newCustomerCharacter.setFundsVolume(Objects.nonNull(customerFeature.getBasic().getFundsVolume().getModelRecord()) ? customerFeature.getBasic().getFundsVolume().getModelRecord().toString() : null);
-            newCustomerCharacter.setProfitLossSituation(Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null);
-            newCustomerCharacter.setEarningDesire(Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null);
-
-            newCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord()) ? customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord().toString() : null);
-            newCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord().toString() : null);
-            newCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getModelRecord()) ? customerFeature.getRecognition().getStockSelectionMethod().getModelRecord().toString() : null);
-            newCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord()) ? customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord().toString() : null);
-            newCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord()) ? customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord().toString() : null);
-            newCustomerCharacter.setSoftwarePurchaseAttitude(Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord().toString() : null);
-
-            List<String> advantages = customerSummary.getSummary().getAdvantage();
-            List<String> questions = customerSummary.getSummary().getQuestions();
-            for (String item : advantages) {
-                if (item.contains("完成客户匹配度判断")) {
-                    newCustomerCharacter.setSummaryMatchJudgment("yes");
-                } else if (item.contains("完成客户交易风格了解")) {
-                    newCustomerCharacter.setSummaryTransactionStyle("yes");
-                } else if (item.contains("跟进对的客户")) {
-                    newCustomerCharacter.setSummaryFollowCustomer("yes");
-                } else if (item.contains("功能讲解让客户理解")) {
-                    newCustomerCharacter.setSummaryFunctionIntroduction("yes");
-                } else if (item.contains("成功让客户认可价值")) {
-                    newCustomerCharacter.setSummaryConfirmValue("yes");
-                } else if (item.contains("执行顺序正确")) {
-                    newCustomerCharacter.setSummaryExecuteOrder("yes");
-                } else if (item.contains("邀约听课成功")) {
-                    newCustomerCharacter.setSummaryInvitCourse("yes");
-                }
-            }
-            for (String item : questions) {
-                if (item.contains("未完成客户匹配度判断")) {
-                    newCustomerCharacter.setSummaryMatchJudgment("no");
-                } else if (item.contains("未完成客户交易风格了解")) {
-                    newCustomerCharacter.setSummaryTransactionStyle("no");
-                } else if (item.contains("跟进错的客户")) {
-                    newCustomerCharacter.setSummaryFollowCustomer("no");
-                } else if (item.contains("功能讲解未让客户理解")) {
-                    newCustomerCharacter.setSummaryFunctionIntroduction("no");
-                } else if (item.contains("未让客户认可价值")) {
-                    newCustomerCharacter.setSummaryConfirmValue("no");
-                } else if (item.contains("执行顺序错误")) {
-                    newCustomerCharacter.setSummaryExecuteOrder("no");
-                } else if (item.contains("邀约听课失败")) {
-                    newCustomerCharacter.setSummaryInvitCourse("no");
-                }
-            }
+            updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
             customerCharacterMapper.insert(newCustomerCharacter);
         } else {
-
+            // 更新
+            updateCharacter(customerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
             customerCharacterMapper.updateById(customerCharacter);
         }
-        sendMessage(customerInfo, customerProfile, customerFeature);
+//        sendMessage(customerInfo, customerProfile, customerFeature);
     }
 
     @Override
@@ -268,5 +210,70 @@ public class MessageServiceImpl implements MessageService {
         textMessage.setMsgtype("markdown");
         textMessage.setMarkdown(textContent);
         sendMessageToChat(notifyUrl, textMessage);
+    }
+
+
+    private void updateCharacter(CustomerCharacter latestCustomerCharacter, CustomerInfo customerInfo,
+                                 CustomerProfile customerProfile, CustomerFeatureResponse customerFeature, CustomerProcessSummaryResponse customerSummary){
+        latestCustomerCharacter.setId(customerInfo.getId());
+        latestCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
+        latestCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
+        latestCustomerCharacter.setCurrentCampaign(customerProfile.getCurrentCampaign());
+        latestCustomerCharacter.setConversionRate(customerProfile.getConversionRate());
+
+        latestCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);
+        latestCustomerCharacter.setTransactionStyleStage(customerProfile.getCustomerStage().getTransactionStyle() == 1);
+        latestCustomerCharacter.setFunctionIntroductionStage(customerProfile.getCustomerStage().getFunctionIntroduction() == 1);
+        latestCustomerCharacter.setConfirmValueStage(customerProfile.getCustomerStage().getConfirmValue() == 1);
+        latestCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
+        latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
+
+        latestCustomerCharacter.setFundsVolume(Objects.nonNull(customerFeature.getBasic().getFundsVolume().getModelRecord()) ? customerFeature.getBasic().getFundsVolume().getModelRecord().toString() : null);
+        latestCustomerCharacter.setProfitLossSituation(Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null);
+        latestCustomerCharacter.setEarningDesire(Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null);
+
+        latestCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord()) ? customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord().toString() : null);
+        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord().toString() : null);
+        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getModelRecord()) ? customerFeature.getRecognition().getStockSelectionMethod().getModelRecord().toString() : null);
+        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord()) ? customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord().toString() : null);
+        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord()) ? customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord().toString() : null);
+        latestCustomerCharacter.setSoftwarePurchaseAttitude(Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord().toString() : null);
+
+        List<String> advantages = customerSummary.getSummary().getAdvantage();
+        List<String> questions = customerSummary.getSummary().getQuestions();
+        for (String item : advantages) {
+            if (item.contains("完成客户匹配度判断")) {
+                latestCustomerCharacter.setSummaryMatchJudgment("yes");
+            } else if (item.contains("完成客户交易风格了解")) {
+                latestCustomerCharacter.setSummaryTransactionStyle("yes");
+            } else if (item.contains("跟进对的客户")) {
+                latestCustomerCharacter.setSummaryFollowCustomer("yes");
+            } else if (item.contains("功能讲解让客户理解")) {
+                latestCustomerCharacter.setSummaryFunctionIntroduction("yes");
+            } else if (item.contains("成功让客户认可价值")) {
+                latestCustomerCharacter.setSummaryConfirmValue("yes");
+            } else if (item.contains("执行顺序正确")) {
+                latestCustomerCharacter.setSummaryExecuteOrder("yes");
+            } else if (item.contains("邀约听课成功")) {
+                latestCustomerCharacter.setSummaryInvitCourse("yes");
+            }
+        }
+        for (String item : questions) {
+            if (item.contains("未完成客户匹配度判断")) {
+                latestCustomerCharacter.setSummaryMatchJudgment("no");
+            } else if (item.contains("未完成客户交易风格了解")) {
+                latestCustomerCharacter.setSummaryTransactionStyle("no");
+            } else if (item.contains("跟进错的客户")) {
+                latestCustomerCharacter.setSummaryFollowCustomer("no");
+            } else if (item.contains("功能讲解未让客户理解")) {
+                latestCustomerCharacter.setSummaryFunctionIntroduction("no");
+            } else if (item.contains("未让客户认可价值")) {
+                latestCustomerCharacter.setSummaryConfirmValue("no");
+            } else if (item.contains("执行顺序错误")) {
+                latestCustomerCharacter.setSummaryExecuteOrder("no");
+            } else if (item.contains("邀约听课失败")) {
+                latestCustomerCharacter.setSummaryInvitCourse("no");
+            }
+        }
     }
 }

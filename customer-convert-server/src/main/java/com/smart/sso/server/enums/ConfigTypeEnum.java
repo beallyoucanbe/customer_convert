@@ -10,7 +10,7 @@ public enum ConfigTypeEnum {
 
     CURRENT_CAMPAIGN("CURRENT_CAMPAIGN", "当前阶段的活动"),
 
-    LOSS("loss", "亏损");
+    LEADER("leader", "组长");
 
     private final String value;
     private final String text;
