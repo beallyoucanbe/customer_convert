@@ -1,21 +1,29 @@
 package com.smart.sso.server.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.mapper.CustomerCharacterMapper;
+import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.mapper.NotifyRelationMapper;
+import com.smart.sso.server.model.CustomerCharacter;
+import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.CustomerStageStatus;
+import com.smart.sso.server.model.NotifyRelation;
 import com.smart.sso.server.model.TextMessage;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
@@ -25,6 +33,7 @@ import java.util.Objects;
 
 
 @Service
+@Slf4j
 public class MessageServiceImpl implements MessageService {
 
     @Autowired
@@ -33,6 +42,10 @@ public class MessageServiceImpl implements MessageService {
     private CustomerInfoService customerInfoService;
     @Autowired
     private CustomerCharacterMapper customerCharacterMapper;
+    @Autowired
+    private NotifyRelationMapper notifyRelationMapper;
+    @Autowired
+    private CustomerInfoMapper customerInfoMapper;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -83,9 +96,38 @@ public class MessageServiceImpl implements MessageService {
      */
     @Override
     public void sendNoticeForSingle(String id) {
+        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
-        sendMessage(id, customerProfile, customerFeature);
+        CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
+        CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
+        if (Objects.isNull(customerCharacter)) {
+            // 新建
+            CustomerCharacter newCustomerCharacter = new CustomerCharacter();
+            newCustomerCharacter.setId(id);
+            newCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
+            newCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
+            newCustomerCharacter.setCurrentCampaign(customerProfile.getCurrentCampaign());
+            newCustomerCharacter.setConversionRate(customerProfile.getConversionRate());
+
+            newCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);
+            newCustomerCharacter.setTransactionStyleStage(customerProfile.getCustomerStage().getTransactionStyle() == 1);
+            newCustomerCharacter.setFunctionIntroductionStage(customerProfile.getCustomerStage().getFunctionIntroduction() == 1);
+            newCustomerCharacter.setConfirmValueStage(customerProfile.getCustomerStage().getConfirmValue() == 1);
+            newCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
+            newCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
+
+            newCustomerCharacter.setFundsVolume(Objects.nonNull(customerFeature.getBasic().getFundsVolume().getModelRecord()) ? customerFeature.getBasic().getFundsVolume().getModelRecord().toString() : null);
+            newCustomerCharacter.setProfitLossSituation(Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null);
+            newCustomerCharacter.setEarningDesire(Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null);
+
+
+            customerCharacterMapper.insert(newCustomerCharacter);
+        } else {
+
+            customerCharacterMapper.updateById(customerCharacter);
+        }
+        sendMessage(customerInfo, customerProfile, customerFeature);
     }
 
     @Override
@@ -93,7 +135,7 @@ public class MessageServiceImpl implements MessageService {
 
     }
 
-    private void sendMessage(String id, CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
+    private void sendMessage(CustomerInfo customerInfo, CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
 
         CustomerFeatureResponse.Recognition recognition = customerFeature.getRecognition();
         List<String> completeStatus = new ArrayList<>();
@@ -159,17 +201,29 @@ public class MessageServiceImpl implements MessageService {
         for (String item : incompleteStatus) {
             incomplete.append(i++).append(". ").append(item).append("\n");
         }
-        String url = "https://newcmp.emoney.cn/chat/customer?id=" + id;
+        String url = "https://newcmp.emoney.cn/chat/customer?id=" + customerInfo.getId();
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerProfile.getCustomerName(),
                 conversionRateMap.get(customerProfile.getConversionRate()),
                 complete,
                 incomplete,
                 url, url);
+
+
+        QueryWrapper<NotifyRelation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("owner_id", customerInfo.getOwnerId());
+        NotifyRelation notifyRelation = notifyRelationMapper.selectOne(queryWrapper);
+        String notifyUrl = "";
+        if (Objects.isNull(notifyRelation)) {
+            log.error("没有配置该销售的报警url，使用默认的报警配置");
+            notifyUrl = "";
+        } else {
+            notifyUrl = notifyRelation.getUrl();
+        }
         TextMessage textMessage = new TextMessage();
         TextMessage.TextContent textContent = new TextMessage.TextContent();
         textContent.setContent(message);
         textMessage.setMsgType("markdown");
         textMessage.setMarkdown(textContent);
-        sendMessageToChat("", textMessage);
+        sendMessageToChat(notifyUrl, textMessage);
     }
 }
