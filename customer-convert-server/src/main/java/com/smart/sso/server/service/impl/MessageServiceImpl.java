@@ -3,13 +3,14 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
+import com.smart.sso.server.enums.ConfigTypeEnum;
+import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
-import com.smart.sso.server.mapper.NotifyRelationMapper;
+import com.smart.sso.server.model.Config;
 import com.smart.sso.server.model.CustomerCharacter;
 import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.CustomerStageStatus;
-import com.smart.sso.server.model.NotifyRelation;
 import com.smart.sso.server.model.TextMessage;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -23,7 +24,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
@@ -43,7 +43,7 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private CustomerCharacterMapper customerCharacterMapper;
     @Autowired
-    private NotifyRelationMapper notifyRelationMapper;
+    private ConfigMapper configMapper;
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
 
@@ -121,7 +121,49 @@ public class MessageServiceImpl implements MessageService {
             newCustomerCharacter.setProfitLossSituation(Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null);
             newCustomerCharacter.setEarningDesire(Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null);
 
+            newCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord()) ? customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord().toString() : null);
+            newCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord().toString() : null);
+            newCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getModelRecord()) ? customerFeature.getRecognition().getStockSelectionMethod().getModelRecord().toString() : null);
+            newCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord()) ? customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord().toString() : null);
+            newCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord()) ? customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord().toString() : null);
+            newCustomerCharacter.setSoftwarePurchaseAttitude(Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord().toString() : null);
 
+            List<String> advantages = customerSummary.getSummary().getAdvantage();
+            List<String> questions = customerSummary.getSummary().getQuestions();
+            for (String item : advantages) {
+                if (item.contains("完成客户匹配度判断")) {
+                    newCustomerCharacter.setSummaryMatchJudgment("yes");
+                } else if (item.contains("完成客户交易风格了解")) {
+                    newCustomerCharacter.setSummaryTransactionStyle("yes");
+                } else if (item.contains("跟进对的客户")) {
+                    newCustomerCharacter.setSummaryFollowCustomer("yes");
+                } else if (item.contains("功能讲解让客户理解")) {
+                    newCustomerCharacter.setSummaryFunctionIntroduction("yes");
+                } else if (item.contains("成功让客户认可价值")) {
+                    newCustomerCharacter.setSummaryConfirmValue("yes");
+                } else if (item.contains("执行顺序正确")) {
+                    newCustomerCharacter.setSummaryExecuteOrder("yes");
+                } else if (item.contains("邀约听课成功")) {
+                    newCustomerCharacter.setSummaryInvitCourse("yes");
+                }
+            }
+            for (String item : questions) {
+                if (item.contains("未完成客户匹配度判断")) {
+                    newCustomerCharacter.setSummaryMatchJudgment("no");
+                } else if (item.contains("未完成客户交易风格了解")) {
+                    newCustomerCharacter.setSummaryTransactionStyle("no");
+                } else if (item.contains("跟进错的客户")) {
+                    newCustomerCharacter.setSummaryFollowCustomer("no");
+                } else if (item.contains("功能讲解未让客户理解")) {
+                    newCustomerCharacter.setSummaryFunctionIntroduction("no");
+                } else if (item.contains("未让客户认可价值")) {
+                    newCustomerCharacter.setSummaryConfirmValue("no");
+                } else if (item.contains("执行顺序错误")) {
+                    newCustomerCharacter.setSummaryExecuteOrder("no");
+                } else if (item.contains("邀约听课失败")) {
+                    newCustomerCharacter.setSummaryInvitCourse("no");
+                }
+            }
             customerCharacterMapper.insert(newCustomerCharacter);
         } else {
 
@@ -209,20 +251,21 @@ public class MessageServiceImpl implements MessageService {
                 url, url);
 
 
-        QueryWrapper<NotifyRelation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("owner_id", customerInfo.getOwnerId());
-        NotifyRelation notifyRelation = notifyRelationMapper.selectOne(queryWrapper);
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
+        queryWrapper.eq("name", customerInfo.getOwnerId());
+        Config config = configMapper.selectOne(queryWrapper);
         String notifyUrl = "";
-        if (Objects.isNull(notifyRelation)) {
+        if (Objects.isNull(config)) {
             log.error("没有配置该销售的报警url，使用默认的报警配置");
-            notifyUrl = "";
+            notifyUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=599ac6c1-091c-4dd3-99b6-1fbd76411d87";
         } else {
-            notifyUrl = notifyRelation.getUrl();
+            notifyUrl = config.getValue();
         }
         TextMessage textMessage = new TextMessage();
         TextMessage.TextContent textContent = new TextMessage.TextContent();
         textContent.setContent(message);
-        textMessage.setMsgType("markdown");
+        textMessage.setMsgtype("markdown");
         textMessage.setMarkdown(textContent);
         sendMessageToChat(notifyUrl, textMessage);
     }

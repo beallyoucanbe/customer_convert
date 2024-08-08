@@ -23,4 +23,11 @@ public class AppConstant {
             "### 本次通话遗留问题，待下次通话解决：\n" +
             "%s\n" +
             "详细内容链接：[%s](%s)";
+
+    public static final String LEADER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您团队的半日报更新。截至%s:\n" +
+            "### 【问题】\n" +
+            "s\n" +
+            "### 【进展】\n" +
+            "%s\n" +
+            "详细内容链接：[%s](%s)";
 }

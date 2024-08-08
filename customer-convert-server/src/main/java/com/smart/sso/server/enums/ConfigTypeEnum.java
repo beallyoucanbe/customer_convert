@@ -1,0 +1,22 @@
+package com.smart.sso.server.enums;
+
+import lombok.Getter;
+
+@Getter
+public enum ConfigTypeEnum {
+    NOTIFY_URL("NOTIFY_URL", "企微通知地址"),
+    COMMON("COMMON", "通用配置"),
+
+
+    CURRENT_CAMPAIGN("CURRENT_CAMPAIGN", "当前阶段的活动"),
+
+    LOSS("loss", "亏损");
+
+    private final String value;
+    private final String text;
+
+    ConfigTypeEnum(String value, String text) {
+        this.value = value;
+        this.text = text;
+    }
+}

@@ -10,19 +10,19 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 公司信息;
+ * 配置项;
  */
 @Data
 @TableName(autoResultMap = true)
-public class NotifyRelation implements Serializable {
+public class Config implements Serializable {
     /**
      * 主键
      */
     @TableId
-    private String id;
-    private String customerId;
-    private String ownerId;
-    private String url;
+    private Integer id;
+    private String type;
+    private String name;
+    private String value;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

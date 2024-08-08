@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class TextMessage {
 
-    private String msgType;
+    private String msgtype;
     private TextContent markdown;
 
     @Data
