@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
+import com.smart.sso.server.enums.EarningDesireEnum;
+import com.smart.sso.server.enums.FundsVolumeEnum;
+import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
@@ -199,8 +202,8 @@ public class MessageServiceImpl implements MessageService {
         Config config = configMapper.selectOne(queryWrapper);
         String notifyUrl = "";
         if (Objects.isNull(config)) {
-            log.error("没有配置该销售的报警url，使用默认的报警配置");
-            notifyUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=599ac6c1-091c-4dd3-99b6-1fbd76411d87";
+            log.error("没有配置该销售的报警url，暂不发送");
+            return;
         } else {
             notifyUrl = config.getValue();
         }
@@ -217,9 +220,11 @@ public class MessageServiceImpl implements MessageService {
                                  CustomerProfile customerProfile, CustomerFeatureResponse customerFeature, CustomerProcessSummaryResponse customerSummary){
         latestCustomerCharacter.setId(customerInfo.getId());
         latestCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
+        latestCustomerCharacter.setCustomerName(customerInfo.getCustomerName());
         latestCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
+        latestCustomerCharacter.setOwnerName(customerInfo.getOwnerName());
         latestCustomerCharacter.setCurrentCampaign(customerProfile.getCurrentCampaign());
-        latestCustomerCharacter.setConversionRate(customerProfile.getConversionRate());
+        latestCustomerCharacter.setConversionRate(conversionRateMap.get(customerProfile.getConversionRate()));
 
         latestCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);
         latestCustomerCharacter.setTransactionStyleStage(customerProfile.getCustomerStage().getTransactionStyle() == 1);
@@ -228,9 +233,12 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
-        latestCustomerCharacter.setFundsVolume(Objects.nonNull(customerFeature.getBasic().getFundsVolume().getModelRecord()) ? customerFeature.getBasic().getFundsVolume().getModelRecord().toString() : null);
-        latestCustomerCharacter.setProfitLossSituation(Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null);
-        latestCustomerCharacter.setEarningDesire(Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null);
+        latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
+                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getModelRecord()) ? customerFeature.getBasic().getFundsVolume().getModelRecord().toString() : null));
+        latestCustomerCharacter.setProfitLossSituation(ProfitLossEnum.getTextByValue(
+                Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null));
+        latestCustomerCharacter.setEarningDesire(EarningDesireEnum.getTextByValue(
+                Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null));
 
         latestCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord()) ? customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord().toString() : null);
         latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord().toString() : null);

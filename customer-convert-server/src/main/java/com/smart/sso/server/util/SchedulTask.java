@@ -1,6 +1,7 @@
 package com.smart.sso.server.util;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
@@ -9,6 +10,7 @@ import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.ScheduledTasksMapper;
 import com.smart.sso.server.model.*;
+import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
@@ -147,83 +149,89 @@ public class SchedulTask {
         for (CustomerInfo item : customerFeatureList) {
             messageService.sendNoticeForSingle(item.getId());
         }
-        //获取当前阶段的活动
+        //获取需要发送的组长
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
-        queryWrapper.eq("name", ConfigTypeEnum.CURRENT_CAMPAIGN.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER.getValue());
         Config config = configMapper.selectOne(queryWrapper);
-        // 获取当前活动内的所有客户
-        QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
-        queryWrapper1.eq("type", ConfigTypeEnum.COMMON.getValue());
-        queryWrapper1.eq("name", ConfigTypeEnum.CURRENT_CAMPAIGN.getValue());
-        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
-
-        Map<String, Integer> questions = new TreeMap<>();
-        questions.put("未完成客户匹配度判断", 0);
-        questions.put("跟进错的客户", 0);
-        questions.put("未完成客户交易风格了解", 0);
-        questions.put("未完成针对性介绍功能", 0);
-        questions.put("客户对老师和课程不认可", 0);
-        questions.put("客户对软件功能不理解", 0);
-        questions.put("客户对选股方法不认可", 0);
-        questions.put("客户对自身问题不认可", 0);
-        questions.put("客户对软件价值不认可", 0);
-        questions.put("客户拒绝购买", 0);
-
-        Map<String, Integer> advantages = new TreeMap<>();
-        advantages.put("完成客户匹配度判断", 0);
-        advantages.put("完成客户交易风格了解", 0);
-        advantages.put("客户认可老师和课程", 0);
-        advantages.put("客户理解了软件功能", 0);
-        advantages.put("客户认可选股方法", 0);
-        advantages.put("客户认可自身问题", 0);
-        advantages.put("客户认可软件价值", 0);
-        advantages.put("客户确认购买", 0);
-        advantages.put("客户完成购买", 0);
-
-
-        // 对获取的所有客户进行总结
-        execute(characterList, questions, advantages);
-
-        StringBuilder complete = new StringBuilder();
-        StringBuilder incomplete = new StringBuilder();
-        int i = 1;
-        for (Map.Entry<String, Integer> item : advantages.entrySet()) {
-            if (item.getValue() == 0) {
-                continue;
-            }
-            complete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue())
-                    .append("个\n");
-        }
-        i = 1;
-        for (Map.Entry<String, Integer> item : questions.entrySet()) {
-            incomplete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue())
-                    .append("个\n");
-        }
-        String url = "https://newcmp.emoney.cn/chat/customers";
-        String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"),
-                incomplete,
-                complete,
-                url, url);
-
-        // 获取要发送的url
-        QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-        queryWrapper2.eq("name", "");
-        config = configMapper.selectOne(queryWrapper2);
-        String notifyUrl = "";
         if (Objects.isNull(config)) {
-            log.error("没有配置该销售的报警url，使用默认的报警配置");
-            notifyUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=599ac6c1-091c-4dd3-99b6-1fbd76411d87";
-        } else {
-            notifyUrl = config.getValue();
+            log.error("没有配置组长信息，请先配置");
+            return;
         }
-        TextMessage textMessage = new TextMessage();
-        TextMessage.TextContent textContent = new TextMessage.TextContent();
-        textContent.setContent(message);
-        textMessage.setMsgtype("markdown");
-        textMessage.setMarkdown(textContent);
-        messageService.sendMessageToChat(notifyUrl, textMessage);
+        List<LeadMemberRequest> leadMemberList = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
+        });
+
+        for (LeadMemberRequest leadMember : leadMemberList) {
+            String area = leadMember.getArea();
+            List<String> leaders = leadMember.getLeaders();
+            List<String> members = leadMember.getMembers();
+            // 获取销售的所有客户进行总结
+            // 获取当前活动内的所有客户
+            QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.in("owner_name", members);
+            List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
+            Map<String, Integer> questions = new TreeMap<>();
+            questions.put("未完成客户匹配度判断", 0);
+            questions.put("跟进错的客户", 0);
+            questions.put("未完成客户交易风格了解", 0);
+            questions.put("未完成针对性介绍功能", 0);
+            questions.put("客户对老师和课程不认可", 0);
+            questions.put("客户对软件功能不理解", 0);
+            questions.put("客户对选股方法不认可", 0);
+            questions.put("客户对自身问题不认可", 0);
+            questions.put("客户对软件价值不认可", 0);
+            questions.put("客户拒绝购买", 0);
+
+            Map<String, Integer> advantages = new TreeMap<>();
+            advantages.put("完成客户匹配度判断", 0);
+            advantages.put("完成客户交易风格了解", 0);
+            advantages.put("客户认可老师和课程", 0);
+            advantages.put("客户理解了软件功能", 0);
+            advantages.put("客户认可选股方法", 0);
+            advantages.put("客户认可自身问题", 0);
+            advantages.put("客户认可软件价值", 0);
+            advantages.put("客户确认购买", 0);
+            advantages.put("客户完成购买", 0);
+
+
+            // 对获取的所有客户进行总结
+            execute(characterList, questions, advantages);
+
+            StringBuilder complete = new StringBuilder();
+            StringBuilder incomplete = new StringBuilder();
+            int i = 1;
+            for (Map.Entry<String, Integer> item : advantages.entrySet()) {
+                if (item.getValue() == 0) {
+                    continue;
+                }
+                complete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue()).append("个\n");
+            }
+            i = 1;
+            for (Map.Entry<String, Integer> item : questions.entrySet()) {
+                incomplete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue()).append("个\n");
+            }
+            String url = "https://newcmp.emoney.cn/chat/customers";
+            String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), incomplete, complete, url, url);
+
+            // 获取要发送的url
+            QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
+            queryWrapper2.eq("name", "");
+            config = configMapper.selectOne(queryWrapper2);
+            String notifyUrl = "";
+            if (Objects.isNull(config)) {
+                log.error("没有配置该销售的报警url，暂不发送");
+                return;
+            } else {
+                notifyUrl = config.getValue();
+            }
+            TextMessage textMessage = new TextMessage();
+            TextMessage.TextContent textContent = new TextMessage.TextContent();
+            textContent.setContent(message);
+            textMessage.setMsgtype("markdown");
+            textMessage.setMarkdown(textContent);
+            messageService.sendMessageToChat(notifyUrl, textMessage);
+        }
     }
 
     private void execute(List<CustomerCharacter> characterList, Map<String, Integer> questions, Map<String, Integer> advantages) {
