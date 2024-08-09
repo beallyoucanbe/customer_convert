@@ -18,13 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 
 
 @Component
@@ -170,7 +171,7 @@ public class SchedulTask {
             QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
             queryWrapper1.in("owner_name", members);
             List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
-            Map<String, Integer> questions = new TreeMap<>();
+            Map<String, Integer> questions = new LinkedHashMap<>();
             questions.put("未完成客户匹配度判断", 0);
             questions.put("跟进错的客户", 0);
             questions.put("未完成客户交易风格了解", 0);
@@ -181,8 +182,7 @@ public class SchedulTask {
             questions.put("客户对自身问题不认可", 0);
             questions.put("客户对软件价值不认可", 0);
             questions.put("客户拒绝购买", 0);
-
-            Map<String, Integer> advantages = new TreeMap<>();
+            Map<String, Integer> advantages = new LinkedHashMap<>();
             advantages.put("完成客户匹配度判断", 0);
             advantages.put("完成客户交易风格了解", 0);
             advantages.put("客户认可老师和课程", 0);
@@ -192,8 +192,6 @@ public class SchedulTask {
             advantages.put("客户认可软件价值", 0);
             advantages.put("客户确认购买", 0);
             advantages.put("客户完成购买", 0);
-
-
             // 对获取的所有客户进行总结
             execute(characterList, questions, advantages);
 
@@ -216,9 +214,9 @@ public class SchedulTask {
             // 获取要发送的url
             QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
             queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-            queryWrapper2.eq("name", "");
+            queryWrapper2.eq("name", area);
             config = configMapper.selectOne(queryWrapper2);
-            String notifyUrl = "";
+            String notifyUrl;
             if (Objects.isNull(config)) {
                 log.error("没有配置该销售的报警url，暂不发送");
                 return;
@@ -240,22 +238,58 @@ public class SchedulTask {
         }
         for (CustomerCharacter character : characterList) {
             if (character.getMatchingJudgmentStage()) {
-                advantages.put("完成客户匹配度判断", advantages.get("完成客户匹配度判断") + 1);
+                advantages.merge("完成客户匹配度判断", 1, Integer::sum);
             } else {
-                questions.put("未完成客户匹配度判断", questions.get("未完成客户匹配度判断") + 1);
+                questions.merge("未完成客户匹配度判断", 1, Integer::sum);
             }
             if (character.getTransactionStyleStage()) {
-                advantages.put("完成客户交易风格了解", advantages.get("完成客户交易风格了解") + 1);
+                advantages.merge("完成客户交易风格了解", 1, Integer::sum);
             } else {
-                questions.put("未完成客户交易风格了解", questions.get("未完成客户交易风格了解") + 1);
+                questions.merge("未完成客户交易风格了解", 1, Integer::sum);
             }
             if (character.getFunctionIntroductionStage()) {
-                advantages.put("完成客户交易风格了解", advantages.get("完成客户交易风格了解") + 1);
+                advantages.merge("完成客户交易风格了解", 1, Integer::sum);
             } else {
-                questions.put("未完成针对性介绍功能", questions.get("未完成针对性介绍功能") + 1);
+                questions.merge("未完成针对性介绍功能", 1, Integer::sum);
+            }
+            if (character.getConfirmPurchaseStage()) {
+                advantages.merge("客户确认购买", 1, Integer::sum);
+            }
+            if (character.getCompletePurchaseStage()) {
+                advantages.merge("客户完成购买", 1, Integer::sum);
             }
 
-
+            if (!StringUtils.isEmpty(character.getCourseTeacherApproval()) && Boolean.parseBoolean(character.getCourseTeacherApproval())) {
+                advantages.merge("客户认可老师和课程", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getCourseTeacherApproval()) && !Boolean.parseBoolean(character.getCourseTeacherApproval())) {
+                questions.merge("客户对老师和课程不认可", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) && Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
+                advantages.merge("客户理解了软件功能", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) && !Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
+                questions.merge("客户对软件功能不理解", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getStockSelectionMethod()) && Boolean.parseBoolean(character.getStockSelectionMethod())) {
+                advantages.merge("客户认可选股方法", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getStockSelectionMethod()) && !Boolean.parseBoolean(character.getStockSelectionMethod())) {
+                questions.merge("客户对选股方法不认可", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) && Boolean.parseBoolean(character.getSelfIssueRecognition())) {
+                advantages.merge("客户认可自身问题", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) && !Boolean.parseBoolean(character.getSelfIssueRecognition())) {
+                questions.merge("客户对自身问题不认可", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) && Boolean.parseBoolean(character.getSoftwareValueApproval())) {
+                advantages.merge("客户认可软件价值", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) && !Boolean.parseBoolean(character.getSoftwareValueApproval())) {
+                questions.merge("客户对软件价值不认可", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getSoftwarePurchaseAttitude()) && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
+                questions.merge("客户拒绝购买", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) && !Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
+                questions.merge("跟进错的客户", 1, Integer::sum);
+            }
         }
     }
 }

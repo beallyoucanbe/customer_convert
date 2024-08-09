@@ -198,7 +198,7 @@ public class MessageServiceImpl implements MessageService {
 
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-        queryWrapper.eq("name", customerInfo.getOwnerId());
+        queryWrapper.eq("name", customerInfo.getCustomerName());
         Config config = configMapper.selectOne(queryWrapper);
         String notifyUrl = "";
         if (Objects.isNull(config)) {
@@ -251,36 +251,36 @@ public class MessageServiceImpl implements MessageService {
         List<String> questions = customerSummary.getSummary().getQuestions();
         for (String item : advantages) {
             if (item.contains("完成客户匹配度判断")) {
-                latestCustomerCharacter.setSummaryMatchJudgment("yes");
+                latestCustomerCharacter.setSummaryMatchJudgment("true");
             } else if (item.contains("完成客户交易风格了解")) {
-                latestCustomerCharacter.setSummaryTransactionStyle("yes");
+                latestCustomerCharacter.setSummaryTransactionStyle("true");
             } else if (item.contains("跟进对的客户")) {
-                latestCustomerCharacter.setSummaryFollowCustomer("yes");
+                latestCustomerCharacter.setSummaryFollowCustomer("true");
             } else if (item.contains("功能讲解让客户理解")) {
-                latestCustomerCharacter.setSummaryFunctionIntroduction("yes");
+                latestCustomerCharacter.setSummaryFunctionIntroduction("true");
             } else if (item.contains("成功让客户认可价值")) {
-                latestCustomerCharacter.setSummaryConfirmValue("yes");
+                latestCustomerCharacter.setSummaryConfirmValue("true");
             } else if (item.contains("执行顺序正确")) {
-                latestCustomerCharacter.setSummaryExecuteOrder("yes");
+                latestCustomerCharacter.setSummaryExecuteOrder("true");
             } else if (item.contains("邀约听课成功")) {
-                latestCustomerCharacter.setSummaryInvitCourse("yes");
+                latestCustomerCharacter.setSummaryInvitCourse("true");
             }
         }
         for (String item : questions) {
             if (item.contains("未完成客户匹配度判断")) {
-                latestCustomerCharacter.setSummaryMatchJudgment("no");
+                latestCustomerCharacter.setSummaryMatchJudgment("false");
             } else if (item.contains("未完成客户交易风格了解")) {
-                latestCustomerCharacter.setSummaryTransactionStyle("no");
+                latestCustomerCharacter.setSummaryTransactionStyle("false");
             } else if (item.contains("跟进错的客户")) {
-                latestCustomerCharacter.setSummaryFollowCustomer("no");
+                latestCustomerCharacter.setSummaryFollowCustomer("false");
             } else if (item.contains("功能讲解未让客户理解")) {
-                latestCustomerCharacter.setSummaryFunctionIntroduction("no");
+                latestCustomerCharacter.setSummaryFunctionIntroduction("false");
             } else if (item.contains("未让客户认可价值")) {
-                latestCustomerCharacter.setSummaryConfirmValue("no");
+                latestCustomerCharacter.setSummaryConfirmValue("false");
             } else if (item.contains("执行顺序错误")) {
-                latestCustomerCharacter.setSummaryExecuteOrder("no");
+                latestCustomerCharacter.setSummaryExecuteOrder("false");
             } else if (item.contains("邀约听课失败")) {
-                latestCustomerCharacter.setSummaryInvitCourse("no");
+                latestCustomerCharacter.setSummaryInvitCourse("false");
             }
         }
     }

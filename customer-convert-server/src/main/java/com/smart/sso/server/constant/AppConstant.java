@@ -26,7 +26,7 @@ public class AppConstant {
 
     public static final String LEADER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您团队的半日报更新。截至%s:\n" +
             "### 【问题】\n" +
-            "s\n" +
+            "%s\n" +
             "### 【进展】\n" +
             "%s\n" +
             "详细内容链接：[%s](%s)";
