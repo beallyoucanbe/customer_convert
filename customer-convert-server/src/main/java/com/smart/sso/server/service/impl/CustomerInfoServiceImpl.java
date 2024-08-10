@@ -487,6 +487,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
         String resultAnswerLatest = null;
+        String original = null;
+        String callId = null;
         // 获取
         if (!CollectionUtils.isEmpty(featureContentByModel)) {
             for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
@@ -494,6 +496,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         !featureContentByModel.get(i).getAnswer().equals("无") &&
                         !featureContentByModel.get(i).getAnswer().equals("null")) {
                     resultAnswerLatest = featureContentByModel.get(i).getAnswer();
+                    original = featureContentByModel.get(i).getOriginal();
+                    callId = featureContentByModel.get(i).getCallId();
                     break;
                 }
             }
@@ -503,6 +507,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
             if (Objects.isNull(enumClass)) {
                 resultAnswer = resultAnswerLatest;
+                CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+                originChat.setContent(original);
+                originChat.setId(callId);
+                featureVO.setOriginChat(originChat);
             } else {
                 // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
                 for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
@@ -512,6 +520,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     // 判断文本是否匹配`text`
                     if (resultAnswerLatest.trim().equals(enumText)) {
                         resultAnswer = value;
+                        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+                        originChat.setContent(original);
+                        originChat.setId(callId);
+                        featureVO.setOriginChat(originChat);
                         break;
                     }
                 }

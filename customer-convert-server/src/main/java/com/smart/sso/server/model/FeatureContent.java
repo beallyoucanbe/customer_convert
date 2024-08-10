@@ -9,6 +9,7 @@ public class FeatureContent {
     private String callId;
     private String question;
     private String answer;
+    private String original;
 }
 
 

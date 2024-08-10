@@ -15,6 +15,7 @@ import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class CustomerController {
 
     @Autowired
@@ -123,7 +125,11 @@ public class CustomerController {
         queryWrapper.gt("update_time", dateTime);
         List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapper);
         for (CustomerInfo item : customerFeatureList) {
-            messageService.sendNoticeForSingle(item.getId());
+            try {
+                messageService.sendNoticeForSingle(item.getId());
+            } catch (Exception e) {
+                log.error("###########"+item.getId());
+            }
         }
         return ResultUtils.success(null);
     }

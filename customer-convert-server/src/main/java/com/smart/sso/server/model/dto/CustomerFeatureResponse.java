@@ -60,5 +60,13 @@ public class CustomerFeatureResponse {
         private String inquired = "no"; // no-need, no, yes
         private Object modelRecord;
         private String salesRecord;
+        private OriginChat originChat;
+    }
+
+    @Getter
+    @Setter
+    public static class OriginChat {
+        private String id;
+        private String content;
     }
 }
