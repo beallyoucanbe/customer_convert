@@ -81,6 +81,14 @@ public class CustomerFeature implements Serializable {
     @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
     private FeatureContentSales selfIssueRecognitionSales;
     @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private List<FeatureContent> learnNewMethodApprovalModel;
+    @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
+    private FeatureContentSales learnNewMethodApprovalSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
+    private List<FeatureContent> continuousLearnApprovalModel;
+    @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
+    private FeatureContentSales continuousLearnApprovalSales;
+    @TableField(typeHandler = FeatureContentTypeHandler.class)
     private List<FeatureContent> softwareValueApprovalModel;
     @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
     private FeatureContentSales softwareValueApprovalSales;

@@ -32,6 +32,12 @@ public class CustomerSummary implements Serializable {
     // 销售有点评客户的选股时机
     @TableField(typeHandler = SummaryContentTypeHandler.class)
     private List<SummaryContent> stockPickTimingReview;
+    // 销售有对客户的问题做量化放大
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> customerIssuesQuantified;
+    // 销售有对软件的价值做量化放大
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> softwareValueQuantified;
     // 方法认可
     @TableField(typeHandler = SummaryContentTypeHandler.class)
     private List<SummaryContent> approvalAnalysisMethod;
@@ -47,6 +53,18 @@ public class CustomerSummary implements Serializable {
     // 购买认可
     @TableField(typeHandler = SummaryContentTypeHandler.class)
     private List<SummaryContent> approvalAnalysisPurchase;
+    // 客户学不会软件操作
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisSoftwareOperation;
+    // 购买认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisCourse;
+    // 购买认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisNoMoney;
+    // 购买认可
+    @TableField(typeHandler = SummaryContentTypeHandler.class)
+    private List<SummaryContent> approvalAnalysisOthers;
     //邀请客户参加课程
     @TableField(typeHandler = SummaryContentTypeHandler.class)
     private List<SummaryContent> invitAttendCourses;

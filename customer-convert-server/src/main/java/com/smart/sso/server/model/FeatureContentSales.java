@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FeatureContentSales {
     private String content;
+    private Object tag;
 }
 
 

@@ -50,6 +50,8 @@ public class CustomerFeatureResponse {
         private Feature softwareFunctionClarity;
         private Feature stockSelectionMethod;
         private Feature selfIssueRecognition;
+        private Feature learnNewMethodApproval;
+        private Feature continuousLearnApproval;
         private Feature softwareValueApproval;
         private Feature softwarePurchaseAttitude;
     }
@@ -60,7 +62,9 @@ public class CustomerFeatureResponse {
         private String inquired = "no"; // no-need, no, yes
         private Object modelRecord;
         private String salesRecord;
+        private Object salesManualTag;
         private OriginChat originChat;
+        private OriginChat inquiredOriginChat;
     }
 
     @Getter
