@@ -63,6 +63,7 @@ public class CustomerFeatureResponse {
         private Object modelRecord;
         private String salesRecord;
         private Object salesManualTag;
+        private Object compareValue;
         private OriginChat originChat;
         private OriginChat inquiredOriginChat;
     }

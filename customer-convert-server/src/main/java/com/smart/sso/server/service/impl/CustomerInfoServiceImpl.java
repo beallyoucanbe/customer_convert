@@ -139,7 +139,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // -未完成判断：资金体量=空 or 赚钱欲望=空
         String result = "incomplete";
         List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
+        String fundsVolumeSales = Objects.nonNull(customerFeature.getFundsVolumeSales()) && Objects.nonNull(customerFeature.getFundsVolumeSales().getTag())
+                ? customerFeature.getFundsVolumeSales().getTag().toString() : null;
         List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
+        String earningDesireSales = Objects.nonNull(customerFeature.getEarningDesireSales()) && Objects.nonNull(customerFeature.getEarningDesireSales().getTag())
+                ? customerFeature.getFundsVolumeSales().getTag().toString() : null;
         if (CollectionUtils.isEmpty(fundsVolumeModel) || CollectionUtils.isEmpty(earningDesireModel)) {
             return result;
         }
@@ -163,20 +167,51 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
         }
-        if (StringUtils.isEmpty(fundsVolume) || StringUtils.isEmpty(earningDesire)) {
-            return result;
+
+        String fundsVolumeStatus = null;
+        String earningDesireStatus = null;
+
+        if (StringUtils.isEmpty(fundsVolumeSales)){
+            if (fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) {
+                fundsVolumeStatus = "high";
+            } else if (fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) {
+                fundsVolumeStatus = "low";
+            }
+        } else {
+            if (fundsVolumeSales.equals("abundant") || fundsVolumeSales.equals("great_equal_ten_w")) {
+                fundsVolumeStatus = "high";
+            } else if (fundsVolumeSales.equals("deficient") || fundsVolumeSales.equals("less_ten_w")) {
+                fundsVolumeStatus = "low";
+            }
         }
 
-        if ((fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) && earningDesire.equals("高")) {
+        if (StringUtils.isEmpty(earningDesireSales)){
+            if (earningDesire.equals("高")) {
+                earningDesireStatus = "high";
+            } else if (earningDesire.equals("低")) {
+                earningDesireStatus = "low";
+            }
+        } else {
+            if (earningDesireSales.equals("high")) {
+                earningDesireStatus = "high";
+            } else if (earningDesireSales.equals("low")) {
+                earningDesireStatus = "low";
+            }
+        }
+
+        if (StringUtils.isEmpty(fundsVolumeStatus) || StringUtils.isEmpty(earningDesireStatus)) {
+            return result;
+        }
+        if (fundsVolumeStatus.equals("high") && earningDesireStatus.equals("high")) {
             return "high";
         }
-        if ((fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) && earningDesire.equals("高")) {
+        if (fundsVolumeStatus.equals("low") && earningDesireStatus.equals("high")) {
             return "medium";
         }
-        if ((fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) && earningDesire.equals("低")) {
+        if (fundsVolumeStatus.equals("high") && earningDesireStatus.equals("low")) {
             return "medium";
         }
-        if ((fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) && earningDesire.equals("低")) {
+        if (fundsVolumeStatus.equals("low") && earningDesireStatus.equals("low")) {
             return "low";
         }
         return result;
@@ -519,6 +554,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
         approvalAnalysis.setPurchase(convertProcessContent(customerSummary.getApprovalAnalysisPurchase()));
         approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
+        approvalAnalysis.setSoftwareOperation(convertProcessContent(customerSummary.getApprovalAnalysisSoftwareOperation()));
+        approvalAnalysis.setCourse(convertProcessContent(customerSummary.getApprovalAnalysisCourse()));
+        approvalAnalysis.setNoMoney(convertProcessContent(customerSummary.getApprovalAnalysisNoMoney()));
+        approvalAnalysis.setOthers(convertProcessContent(customerSummary.getApprovalAnalysisOthers()));
 
         customerSummaryResponse.setApprovalAnalysis(approvalAnalysis);
 
@@ -620,6 +659,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
         }
+        featureVO.setCompareValue(Objects.nonNull(featureVO.getSalesManualTag()) ? featureVO.getSalesManualTag() :
+                featureVO.getModelRecord());
         //否则就是 ‘否’
         return featureVO;
     }
@@ -676,6 +717,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
         //否则就是 ‘否’
+        featureVO.setCompareValue(Objects.nonNull(featureVO.getSalesManualTag()) ? featureVO.getSalesManualTag() :
+                featureVO.getModelRecord());
         return featureVO;
     }
 
