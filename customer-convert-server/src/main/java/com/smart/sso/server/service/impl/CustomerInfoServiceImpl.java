@@ -7,6 +7,7 @@ import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
+import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
@@ -186,9 +187,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 
         if (StringUtils.isEmpty(earningDesireSales)){
-            if (earningDesire.equals("高")) {
+            if (earningDesire.equals("强")) {
                 earningDesireStatus = "high";
-            } else if (earningDesire.equals("低")) {
+            } else if (earningDesire.equals("弱")) {
                 earningDesireStatus = "low";
             }
         } else {
@@ -512,7 +513,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
         tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null, String.class));
         tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null, String.class));
-        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), null, String.class));
+        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
         customerFeatureResponse.setTradingMethod(tradingMethod);
 
         // Recognition 客户认可度
@@ -651,7 +652,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             !featureContentByModel.get(i).getAnswer().equals("null")) {
                         featureVO.setInquired("no-need");
                         CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                        originChat.setContent(featureContentByModel.get(i).getAnswer());
+                        originChat.setContent(featureContentByModel.get(i).getQuestion());
                         originChat.setId(featureContentByModel.get(i).getCallId());
                         featureVO.setInquiredOriginChat(originChat);
                         break;
@@ -701,6 +702,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         !featureContentByModel.get(i).getQuestion().equals("无") &&
                         !featureContentByModel.get(i).getQuestion().equals("null")) {
                     featureVO.setInquired("yes");
+                    CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+                    originChat.setContent(featureContentByModel.get(i).getQuestion());
+                    originChat.setId(featureContentByModel.get(i).getCallId());
+                    featureVO.setInquiredOriginChat(originChat);
                     break;
                 }
             }
@@ -711,6 +716,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             !featureContentByModel.get(i).getAnswer().equals("无") &&
                             !featureContentByModel.get(i).getAnswer().equals("null")) {
                         featureVO.setInquired("no-need");
+                        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+                        originChat.setContent(featureContentByModel.get(i).getQuestion());
+                        originChat.setId(featureContentByModel.get(i).getCallId());
+                        featureVO.setInquiredOriginChat(originChat);
                         break;
                     }
                 }
