@@ -52,7 +52,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerSummaryMapper customerSummaryMapper;
     @Autowired
     private ConfigMapper configMapper;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd HH");
+    private SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy-MM-dd");
 
 
     @Override
@@ -576,7 +578,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = new CustomerProcessSummaryResponse.ProcessApprovalAnalysis();
         approvalAnalysis.setMethod(convertProcessContent(customerSummary.getApprovalAnalysisMethod()));
         approvalAnalysis.setIssue(convertProcessContent(customerSummary.getApprovalAnalysisIssue()));
-        approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
+        approvalAnalysis.setValue(convertProcessContent(customerSummary.getApprovalAnalysisValue()));
         approvalAnalysis.setPurchase(convertProcessContent(customerSummary.getApprovalAnalysisPurchase()));
         approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
         approvalAnalysis.setSoftwareOperation(convertProcessContent(customerSummary.getApprovalAnalysisSoftwareOperation()));
@@ -817,11 +819,27 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
                             message.setRole(dbmessage.getRole());
                             message.setContent(dbmessage.getContent());
-                            message.setTime(dateFormat.parse(dateString));
+                            try {
+                                message.setTime(dateFormat1.parse(dateString));
+                            } catch (Exception e) {
+                                try {
+                                    message.setTime(dateFormat2.parse(dateString));
+                                } catch (Exception ex) {
+                                    message.setTime(dateFormat3.parse(dateString));
+                                }
+                            }
                             messageList.add(message);
                         }
                         chat.setMessages(messageList);
-                        chat.setTime(dateFormat.parse(dateString));
+                        try {
+                            chat.setTime(dateFormat1.parse(dateString));
+                        } catch (Exception e) {
+                            try {
+                                chat.setTime(dateFormat2.parse(dateString));
+                            } catch (Exception ex) {
+                                chat.setTime(dateFormat3.parse(dateString));
+                            }
+                        }
                         chatList.add(chat);
                     }
                 } catch (Exception e) {

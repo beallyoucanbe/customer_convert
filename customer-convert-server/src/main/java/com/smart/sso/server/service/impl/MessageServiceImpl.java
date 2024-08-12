@@ -245,7 +245,10 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getModelRecord()) ? customerFeature.getRecognition().getStockSelectionMethod().getModelRecord().toString() : null);
         latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord()) ? customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord().toString() : null);
         latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord()) ? customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord().toString() : null);
-        latestCustomerCharacter.setSoftwarePurchaseAttitude(Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord().toString() : null);
+        latestCustomerCharacter.setSoftwarePurchaseAttitude(
+                Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord().toString() : null);
+        latestCustomerCharacter.setContinuousLearnApproval(Objects.nonNull(customerFeature.getRecognition().getContinuousLearnApproval().getModelRecord()) ? customerFeature.getRecognition().getContinuousLearnApproval().getModelRecord().toString() : null);
+        latestCustomerCharacter.setLearnNewMethodApproval(Objects.nonNull(customerFeature.getRecognition().getLearnNewMethodApproval().getModelRecord()) ? customerFeature.getRecognition().getLearnNewMethodApproval().getModelRecord().toString() : null);
 
         List<String> advantages = customerSummary.getSummary().getAdvantage();
         List<String> questions = customerSummary.getSummary().getQuestions();

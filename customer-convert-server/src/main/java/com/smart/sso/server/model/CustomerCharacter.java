@@ -44,6 +44,8 @@ public class CustomerCharacter implements Serializable {
     private String selfIssueRecognition;
     private String softwareValueApproval;
     private String softwarePurchaseAttitude;
+    private String continuousLearnApproval;
+    private String learnNewMethodApproval;
 
     private String summaryMatchJudgment;
     private String summaryTransactionStyle;
