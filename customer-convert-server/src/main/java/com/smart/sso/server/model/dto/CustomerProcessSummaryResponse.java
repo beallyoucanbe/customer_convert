@@ -48,9 +48,7 @@ public class CustomerProcessSummaryResponse {
     @Getter
     @Setter
     public static class ProcessInfoExplanationContent {
-        // 方法认可
         private Boolean result;
-        // 问题认可
         private OriginChat originChat;
     }
 

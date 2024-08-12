@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Data
 public class CustomerFeatureResponse {
 
@@ -35,9 +37,9 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class TradingMethod {
-        private Feature currentStocks;
-        private Feature stockPurchaseReason;
-        private Feature tradeTimingDecision;
+        private FeatureSpecial currentStocks;
+        private FeatureSpecial stockPurchaseReason;
+        private FeatureSpecial tradeTimingDecision;
         private Feature tradingStyle;
         private Feature stockMarketAge;
         private Feature learningAbility;
@@ -65,6 +67,18 @@ public class CustomerFeatureResponse {
         private Object salesManualTag;
         private Object compareValue;
         private OriginChat originChat;
+        private OriginChat inquiredOriginChat;
+    }
+
+    @Getter
+    @Setter
+    public static class FeatureSpecial {
+        private String inquired = "no"; // no-need, no, yes
+        private Object modelRecord;
+        private String salesRecord;
+        private Object salesManualTag;
+        private Object compareValue;
+        private List<OriginChat> originChats;
         private OriginChat inquiredOriginChat;
     }
 
