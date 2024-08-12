@@ -140,31 +140,37 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // -未完成判断：资金体量=空 or 赚钱欲望=空
         String result = "incomplete";
         List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
-        String fundsVolumeSales = Objects.nonNull(customerFeature.getFundsVolumeSales()) && Objects.nonNull(customerFeature.getFundsVolumeSales().getTag())
+        String fundsVolumeSales = Objects.nonNull(customerFeature.getFundsVolumeSales()) &&
+                Objects.nonNull(customerFeature.getFundsVolumeSales().getTag())
                 ? customerFeature.getFundsVolumeSales().getTag().toString() : null;
         List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
-        String earningDesireSales = Objects.nonNull(customerFeature.getEarningDesireSales()) && Objects.nonNull(customerFeature.getEarningDesireSales().getTag())
+        String earningDesireSales = Objects.nonNull(customerFeature.getEarningDesireSales()) &&
+                Objects.nonNull(customerFeature.getEarningDesireSales().getTag())
                 ? customerFeature.getEarningDesireSales().getTag().toString() : null;
-        if (CollectionUtils.isEmpty(fundsVolumeModel) || CollectionUtils.isEmpty(earningDesireModel)) {
+        if ((CollectionUtils.isEmpty(fundsVolumeModel) && StringUtils.isEmpty(fundsVolumeSales)) ||
+                CollectionUtils.isEmpty(earningDesireModel) && StringUtils.isEmpty(earningDesireSales)) {
             return result;
         }
         String fundsVolume = null;
         String earningDesire = null;
-
-        // 找到最后一个非null的值
-        for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
-            if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
-                fundsVolume = fundsVolumeModel.get(i).getAnswer();
-                if (!fundsVolume.equals("无") && !fundsVolume.equals("null")) {
-                    break;
+        if (!CollectionUtils.isEmpty(fundsVolumeModel)) {
+            // 找到最后一个非null的值
+            for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
+                if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
+                    fundsVolume = fundsVolumeModel.get(i).getAnswer();
+                    if (!fundsVolume.equals("无") && !fundsVolume.equals("null")) {
+                        break;
+                    }
                 }
             }
         }
-        for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
-            if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
-                earningDesire = earningDesireModel.get(i).getAnswer();
-                if (!earningDesire.equals("无") && !earningDesire.equals("null")) {
-                    break;
+        if (!CollectionUtils.isEmpty(earningDesireModel)) {
+            for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
+                if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
+                    earningDesire = earningDesireModel.get(i).getAnswer();
+                    if (!earningDesire.equals("无") && !earningDesire.equals("null")) {
+                        break;
+                    }
                 }
             }
         }
@@ -172,7 +178,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String fundsVolumeStatus = null;
         String earningDesireStatus = null;
 
-        if (StringUtils.isEmpty(fundsVolumeSales)){
+        if (StringUtils.isEmpty(fundsVolumeSales)) {
             if (fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) {
                 fundsVolumeStatus = "high";
             } else if (fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) {
@@ -186,7 +192,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
 
-        if (StringUtils.isEmpty(earningDesireSales)){
+        if (StringUtils.isEmpty(earningDesireSales)) {
             if (earningDesire.equals("强")) {
                 earningDesireStatus = "high";
             } else if (earningDesire.equals("弱")) {
@@ -239,17 +245,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
         CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
         if (Objects.nonNull(infoExplanation.getStock()) &&
-                 infoExplanation.getStock().getResult() &&
+                infoExplanation.getStock().getResult() &&
                 Objects.nonNull(infoExplanation.getStockPickReview()) &&
-                 infoExplanation.getStockPickReview().getResult() &&
+                infoExplanation.getStockPickReview().getResult() &&
                 Objects.nonNull(infoExplanation.getStockTimingReview()) &&
-                 infoExplanation.getStockTimingReview().getResult() &&
+                infoExplanation.getStockTimingReview().getResult() &&
                 Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
                 infoExplanation.getCustomerIssuesQuantified().getResult() &&
                 Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
                 infoExplanation.getSoftwareValueQuantified().getResult() &&
                 Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
-                 infoExplanation.getTradeBasedIntro().getResult()) {
+                infoExplanation.getTradeBasedIntro().getResult()) {
             stageStatus.setFunctionIntroduction(1);
         }
         // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
@@ -298,13 +304,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
             if (Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation()) &&
                     (Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesManualTag()))) {
                 customerFeature.setProfitLossSituationSales(new FeatureContentSales(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesRecord(),
                         customerFeatureRequest.getBasic().getProfitLossSituation().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) &&
                     (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getSalesManualTag()))) {
                 customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getBasic().getEarningDesire().getSalesRecord(),
                         customerFeatureRequest.getBasic().getEarningDesire().getSalesManualTag()));
             }
@@ -313,37 +319,37 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.nonNull(customerFeatureRequest.getTradingMethod())) {
             if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks()) &&
                     (Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesManualTag()))) {
                 customerFeature.setCurrentStocksSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesRecord(),
                         customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason()) &&
                     (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesManualTag()))) {
                 customerFeature.setStockPurchaseReasonSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesRecord(),
                         customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision()) &&
                     (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesManualTag()))) {
                 customerFeature.setTradeTimingDecisionSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesRecord(),
                         customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility()) &&
                     (Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesManualTag()))) {
                 customerFeature.setLearningAbilitySales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesRecord(),
                         customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge()) &&
                     (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesManualTag()))) {
                 customerFeature.setStockMarketAgeSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesRecord(),
                         customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle()) &&
                     (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesManualTag()))) {
                 customerFeature.setTradingStyleSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesRecord(),
                         customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesManualTag()));
             }
@@ -352,25 +358,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.nonNull(customerFeatureRequest.getRecognition())) {
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesManualTag()))) {
                 customerFeature.setCourseTeacherApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesManualTag()))) {
                 customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesManualTag()))) {
                 customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesManualTag()))) {
                 customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesManualTag()));
             }
@@ -388,13 +394,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesManualTag()))) {
                 customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesManualTag()));
             }
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesRecord()) ||
-                    Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesManualTag()))) {
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesManualTag()))) {
                 customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesManualTag()));
             }
