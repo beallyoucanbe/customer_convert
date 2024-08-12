@@ -31,7 +31,7 @@ public interface CustomerInfoService {
 
     void callback(CallBackRequest callBackRequest);
 
-    String getRedirectUrl(String customerId, String activeId);
+    String getRedirectUrl(String customerId, String activeId, String from, String manager);
 
     List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite);
 

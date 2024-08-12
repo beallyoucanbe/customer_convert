@@ -254,23 +254,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
         CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
-                (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
-                Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
-                (Boolean) recognition.getStockSelectionMethod().getModelRecord() &&
-                Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
-                (Boolean) recognition.getSelfIssueRecognition().getModelRecord() &&
-                Objects.nonNull(recognition.getLearnNewMethodApproval().getModelRecord()) &&
-                (Boolean) recognition.getLearnNewMethodApproval().getModelRecord() &&
-                Objects.nonNull(recognition.getContinuousLearnApproval().getModelRecord()) &&
-                (Boolean) recognition.getContinuousLearnApproval().getModelRecord() &&
-                Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
-                (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
+                (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue() &&
+                Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
+                (Boolean) recognition.getStockSelectionMethod().getCompareValue() &&
+                Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
+                (Boolean) recognition.getSelfIssueRecognition().getCompareValue() &&
+                Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
+                (Boolean) recognition.getLearnNewMethodApproval().getCompareValue() &&
+                Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
+                (Boolean) recognition.getContinuousLearnApproval().getCompareValue() &&
+                Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
             stageStatus.setConfirmValue(1);
         }
         // 客户确认购买 客户对购买软件的态度”的值为“是”
-        if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getModelRecord()) &&
-                (Boolean) recognition.getSoftwarePurchaseAttitude().getModelRecord()) {
+        if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
+                (Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
             stageStatus.setConfirmPurchase(1);
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
@@ -374,6 +374,18 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesRecord(),
                         customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesManualTag()));
             }
+            if (Objects.nonNull(customerFeatureRequest.getRecognition().getContinuousLearnApproval()) &&
+                    (Objects.nonNull(customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesManualTag()))) {
+                customerFeature.setContinuousLearnApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesRecord(),
+                        customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesManualTag()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getRecognition().getLearnNewMethodApproval()) &&
+                    (Objects.nonNull(customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesManualTag()))) {
+                customerFeature.setLearnNewMethodApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesRecord(),
+                        customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesManualTag()));
+            }
             if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval()) &&
                     (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesRecord()) ||
                     Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesManualTag()))) {
@@ -409,7 +421,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public String getRedirectUrl(String customerId, String activeId) {
+    public String getRedirectUrl(String customerId, String activeId, String from, String manager) {
         QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("customer_id", customerId);
         queryWrapper.eq("current_campaign", activeId);
@@ -423,6 +435,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 //        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
         String urlFormatter = "https://newcmp.emoney.cn/chat/customer?id=%s&embed=true";
+        if (!StringUtils.isEmpty(from)) {
+            urlFormatter = urlFormatter + "&from=" + from;
+        }
+        if (!StringUtils.isEmpty(manager)) {
+            urlFormatter = urlFormatter + "&manager=" + manager;
+        }
         return String.format(urlFormatter, id);
     }
 
@@ -947,11 +965,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 功能讲解
             // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
             // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
-            if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
-                    (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
+            if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) &&
+                    (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) {
                 advantage.add("功能讲解让客户理解");
-            } else if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) &&
-                    !(Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getModelRecord()) {
+            } else if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) &&
+                    !(Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) {
                 questions.add("功能讲解未让客户理解");
             }
 
@@ -959,43 +977,43 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
             // 缺点：-未让客户认可价值：相关字段有一个以上为“否”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪一项不为“是”（可以用括号放在后面显示）
             CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
-                    (Boolean) recognition.getSoftwareFunctionClarity().getModelRecord() &&
-                    Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
-                    (Boolean) recognition.getStockSelectionMethod().getModelRecord() &&
-                    Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
-                    (Boolean) recognition.getSelfIssueRecognition().getModelRecord() &&
-                    Objects.nonNull(recognition.getLearnNewMethodApproval().getModelRecord()) &&
-                    (Boolean) recognition.getLearnNewMethodApproval().getModelRecord() &&
-                    Objects.nonNull(recognition.getContinuousLearnApproval().getModelRecord()) &&
-                    (Boolean) recognition.getContinuousLearnApproval().getModelRecord() &&
-                    Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
-                    (Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue() &&
+                    Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
+                    (Boolean) recognition.getStockSelectionMethod().getCompareValue() &&
+                    Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
+                    (Boolean) recognition.getSelfIssueRecognition().getCompareValue() &&
+                    Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
+                    (Boolean) recognition.getLearnNewMethodApproval().getCompareValue() &&
+                    Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
+                    (Boolean) recognition.getContinuousLearnApproval().getCompareValue() &&
+                    Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
                 advantage.add("成功让客户认可价值");
             } else {
                 StringBuilder ttt = new StringBuilder("未让客户认可价值（");
-                if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord()) &&
-                        !(Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
+                if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
+                        !(Boolean) recognition.getSoftwareFunctionClarity().getCompareValue()) {
                     ttt.append("客户对软件功能的清晰度，");
                 }
-                if (Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord()) &&
-                        !(Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
+                if (Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
+                        !(Boolean) recognition.getStockSelectionMethod().getCompareValue()) {
                     ttt.append("客户对销售讲的选股方法的认可度，");
                 }
-                if (Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord()) &&
-                        !(Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
+                if (Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
+                        !(Boolean) recognition.getSelfIssueRecognition().getCompareValue()) {
                     ttt.append("客户对自身问题及影响的认可度，");
                 }
-                if (Objects.nonNull(recognition.getLearnNewMethodApproval().getModelRecord()) &&
-                        !(Boolean) recognition.getLearnNewMethodApproval().getModelRecord()) {
+                if (Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
+                        !(Boolean) recognition.getLearnNewMethodApproval().getCompareValue()) {
                     ttt.append("客户对自身问题及影响的认可度，");
                 }
-                if (Objects.nonNull(recognition.getContinuousLearnApproval().getModelRecord()) &&
-                        !(Boolean) recognition.getContinuousLearnApproval().getModelRecord()) {
+                if (Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
+                        !(Boolean) recognition.getContinuousLearnApproval().getCompareValue()) {
                     ttt.append("客户对自身问题及影响的认可度，");
                 }
-                if (Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord()) &&
-                        !(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+                if (Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                        !(Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
                     ttt.append("客户对软件价值的认可度，");
                 }
                 ttt.deleteCharAt(ttt.length() - 1);
