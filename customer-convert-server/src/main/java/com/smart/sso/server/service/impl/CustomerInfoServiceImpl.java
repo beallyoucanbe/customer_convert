@@ -237,11 +237,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
         CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
-        if (Objects.nonNull(tradingMethod.getCurrentStocks().getModelRecord()) &&
-                Objects.nonNull(tradingMethod.getStockPurchaseReason().getModelRecord()) &&
-                Objects.nonNull(tradingMethod.getTradeTimingDecision().getModelRecord()) &&
-                Objects.nonNull(tradingMethod.getTradingStyle().getModelRecord()) &&
-                Objects.nonNull(tradingMethod.getStockMarketAge().getModelRecord())) {
+        if (Objects.nonNull(tradingMethod.getCurrentStocks().getCompareValue()) &&
+                Objects.nonNull(tradingMethod.getStockPurchaseReason().getCompareValue()) &&
+                Objects.nonNull(tradingMethod.getTradeTimingDecision().getCompareValue()) &&
+                Objects.nonNull(tradingMethod.getTradingStyle().getCompareValue()) &&
+                Objects.nonNull(tradingMethod.getStockMarketAge().getCompareValue())) {
             stageStatus.setTransactionStyle(1);
         }
         // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
