@@ -30,6 +30,7 @@ import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -434,6 +435,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
+    @Async
     public void callback(CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
         try {
