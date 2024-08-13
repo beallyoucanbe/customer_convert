@@ -8,7 +8,8 @@ import lombok.Getter;
 
 public enum CustomerRecognition {
     APPROVED("approved", 0),
-    NOT_APPROVED("not_approved", 1);
+    NOT_APPROVED("not_approved", 1),
+    UNKNOWN("unknown", 2);
 
     @EnumValue
     private final int value;

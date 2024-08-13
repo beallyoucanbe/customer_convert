@@ -15,14 +15,12 @@ import java.time.LocalDateTime;
 @Data
 @TableName(autoResultMap = true)
 public class CustomerRelation implements Serializable {
-    /**
-     * 主键
-     */
-    @TableId
-    private Integer id;
-    private String type;
-    private String name;
-    private String value;
+
+    private String ownerId;
+    private Integer customerId;
+    private Integer classeAttendTimes;
+    private Integer classeAttendDuration;
+    private Boolean customerSigned;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

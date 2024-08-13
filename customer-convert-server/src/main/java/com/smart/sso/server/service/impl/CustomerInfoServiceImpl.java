@@ -12,6 +12,7 @@ import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.mapper.CustomerRelationMapper;
 import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
@@ -52,6 +53,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerSummaryMapper customerSummaryMapper;
     @Autowired
     private ConfigMapper configMapper;
+    @Autowired
+    private CustomerRelationMapper customerRelationMapper;
     private SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd HH");
     private SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy-MM-dd");
@@ -103,7 +106,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
         CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
-        customerProfile.setCustomerStage(getCustomerStageStatus(customerFeature, customerSummary));
+        customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, customerFeature, customerSummary));
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
@@ -128,8 +131,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
-        CustomerStageStatus stageStatus = getCustomerStageStatus(customerFeature, customerSummary);
-        summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus));
+        CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, customerFeature, customerSummary);
+        if (Objects.nonNull(summaryResponse)) {
+            summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus));
+        }
         return summaryResponse;
     }
 
@@ -141,6 +146,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // -较低：资金体量=“匮乏”或“小于10万” and 赚钱欲望=“低”
         // -未完成判断：资金体量=空 or 赚钱欲望=空
         String result = "incomplete";
+        if (Objects.isNull(customerFeature)) {
+            return result;
+        }
         List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
         String fundsVolumeSales = Objects.nonNull(customerFeature.getFundsVolumeSales()) &&
                 Objects.nonNull(customerFeature.getFundsVolumeSales().getTag())
@@ -227,7 +235,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerStageStatus getCustomerStageStatus(CustomerFeature customerFeature, CustomerSummary customerSummary) {
+    public CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature customerFeature, CustomerSummary customerSummary) {
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
@@ -235,58 +243,70 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!"incomplete".equals(getConversionRate(customerFeature))) {
             stageStatus.setMatchingJudgment(1);
         }
-        // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
-        CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
-        if (Objects.nonNull(tradingMethod.getCurrentStocks().getCompareValue()) &&
-                Objects.nonNull(tradingMethod.getStockPurchaseReason().getCompareValue()) &&
-                Objects.nonNull(tradingMethod.getTradeTimingDecision().getCompareValue()) &&
-                Objects.nonNull(tradingMethod.getTradingStyle().getCompareValue()) &&
-                Objects.nonNull(tradingMethod.getStockMarketAge().getCompareValue())) {
-            stageStatus.setTransactionStyle(1);
+
+        if (Objects.nonNull(customerFeatureResponse)) {
+            // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
+            CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
+            if (Objects.nonNull(tradingMethod.getCurrentStocks().getCompareValue()) &&
+                    Objects.nonNull(tradingMethod.getStockPurchaseReason().getCompareValue()) &&
+                    Objects.nonNull(tradingMethod.getTradeTimingDecision().getCompareValue()) &&
+                    Objects.nonNull(tradingMethod.getTradingStyle().getCompareValue()) &&
+                    Objects.nonNull(tradingMethod.getStockMarketAge().getCompareValue())) {
+                stageStatus.setTransactionStyle(1);
+            }
+            // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
+            CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
+            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue() &&
+                    Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
+                    (Boolean) recognition.getStockSelectionMethod().getCompareValue() &&
+                    Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
+                    (Boolean) recognition.getSelfIssueRecognition().getCompareValue() &&
+                    Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
+                    (Boolean) recognition.getLearnNewMethodApproval().getCompareValue() &&
+                    Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
+                    (Boolean) recognition.getContinuousLearnApproval().getCompareValue() &&
+                    Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
+                stageStatus.setConfirmValue(1);
+            }
+            // 客户确认购买 客户对购买软件的态度”的值为“是”
+            if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
+                stageStatus.setConfirmPurchase(1);
+            }
         }
-        // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
-        CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-        if (Objects.nonNull(infoExplanation.getStock()) &&
-                infoExplanation.getStock().getResult() &&
-                Objects.nonNull(infoExplanation.getStockPickReview()) &&
-                infoExplanation.getStockPickReview().getResult() &&
-                Objects.nonNull(infoExplanation.getStockTimingReview()) &&
-                infoExplanation.getStockTimingReview().getResult() &&
-                Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
-                infoExplanation.getCustomerIssuesQuantified().getResult() &&
-                Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
-                infoExplanation.getSoftwareValueQuantified().getResult() &&
-                Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
-                infoExplanation.getTradeBasedIntro().getResult()) {
-            stageStatus.setFunctionIntroduction(1);
-        }
-        // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
-        CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
-                (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue() &&
-                Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
-                (Boolean) recognition.getStockSelectionMethod().getCompareValue() &&
-                Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
-                (Boolean) recognition.getSelfIssueRecognition().getCompareValue() &&
-                Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
-                (Boolean) recognition.getLearnNewMethodApproval().getCompareValue() &&
-                Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
-                (Boolean) recognition.getContinuousLearnApproval().getCompareValue() &&
-                Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
-                (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
-            stageStatus.setConfirmValue(1);
-        }
-        // 客户确认购买 客户对购买软件的态度”的值为“是”
-        if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
-                (Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
-            stageStatus.setConfirmPurchase(1);
+
+        if (Objects.nonNull(summaryResponse)) {
+            // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
+            CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
+            if (Objects.nonNull(infoExplanation.getStock()) &&
+                    infoExplanation.getStock().getResult() &&
+                    Objects.nonNull(infoExplanation.getStockPickReview()) &&
+                    infoExplanation.getStockPickReview().getResult() &&
+                    Objects.nonNull(infoExplanation.getStockTimingReview()) &&
+                    infoExplanation.getStockTimingReview().getResult() &&
+                    Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
+                    infoExplanation.getCustomerIssuesQuantified().getResult() &&
+                    Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
+                    infoExplanation.getSoftwareValueQuantified().getResult() &&
+                    Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
+                    infoExplanation.getTradeBasedIntro().getResult()) {
+                stageStatus.setFunctionIntroduction(1);
+            }
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
-        // TODO
-        if (Objects.nonNull(summaryResponse.getApprovalAnalysis().getPurchase()) &&
-                !StringUtils.isEmpty(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition()) &&
-                "approved".equals(summaryResponse.getApprovalAnalysis().getPurchase().getRecognition())) {
-            stageStatus.setConfirmPurchase(1);
+        try {
+            QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("owner_id", customerInfo.getOwnerId());
+            queryWrapper.eq("customer_id", Integer.parseInt(customerInfo.getCustomerId()));
+            CustomerRelation customerRelation = customerRelationMapper.selectOne(queryWrapper);
+            if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
+                    && customerRelation.getCustomerSigned()) {
+                stageStatus.setCompletePurchase(1);
+            }
+        } catch (Exception e) {
+            log.error("判断确认购买状态失败", e);
         }
         return stageStatus;
     }
@@ -424,7 +444,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight-main/process_text.py", 2, sourceId);
         } catch (Exception e) {
             // 这里只负责调用对用的脚本
-            log.error("执行脚本报错");
+            log.error("执行脚本报错", e);
         }
     }
 
@@ -807,6 +827,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                                 chatRecognition = CustomerRecognition.APPROVED.getText();
                             } else if ("否".equals(chatFromDb.getRecognition())) {
                                 chatRecognition = CustomerRecognition.NOT_APPROVED.getText();
+                            } else {
+                                chatRecognition = CustomerRecognition.UNKNOWN.getText();
                             }
                         }
                         if (!StringUtils.isEmpty(chatRecognition)) {
@@ -1047,7 +1069,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
         } catch (Exception e) {
-            log.error("获取优缺点失败");
+            log.error("获取优缺点失败", e);
         }
 
         //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
