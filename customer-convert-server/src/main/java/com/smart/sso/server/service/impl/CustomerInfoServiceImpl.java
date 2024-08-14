@@ -158,10 +158,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String earningDesireSales = Objects.nonNull(customerFeature.getEarningDesireSales()) &&
                 Objects.nonNull(customerFeature.getEarningDesireSales().getTag())
                 ? customerFeature.getEarningDesireSales().getTag().toString() : null;
-        if ((CollectionUtils.isEmpty(fundsVolumeModel) && StringUtils.isEmpty(fundsVolumeSales)) ||
-                CollectionUtils.isEmpty(earningDesireModel) && StringUtils.isEmpty(earningDesireSales)) {
-            return result;
-        }
         String fundsVolume = null;
         String earningDesire = null;
         if (!CollectionUtils.isEmpty(fundsVolumeModel)) {
@@ -185,7 +181,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
         }
-
+        if ((StringUtils.isEmpty(fundsVolume) && StringUtils.isEmpty(fundsVolumeSales)) ||
+                (StringUtils.isEmpty(earningDesire) && StringUtils.isEmpty(earningDesireSales))) {
+            return result;
+        }
         String fundsVolumeStatus = null;
         String earningDesireStatus = null;
 
