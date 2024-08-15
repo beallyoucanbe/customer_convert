@@ -14,6 +14,7 @@ import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import com.smart.sso.server.util.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -102,10 +104,10 @@ public class CustomerController {
     public BaseResponse<Void> redirect(@RequestParam(value = "customer_id") String customerId,
                                        @RequestParam(value = "active_id") String activeId,
                                        String from, String manager,
-                                       HttpServletResponse response) throws IOException {
+                                       HttpServletResponse response) throws IOException, URISyntaxException {
         String targetUrl = customerInfoService.getRedirectUrl(customerId, activeId, from, manager);
         // 使用HttpServletResponse进行重定向
-        response.sendRedirect(targetUrl);
+        response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
         response.setStatus(302);
         return ResultUtils.success(null);
     }
@@ -127,9 +129,9 @@ public class CustomerController {
         List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapper);
         for (CustomerInfo item : customerFeatureList) {
             try {
-                messageService.sendNoticeForSingle(item.getId());
+                messageService.updateCustomerCharacter(item.getId());
             } catch (Exception e) {
-                log.error("###########"+item.getId());
+                log.error("更新CustomerCharacter失败：ID=" + item.getId());
             }
         }
         return ResultUtils.success(null);

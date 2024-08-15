@@ -6,7 +6,11 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class CommonUtils {
@@ -51,5 +55,22 @@ public class CommonUtils {
         } catch (IOException e) {
             log.error("保存数据到文件失败");
         }
+    }
+
+    public static String encodeParameters(String url) throws UnsupportedEncodingException {
+        // 正则表达式匹配查询字符串中的参数对
+        Pattern pattern = Pattern.compile("([^&=]+)=([^&]*)");
+        Matcher matcher = pattern.matcher(url);
+        StringBuffer encodedUrl = new StringBuffer();
+
+        while (matcher.find()) {
+            String paramName = matcher.group(1);
+            String paramValue = matcher.group(2);
+            // 对参数值进行编码，参数名保持不变
+            matcher.appendReplacement(encodedUrl, paramName + "=" + URLEncoder.encode(paramValue, "UTF-8"));
+        }
+        matcher.appendTail(encodedUrl);
+
+        return encodedUrl.toString();
     }
 }

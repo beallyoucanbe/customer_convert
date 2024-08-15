@@ -1,6 +1,7 @@
 package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.TextMessage;
+import com.smart.sso.server.model.dto.LeadMemberRequest;
 
 public interface MessageService {
 
@@ -33,6 +34,8 @@ public interface MessageService {
      */
     void sendNoticeForSingle(String id);
 
-    void sendNoticeForLeader(String id);
+    void sendNoticeForLeader(LeadMemberRequest leadMember);
+
+    void updateCustomerCharacter(String id);
 
 }
