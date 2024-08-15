@@ -35,6 +35,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -204,16 +205,55 @@ public class MessageServiceImpl implements MessageService {
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
         CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
+        CustomerCharacter newCustomerCharacter = new CustomerCharacter();
+        updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
         if (Objects.isNull(customerCharacter)) {
             // 新建
-            CustomerCharacter newCustomerCharacter = new CustomerCharacter();
-            updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
             customerCharacterMapper.insert(newCustomerCharacter);
         } else {
             // 更新
-            updateCharacter(customerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
-            customerCharacterMapper.updateById(customerCharacter);
+            if (!areEqual(customerCharacter, newCustomerCharacter)){
+                customerCharacterMapper.updateById(newCustomerCharacter);
+            }
         }
+    }
+
+    public boolean areEqual(CustomerCharacter cc1, CustomerCharacter cc2) {
+        if (cc1 == cc2) {
+            return true;
+        }
+        if (cc1 == null || cc2 == null) {
+            return false;
+        }
+
+        // 获取CustomerCharacter类的所有字段
+        Field[] fields = CustomerCharacter.class.getDeclaredFields();
+
+        for (Field field : fields) {
+            // 跳过 createTime 和 updateTime 字段
+            if ("createTime".equals(field.getName()) || "updateTime".equals(field.getName())) {
+                continue;
+            }
+
+            field.setAccessible(true);
+
+            try {
+                // 获取两个对象的字段值
+                Object value1 = field.get(cc1);
+                Object value2 = field.get(cc2);
+
+                // 比较字段值，如果不相等，返回 false
+                if (!Objects.equals(value1, value2)) {
+                    return false;
+                }
+
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void sendMessage(CustomerInfo customerInfo, CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
