@@ -34,7 +34,7 @@ public interface MessageService {
      */
     void sendNoticeForSingle(String id);
 
-    void sendNoticeForLeader(LeadMemberRequest leadMember);
+    void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign);
 
     void updateCustomerCharacter(String id);
 

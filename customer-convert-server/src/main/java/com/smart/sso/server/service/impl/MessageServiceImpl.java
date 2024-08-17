@@ -122,11 +122,11 @@ public class MessageServiceImpl implements MessageService {
             updateCharacter(customerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
             customerCharacterMapper.updateById(customerCharacter);
         }
-//        sendMessage(customerInfo, customerProfile, customerFeature);
+        sendMessage(customerInfo, customerProfile, customerFeature);
     }
 
     @Override
-    public void sendNoticeForLeader(LeadMemberRequest leadMember) {
+    public void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign) {
         String area = leadMember.getArea();
         List<String> leaders = leadMember.getLeaders();
         List<String> members = leadMember.getMembers();
@@ -134,6 +134,7 @@ public class MessageServiceImpl implements MessageService {
         // 获取当前活动内的所有客户
         QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
         queryWrapper1.in("owner_name", members);
+        queryWrapper1.in("current_campaign", currentCampaign);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
         Map<String, Integer> questions = new LinkedHashMap<>();
         questions.put("未完成客户匹配度判断", 0);
@@ -318,13 +319,25 @@ public class MessageServiceImpl implements MessageService {
         for (String item : completeStatus) {
             complete.append(i++).append(". ").append(item).append("\n");
         }
+        if (complete.length() < 1){
+            complete.append("暂无");
+        }
         i = 1;
         for (String item : incompleteStatus) {
             incomplete.append(i++).append(". ").append(item).append("\n");
         }
+        if (incomplete.length() < 1){
+            incomplete.append("暂无");
+        }
+        String rateDesc;
+        if (customerProfile.getConversionRate().equals("low")){
+            rateDesc = conversionRateMap.get(customerProfile.getConversionRate()) + "（不应重点跟进）";
+        } else {
+            rateDesc = conversionRateMap.get(customerProfile.getConversionRate());
+        }
         String url = "https://newcmp.emoney.cn/chat/customer?id=" + customerInfo.getId();
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerProfile.getCustomerName(),
-                conversionRateMap.get(customerProfile.getConversionRate()),
+                rateDesc,
                 complete,
                 incomplete,
                 url, url);

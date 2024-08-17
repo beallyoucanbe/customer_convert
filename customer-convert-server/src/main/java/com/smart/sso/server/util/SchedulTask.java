@@ -165,9 +165,19 @@ public class SchedulTask {
         }
         List<LeadMemberRequest> leadMemberList = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
         });
+        //获取需要当前的活动
+        QueryWrapper<Config> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper1.eq("name", ConfigTypeEnum.CURRENT_CAMPAIGN.getValue());
+        config = configMapper.selectOne(queryWrapper1);
+        if (Objects.isNull(config)) {
+            log.error("没有当前的活动，请先配置");
+            return;
+        }
+        String currentCampaign = config.getValue();
 
         for (LeadMemberRequest leadMember : leadMemberList) {
-            messageService.sendNoticeForLeader(leadMember);
+            messageService.sendNoticeForLeader(leadMember, currentCampaign);
         }
     }
 }

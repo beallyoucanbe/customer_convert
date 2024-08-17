@@ -8,8 +8,8 @@ public enum ConfigTypeEnum {
     COMMON("COMMON", "通用配置"),
 
 
-    CURRENT_CAMPAIGN("CURRENT_CAMPAIGN", "当前阶段的活动"),
 
+    CURRENT_CAMPAIGN("current_campaign", "当前阶段的活动"),
     LEADER("leader", "组长");
 
     private final String value;
