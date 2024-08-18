@@ -112,15 +112,16 @@ public class MessageServiceImpl implements MessageService {
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
         CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
+        CustomerCharacter newCustomerCharacter = new CustomerCharacter();
+        updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
         if (Objects.isNull(customerCharacter)) {
             // 新建
-            CustomerCharacter newCustomerCharacter = new CustomerCharacter();
-            updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
             customerCharacterMapper.insert(newCustomerCharacter);
         } else {
             // 更新
-            updateCharacter(customerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
-            customerCharacterMapper.updateById(customerCharacter);
+            if (!areEqual(customerCharacter, newCustomerCharacter)){
+                customerCharacterMapper.updateById(newCustomerCharacter);
+            }
         }
         sendMessage(customerInfo, customerProfile, customerFeature);
     }
@@ -176,7 +177,7 @@ public class MessageServiceImpl implements MessageService {
             }
             incomplete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue()).append("个\n");
         }
-        String url = "https://newcmp.emoney.cn/chat/customers";
+        String url = "http://172.16.192.61:8086/share/33/dashboard/1";
         String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), incomplete, complete, url, url);
 
         // 获取要发送的url
@@ -335,13 +336,12 @@ public class MessageServiceImpl implements MessageService {
         } else {
             rateDesc = conversionRateMap.get(customerProfile.getConversionRate());
         }
-        String url = "https://newcmp.emoney.cn/chat/customer?id=" + customerInfo.getId();
+        String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s", customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerProfile.getCustomerName(),
                 rateDesc,
                 complete,
                 incomplete,
                 url, url);
-
 
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
