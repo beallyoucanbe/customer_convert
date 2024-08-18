@@ -10,7 +10,7 @@ from logging import handlers
 
 from alarm import send_customer_log_alarm
 
-log_path = ' /opt/customer-convert/callback/logs'
+log_path = '/opt/customer-convert/callback/logs'
 
 LOG_FILE = log_path + '/log.txt'
 POSITION_FILE = log_path + '/moniter/log_position'

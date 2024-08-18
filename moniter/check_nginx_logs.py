@@ -8,15 +8,13 @@ import logging
 import json
 from logging import handlers
 
-# nginx_log_path = '/var/log/nginx'
-nginx_log_path = '/Users/shuoyizhao/fsdownload'
-
-project_path = '/Users/shuoyizhao/fsdownload'
+nginx_log_path = '/var/log/nginx'
+project_path = '/opt/customer-convert'
 
 LOG_FILE = nginx_log_path + '/access.log'
 POSITION_FILE = nginx_log_path + '/nginx_position'
 
-valid_url = ['section_id']
+valid_url = ['customer/callback']
 
 RESULT_FILE_SUFFIXE = '.pkl'
 RESULT_FILE = nginx_log_path + '/monitor_result_tmp_{last_end_position}' + RESULT_FILE_SUFFIXE
@@ -175,15 +173,12 @@ if __name__ == '__main__':
     log_file = LOG_FILE
     if not os.path.exists(log_file):
         os._exit(1)
-    moniter_log_path = os.path.join(project_path, 'moniter')
-    if not os.path.exists(moniter_log_path):
-        os.makedirs(moniter_log_path, mode=0o755, exist_ok=True)
-
+    monitor_log_path = os.path.join(project_path, 'monitor')
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    logFilePath = f"{moniter_log_path}/tiny_moniter.log"
-    errorFilePath = f"{moniter_log_path}/tiny_moniter.error"
+    logFilePath = monitor_log_path + "/tiny_monitor.log"
+    errorFilePath = monitor_log_path + "/tiny_monitor.error"
 
     fa = handlers.RotatingFileHandler(logFilePath, 'a', 1024 * 1024, 10)
     fa.setLevel(logging.INFO)
