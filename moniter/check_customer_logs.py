@@ -8,17 +8,17 @@ import logging
 import json
 from logging import handlers
 
+from alarm import send_customer_log_alarm
+
 log_path = '/Users/shuoyizhao/fsdownload'
 
 project_path = '/Users/shuoyizhao/fsdownload'
 
-LOG_FILE = log_path + '/access.log'
-POSITION_FILE = log_path + '/nginx_position'
-
-valid_url = ['section_id']
+LOG_FILE = log_path + '/log.txt'
+POSITION_FILE = log_path + '/log_position'
 
 RESULT_FILE_SUFFIXE = '.pkl'
-RESULT_FILE = log_path + '/monitor_result_tmp_{last_end_position}' + RESULT_FILE_SUFFIXE
+RESULT_FILE = log_path + '/log_result_tmp_{last_end_position}' + RESULT_FILE_SUFFIXE
 RESULT_CACHE_TIME = 10
 
 def get_position(logger):
@@ -79,10 +79,10 @@ def clear_monitor_result_log(backup_count=1, file_suffix=RESULT_FILE_SUFFIXE):
 
     """
     files = []
-    for f in os.listdir(nginx_log_path):
+    for f in os.listdir(log_path):
         _, suffix = os.path.splitext(f)
         if suffix == file_suffix:
-            file = os.path.join(nginx_log_path, f)
+            file = os.path.join(log_path, f)
             ctime = os.stat(file).st_ctime
             files.append((file, ctime))
 
@@ -125,7 +125,7 @@ def handle_log(start_position, end_position, logger):
             if "error" in line:
                 data["error"] = data["error"] + 1
             elif "mysql dict is" in line:
-                data["success"] = data["error"] + 1
+                data["success"] = data["success"] + 1
         except Exception:
             continue
 
@@ -138,7 +138,7 @@ def handle_log(start_position, end_position, logger):
         backup_position(start_position, end_position)
 
     clear_monitor_result_log()
-    print(data)
+    send_customer_log_alarm(data)
 
 
 if __name__ == '__main__':
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fe.setFormatter(formater)
     logger.addHandler(fe)
-    logger.info('start nginx monitor')
+    logger.info('start customer log monitor')
     start_position, end_position = get_position(logger)
     print([start_position, end_position])
     handle_log(start_position, end_position, logger)
