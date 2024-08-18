@@ -28,8 +28,8 @@ def send_dingtalk_message(access_token, agent_id, user_id_list, message):
 app_key = 'dingbfew2tpzrm0atojk'
 app_secret = 'T5_2ucmzao8Zi7vYsTerT5Xtd0Nt3dQoncPnG8Yxv72f0jl5f-XDRrZMMmLg92mL'
 agent_id = '3176723147'
-user_id_list = '160422383935775689'
-message = '报警信息内容'
+user_id_list = '160422383935775689,076434076732437917'
+message = '报警信息1111内容'
 
 access_token = get_access_token(app_key, app_secret)
 result = send_dingtalk_message(access_token, agent_id, user_id_list, message)
