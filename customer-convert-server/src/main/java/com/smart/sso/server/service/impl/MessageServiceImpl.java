@@ -68,16 +68,14 @@ public class MessageServiceImpl implements MessageService {
         log.error("发送消息内容：" + JsonUtil.serialize(message));
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
-        return null;
         // 发送 POST 请求
-//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-//
-//        // 处理响应
-//        if (response.getStatusCode() == HttpStatus.OK) {
-//            return response.getBody();
-//        } else {
-//            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
-//        }
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        // 处理响应
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+        }
     }
 
     /**
