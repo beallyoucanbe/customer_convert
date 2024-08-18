@@ -10,12 +10,10 @@ from logging import handlers
 
 from alarm import send_customer_log_alarm
 
-log_path = '/Users/shuoyizhao/fsdownload'
-
-project_path = '/Users/shuoyizhao/fsdownload'
+log_path = ' /opt/customer-convert/callback/logs'
 
 LOG_FILE = log_path + '/log.txt'
-POSITION_FILE = log_path + '/log_position'
+POSITION_FILE = log_path + '/moniter/log_position'
 
 RESULT_FILE_SUFFIXE = '.pkl'
 RESULT_FILE = log_path + '/log_result_tmp_{last_end_position}' + RESULT_FILE_SUFFIXE
@@ -145,7 +143,7 @@ if __name__ == '__main__':
     log_file = LOG_FILE
     if not os.path.exists(log_file):
         os._exit(1)
-    moniter_log_path = os.path.join(project_path, 'moniter')
+    moniter_log_path = os.path.join(log_path, 'moniter')
     if not os.path.exists(moniter_log_path):
         os.makedirs(moniter_log_path, mode=0o755, exist_ok=True)
 
