@@ -189,15 +189,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String earningDesireStatus = null;
 
         if (StringUtils.isEmpty(fundsVolumeSales)) {
-            if (fundsVolume.equals("充裕") || fundsVolume.equals("大于等于10万")) {
+            if (fundsVolume.equals("充裕") || fundsVolume.equals("大于等于5万")) {
                 fundsVolumeStatus = "high";
-            } else if (fundsVolume.equals("匮乏") || fundsVolume.equals("小于10万")) {
+            } else if (fundsVolume.equals("匮乏") || fundsVolume.equals("小于5万")) {
                 fundsVolumeStatus = "low";
             }
         } else {
-            if (fundsVolumeSales.equals("abundant") || fundsVolumeSales.equals("great_equal_ten_w")) {
+            if (fundsVolumeSales.equals("abundant") || fundsVolumeSales.equals("great_equal_five_w")) {
                 fundsVolumeStatus = "high";
-            } else if (fundsVolumeSales.equals("deficient") || fundsVolumeSales.equals("less_ten_w")) {
+            } else if (fundsVolumeSales.equals("deficient") || fundsVolumeSales.equals("less_five_w")) {
                 fundsVolumeStatus = "low";
             }
         }
