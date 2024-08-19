@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Desc  : 检查 saas 环境meta 节点上 在线请求的请求情况
 import os
 import time
 import pickle
