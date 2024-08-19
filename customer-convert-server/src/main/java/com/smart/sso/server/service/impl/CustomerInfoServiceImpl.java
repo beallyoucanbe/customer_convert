@@ -299,7 +299,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         try {
             QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("owner_id", customerInfo.getOwnerId());
-            queryWrapper.eq("customer_id", Integer.parseInt(customerInfo.getCustomerId()));
+            queryWrapper.eq("customer_id", Long.parseLong(customerInfo.getCustomerId()));
             CustomerRelation customerRelation = customerRelationMapper.selectOne(queryWrapper);
             if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
                     && customerRelation.getCustomerSigned()) {

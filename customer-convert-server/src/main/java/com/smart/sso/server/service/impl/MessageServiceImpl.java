@@ -121,7 +121,7 @@ public class MessageServiceImpl implements MessageService {
                 customerCharacterMapper.updateById(newCustomerCharacter);
             }
         }
-        sendMessage(customerInfo, customerProfile, customerFeature);
+//        sendMessage(customerInfo, customerProfile, customerFeature);
     }
 
     @Override
