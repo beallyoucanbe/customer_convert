@@ -442,7 +442,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             String filePath = "/opt/customer-convert/callback/sourceid.txt";
             CommonUtils.appendTextToFile(filePath, sourceId);
 //            ShellUtils.bashRun("", new HashMap<>());
-            ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight-main/process_text.py", 2, sourceId);
+            String[] params = {sourceId};
+            Process process = ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight-main/process_text.py", params.length, params);
+            // 等待脚本执行完成
+            int exitCode = process.waitFor();
+            log.error("Python脚本执行完成，退出码：" + exitCode);
         } catch (Exception e) {
             // 这里只负责调用对用的脚本
             log.error("执行脚本报错", e);

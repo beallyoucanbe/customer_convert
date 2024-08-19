@@ -3,8 +3,11 @@ package com.smart.sso.server.util;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -280,8 +283,15 @@ public class ShellUtils {
         command[0] = pythonPath;
         command[1] = pythonFilePath;
         ProcessBuilder processBuilder = new ProcessBuilder(command);
+        // 设置日志文件为追加模式
+        File logFile = new File("/opt/customer-convert/callback/logs/call.log");
+        FileOutputStream fos = new FileOutputStream(logFile, true); // 'true' 表示追加模式
+
+        // 重定向错误输出流到日志文件
+        processBuilder.redirectErrorStream(true);
+        processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
         // 3. 启动进程
-        log.error("执行的python脚本为：" + JsonUtil.serialize(command));
+        log.error("执行的python脚本为：" + Arrays.toString(command));
         return processBuilder.start();
     }
 
