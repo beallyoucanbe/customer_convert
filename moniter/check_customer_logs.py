@@ -149,8 +149,8 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    logFilePath = f"{moniter_log_path}/tiny_moniter.log"
-    errorFilePath = f"{moniter_log_path}/tiny_moniter.error"
+    logFilePath = moniter_log_path + "tiny_moniter.log"
+    errorFilePath = moniter_log_path + "tiny_moniter.error"
 
     fa = handlers.RotatingFileHandler(logFilePath, 'a', 1024 * 1024, 10)
     fa.setLevel(logging.INFO)
