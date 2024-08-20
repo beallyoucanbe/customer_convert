@@ -6,6 +6,7 @@ import pickle
 import logging
 import json
 from logging import handlers
+from alarm import send_nginx_log_alarm
 
 nginx_log_path = '/var/log/nginx'
 project_path = '/opt/customer-convert'
@@ -165,7 +166,7 @@ def handle_log(start_position, end_position, logger):
         backup_position(start_position, end_position)
 
     clear_monitor_result_log()
-    print(data)
+    send_nginx_log_alarm(data)
 
 
 if __name__ == '__main__':

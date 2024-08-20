@@ -47,6 +47,21 @@ def send_customer_log_alarm(data):
             message = '过去半小时的通话量为：' + str(data["success"]) + '，报错数为：' + str(data["error"])
             send_dingtalk_message(message)
 
+def send_nginx_log_alarm(data):
+    # {"response_time_result": {"response_time_tp80": 0.051, "response_time_tp99": 0.502, "response_time_average": 0.033, "response_time_tp90": 0.084}, "code_dict": {"200": 39, "502": 1, "500": 5}}
+    response_time_tp80 = 0
+    if 'response_time_result' in data and 'response_time_tp80' in data['response_time_result']:
+        response_time_tp80 = data['response_time_result']['response_time_tp80']
+    err_request = 0
+    if 'code_dict' in data:
+        for key, value in data['code_dict'].items():
+            if not (key.startswith('2') or key.startswith('3')):
+                err_request = err_request + value
+
+    if response_time_tp80 > 0.2 or err_request > 10:
+        # 发送报警信息
+        send_dingtalk_message(json.dumps(data))
+
 if __name__ == '__main__':
-    message = '报警信息1111内容'
-    result = send_customer_log_alarm({"success":4, "error":5})
+    data = {"response_time_result": {"response_time_tp80": 0.051, "response_time_tp99": 0.502, "response_time_average": 0.033, "response_time_tp90": 0.084}, "code_dict": {"200": 39, "502": 1, "500": 5}}
+    result = send_nginx_log_alarm(data)
