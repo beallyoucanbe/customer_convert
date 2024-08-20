@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class CustomerRelation implements Serializable {
 
     private String ownerId;
-    private Integer customerId;
+    private Long customerId;
     private Integer classeAttendTimes;
     private Integer classeAttendDuration;
     private Boolean customerSigned;

@@ -55,6 +55,8 @@ public class CustomerCharacter implements Serializable {
     private String summaryExecuteOrder;
     private String summaryInvitCourse;
 
+    private Integer questionCount;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

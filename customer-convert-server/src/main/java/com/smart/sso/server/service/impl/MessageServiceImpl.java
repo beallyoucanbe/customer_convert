@@ -432,6 +432,39 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryInvitCourse("false");
             }
         }
+        // 总结质疑应对中
+        int questionCount = 0;
+        CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = customerSummary.getApprovalAnalysis();
+        if (Objects.nonNull(approvalAnalysis)) {
+            if (Objects.nonNull(approvalAnalysis.getMethod()) && !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())){
+                questionCount += approvalAnalysis.getMethod().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getIssue()) && !CollectionUtils.isEmpty(approvalAnalysis.getIssue().getChats())){
+                questionCount += approvalAnalysis.getIssue().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getValue()) && !CollectionUtils.isEmpty(approvalAnalysis.getValue().getChats())){
+                questionCount += approvalAnalysis.getValue().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getPrice()) && !CollectionUtils.isEmpty(approvalAnalysis.getPrice().getChats())){
+                questionCount += approvalAnalysis.getPrice().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getPurchase()) && !CollectionUtils.isEmpty(approvalAnalysis.getPurchase().getChats())){
+                questionCount += approvalAnalysis.getPurchase().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getSoftwareOperation()) && !CollectionUtils.isEmpty(approvalAnalysis.getSoftwareOperation().getChats())){
+                questionCount += approvalAnalysis.getSoftwareOperation().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getCourse()) && !CollectionUtils.isEmpty(approvalAnalysis.getCourse().getChats())){
+                questionCount += approvalAnalysis.getCourse().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getNoMoney()) && !CollectionUtils.isEmpty(approvalAnalysis.getNoMoney().getChats())){
+                questionCount += approvalAnalysis.getNoMoney().getChats().size();
+            }
+            if (Objects.nonNull(approvalAnalysis.getOthers()) && !CollectionUtils.isEmpty(approvalAnalysis.getOthers().getChats())){
+                questionCount += approvalAnalysis.getOthers().getChats().size();
+            }
+        }
+        latestCustomerCharacter.setQuestionCount(questionCount);
     }
 
 
