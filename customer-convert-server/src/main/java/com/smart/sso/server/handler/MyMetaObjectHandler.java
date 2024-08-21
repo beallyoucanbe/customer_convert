@@ -16,6 +16,10 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
+        // 检查 updateTime 是否已经被设置，如果没有被设置则自动填充当前时间戳
+        Object updateTime = getFieldValByName("updateTime", metaObject);
+        if (updateTime == null) {
+            this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        }
     }
 }

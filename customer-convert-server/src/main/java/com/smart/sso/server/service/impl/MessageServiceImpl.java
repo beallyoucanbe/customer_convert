@@ -231,30 +231,22 @@ public class MessageServiceImpl implements MessageService {
 
         for (Field field : fields) {
             // 跳过 createTime 和 updateTime 字段
-            if ("createTime".equals(field.getName()) || "updateTime".equals(field.getName())) {
+            if ("createTime".equals(field.getName())) {
                 continue;
             }
-
             field.setAccessible(true);
-
             try {
                 // 获取两个对象的字段值
                 Object value1 = field.get(cc1);
                 Object value2 = field.get(cc2);
-
-                if ("question_count".equals(field.getName()) && Objects.isNull(value1) && (int) value2 == 0) {
-                    // 这里是当 value1 为 null 并且 value2 为整数0时
-                    continue;
-                } else if (!Objects.equals(value1, value2)) { // 比较字段值，如果不相等，返回 false
+                if (!Objects.equals(value1, value2)) { // 比较字段值，如果不相等，返回 false
                     return false;
                 }
-
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 return false;
             }
         }
-
         return true;
     }
 
@@ -467,6 +459,7 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         latestCustomerCharacter.setQuestionCount(questionCount);
+        latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());
     }
 
 
