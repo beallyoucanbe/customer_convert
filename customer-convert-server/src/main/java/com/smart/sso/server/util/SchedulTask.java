@@ -135,7 +135,7 @@ public class SchedulTask {
      * 客户完成购买：当前共计5个
      * 详细内容链接：http://xxxxxxxxx（BI对应看板页面链接）
      */
-    @Scheduled(cron = "0 0 9,12,18 * * ?")
+//    @Scheduled(cron = "0 0 9,12,18 * * ?")
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI

@@ -95,6 +95,7 @@ public class CustomerProcessSummaryResponse {
     @Setter
     public static class Chat {
         private String recognition;
+        private String sourceId;
         private List<Message> messages;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Date time;

@@ -876,6 +876,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             messageList.add(message);
                         }
                         chat.setMessages(messageList);
+                        chat.setSourceId(item.getCallId());
                         try {
                             chat.setTime(dateFormat1.parse(dateString));
                         } catch (Exception e) {
