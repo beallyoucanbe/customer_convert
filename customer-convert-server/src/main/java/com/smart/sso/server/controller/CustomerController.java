@@ -119,6 +119,12 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
+    @ApiOperation(value = "返回对话的原文")
+    @GetMapping("/customer/content")
+    public BaseResponse<String> getChatContent(@RequestParam(value = "path") String path) {
+        return ResultUtils.success(customerInfoService.getChatContent(path));
+    }
+
     @ApiOperation(value = "全量初始化")
     @GetMapping("/customer/init_character")
     public BaseResponse<Void> initCharacter() {

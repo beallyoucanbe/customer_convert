@@ -36,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -121,11 +122,10 @@ public class MessageServiceImpl implements MessageService {
                 customerCharacterMapper.updateById(newCustomerCharacter);
             }
         }
-//        sendMessage(customerInfo, customerProfile, customerFeature);
     }
 
     @Override
-    public void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign) {
+    public void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign, LocalDateTime dateTime) {
         String area = leadMember.getArea();
         List<String> leaders = leadMember.getLeaders();
         List<String> members = leadMember.getMembers();
@@ -134,6 +134,7 @@ public class MessageServiceImpl implements MessageService {
         QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
         queryWrapper1.in("owner_name", members);
         queryWrapper1.in("current_campaign", currentCampaign);
+        queryWrapper1.gt("update_time", dateTime);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
         Map<String, Integer> questions = new LinkedHashMap<>();
         questions.put("未完成客户匹配度判断", 0);
@@ -250,8 +251,10 @@ public class MessageServiceImpl implements MessageService {
         return true;
     }
 
-    private void sendMessage(CustomerInfo customerInfo, CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
-
+    private void sendMessage(String id) {
+        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
+        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
         CustomerFeatureResponse.Recognition recognition = customerFeature.getRecognition();
         List<String> completeStatus = new ArrayList<>();
         List<String> incompleteStatus = new ArrayList<>();
@@ -301,11 +304,14 @@ public class MessageServiceImpl implements MessageService {
         }
 
         if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getModelRecord())) {
-            if (!(Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
+            if (!(Boolean) recognition.getSoftwarePurchaseAttitude().getModelRecord()) {
                 incompleteStatus.add("客户拒绝购买");
             }
         }
-
+        // 优缺点都是空，不发送
+        if (CollectionUtils.isEmpty(completeStatus) && CollectionUtils.isEmpty(incompleteStatus)) {
+            return;
+        }
         StringBuilder complete = new StringBuilder();
         StringBuilder incomplete = new StringBuilder();
         int i = 1;
@@ -468,6 +474,7 @@ public class MessageServiceImpl implements MessageService {
             return;
         }
         for (CustomerCharacter character : characterList) {
+            sendMessage(character.getId());
             if (character.getMatchingJudgmentStage()) {
                 advantages.merge("完成客户匹配度判断", 1, Integer::sum);
             } else {

@@ -36,4 +36,6 @@ public interface CustomerInfoService {
 
     List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite);
 
+    String getChatContent(String path);
+
 }

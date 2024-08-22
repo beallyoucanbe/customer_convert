@@ -18,13 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 
@@ -112,7 +109,7 @@ public class SchedulTask {
     }
 
     /**
-     * 每天12点和18点执行团队总结任务
+     * 每天9点，12点和18点执行团队总结任务
      * 以下是您团队的半日报更新。截至X月X日XX：XX：
      * 【问题】
      * 未完成客户匹配度判断：当前共计30个
@@ -138,9 +135,9 @@ public class SchedulTask {
      * 客户完成购买：当前共计5个
      * 详细内容链接：http://xxxxxxxxx（BI对应看板页面链接）
      */
-    @Scheduled(cron = "0 0 12,18 * * ?")
+    @Scheduled(cron = "0 0 9,12,18 * * ?")
     public void performTask() {
-        log.error("开始执行客户情况总结任务");
+        log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
         QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
@@ -174,10 +171,52 @@ public class SchedulTask {
             log.error("没有当前的活动，请先配置");
             return;
         }
+
+        // 任务的判断
+        log.error("开始执行总结信息发送");
+        QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
+        taskQueryWrapper.eq("task_name", AppConstant.SEND_MESSAGE_STATE);
+        taskQueryWrapper.eq("status", "in_progress");
+
+        ScheduledTask tasks = scheduledTasksMapper.selectOne(taskQueryWrapper);
+        if (Objects.nonNull(tasks)) {
+            // 这里判断时间，防止意外崩溃的情况
+            LocalDateTime dateTimeToCompare = tasks.getCreateTime();
+            // 计算时间差
+            Duration duration = Duration.between(dateTimeToCompare, LocalDateTime.now());
+            // 超过1小时就强制退出
+            if (duration.getSeconds() > 3600) {
+                scheduledTasksMapper.updateStatusById(tasks.getId(), "abort");
+            } else {
+                log.error("有任务正在执行，该次不执行");
+                return;
+            }
+        }
+        // 插入新的任务
+        ScheduledTask newTasks = new ScheduledTask();
+        newTasks.setId(CommonUtils.generatePrimaryKey());
+        newTasks.setTaskName(AppConstant.SEND_MESSAGE_STATE);
+        newTasks.setStatus("in_progress");
+        scheduledTasksMapper.insert(newTasks);
+
+        // 获取最后一次执行成功的开始时间， 来决定该次任务的筛选条件
+        dateTime = LocalDateTime.now().minusDays(1);
+        taskQueryWrapper = new QueryWrapper<>();
+        taskQueryWrapper.eq("task_name", AppConstant.SEND_MESSAGE_STATE);
+        taskQueryWrapper.eq("status", "success");
+        taskQueryWrapper.orderByDesc("create_time");
+        taskQueryWrapper.last("limit 1");
+        tasks = scheduledTasksMapper.selectOne(taskQueryWrapper);
+        if (Objects.nonNull(tasks)) {
+            dateTime = tasks.getCreateTime();
+        }
+
         String currentCampaign = config.getValue();
 
         for (LeadMemberRequest leadMember : leadMemberList) {
-            messageService.sendNoticeForLeader(leadMember, currentCampaign);
+            messageService.sendNoticeForLeader(leadMember, currentCampaign, dateTime);
         }
+        // 更新成功，更新任务状态
+        scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
     }
 }
