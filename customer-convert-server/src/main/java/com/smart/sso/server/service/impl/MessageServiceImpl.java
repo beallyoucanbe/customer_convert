@@ -208,13 +208,20 @@ public class MessageServiceImpl implements MessageService {
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
         updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
+
+        CustomerInfo customerInfoUpdate = new CustomerInfo();
+        customerInfoUpdate.setId(customerInfo.getId());
+        customerInfoUpdate.setUpdateTimeTelephone(customerInfo.getUpdateTimeTelephone());
+        customerInfoUpdate.setUpdateTime(LocalDateTime.now());
         if (Objects.isNull(customerCharacter)) {
             // 新建
             customerCharacterMapper.insert(newCustomerCharacter);
+            customerInfoMapper.updateById(customerInfoUpdate);
         } else {
             // 更新
             if (!areEqual(customerCharacter, newCustomerCharacter)){
                 customerCharacterMapper.updateById(newCustomerCharacter);
+                customerInfoMapper.updateById(customerInfoUpdate);
             }
         }
     }
@@ -232,7 +239,7 @@ public class MessageServiceImpl implements MessageService {
 
         for (Field field : fields) {
             // 跳过 createTime 和 updateTime 字段
-            if ("createTime".equals(field.getName())) {
+            if ("createTime".equals(field.getName()) || "updateTime".equals(field.getName())) {
                 continue;
             }
             field.setAccessible(true);
@@ -465,7 +472,6 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         latestCustomerCharacter.setQuestionCount(questionCount);
-        latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());
     }
 
 
