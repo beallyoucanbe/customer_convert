@@ -173,14 +173,14 @@ public class MessageServiceImpl implements MessageService {
             if (item.getValue() == 0) {
                 continue;
             }
-            complete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue()).append("个\n");
+            complete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
         }
         i = 1;
         for (Map.Entry<String, Integer> item : questions.entrySet()) {
             if (item.getValue() == 0) {
                 continue;
             }
-            incomplete.append(i++).append(". ").append(item.getKey()).append("：当前共计").append(item.getValue()).append("个\n");
+            incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
         }
         String url = "http://172.16.192.61:8086/share/33/dashboard/1";
         String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), incomplete, complete, url, url);
