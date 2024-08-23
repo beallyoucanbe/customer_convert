@@ -129,7 +129,7 @@ def handle_log(start_position, end_position, logger):
             break
         try:
             # 这里过调掉无效请求
-            if any(url_case in line for url_case in valid_url):
+            if 'customer/callback' in line and 'source_id' not in line:
                 continue
             line = line.split(' ')
             http_code = line[10]

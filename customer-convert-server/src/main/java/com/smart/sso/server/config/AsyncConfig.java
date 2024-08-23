@@ -13,15 +13,15 @@ import java.util.concurrent.Executor;
 public class AsyncConfig {
 
     /** Set the ThreadPoolExecutor's core pool size. */
-    @Value("${async.corePoolSize:8}")
+    @Value("${async.corePoolSize:16}")
     private int corePoolSize;
 
     /** Set the ThreadPoolExecutor's maximum pool size. */
-    @Value("${async.maxPoolSize:8}")
+    @Value("${async.maxPoolSize:32}")
     private int maxPoolSize;
 
     /** Set the capacity for the ThreadPoolExecutor's BlockingQueue. */
-    @Value("${async.queueCapacity:10}")
+    @Value("${async.queueCapacity:999}")
     private int queueCapacity;
 
     @Bean
