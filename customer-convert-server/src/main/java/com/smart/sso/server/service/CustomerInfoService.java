@@ -30,7 +30,7 @@ public interface CustomerInfoService {
 
     void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeature);
 
-    void callback(CallBackRequest callBackRequest);
+    void callback(String sourceId);
 
     String getRedirectUrl(String customerId, String activeId, String from, String manager);
 

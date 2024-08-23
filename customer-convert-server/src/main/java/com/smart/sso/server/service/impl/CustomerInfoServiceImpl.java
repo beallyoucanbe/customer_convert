@@ -30,6 +30,7 @@ import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 
 @Service
@@ -59,6 +61,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private ConfigMapper configMapper;
     @Autowired
     private CustomerRelationMapper customerRelationMapper;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     private SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd HH");
     private SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy-MM-dd");
@@ -438,17 +442,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     @Async
-    public void callback(CallBackRequest callBackRequest) {
-        String sourceId = callBackRequest.getSourceId();
+    public void callback(String sourceId) {
         try {
             // 将sourceId 写入文件
             String filePath = "/opt/customer-convert/callback/sourceid.txt";
             CommonUtils.appendTextToFile(filePath, sourceId);
-//            ShellUtils.bashRun("", new HashMap<>());
             String[] params = {sourceId};
             Process process = ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight-main/process_text.py", params.length, params);
             // 等待脚本执行完成
             int exitCode = process.waitFor();
+            String redisKey = SOURCEID_KEY_PREFIX + sourceId;
+            redisTemplate.opsForValue().set(redisKey, "processed");
             log.error("Python脚本执行完成，退出码：" + exitCode);
         } catch (Exception e) {
             // 这里只负责调用对用的脚本

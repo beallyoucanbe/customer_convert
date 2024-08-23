@@ -50,7 +50,7 @@ public class CommonUtils {
 
     public static void appendTextToFile(String filePath, String text) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-            writer.write(text);
+            writer.write(DateUtil.getCurrentDateTime() + "  " + text);
             writer.newLine();
         } catch (IOException e) {
             log.error("保存数据到文件失败");

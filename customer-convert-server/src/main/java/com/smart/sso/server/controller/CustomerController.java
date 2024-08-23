@@ -18,6 +18,7 @@ import com.smart.sso.server.util.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,8 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
+
 @RestController
 @Slf4j
 public class CustomerController {
@@ -41,6 +44,8 @@ public class CustomerController {
     private MessageService messageService;
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -89,7 +94,16 @@ public class CustomerController {
     @ApiOperation(value = "客户识别回调")
     @PostMapping("/customer/callback")
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
-        customerInfoService.callback(callBackRequest);
+        String sourceId = callBackRequest.getSourceId();
+        String redisKey = SOURCEID_KEY_PREFIX + sourceId;
+        // 检查key是否存在于Redis中
+        Boolean hasKey = redisTemplate.hasKey(redisKey);
+        if (Boolean.TRUE.equals(hasKey)) {
+            // key已经存在，说明已经处理过
+            log.error("source id 已存在， 跳过不处理: " + sourceId);
+            return ResultUtils.success(null);
+        }
+        customerInfoService.callback(sourceId);
         return ResultUtils.success(null);
     }
 

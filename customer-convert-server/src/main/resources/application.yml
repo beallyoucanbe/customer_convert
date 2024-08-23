@@ -32,12 +32,10 @@ spring:
     content-type: text/html; charset=utf-8
     template-loader: classpath:/templates
     request-context-attribute: request
-#  redis:
-#    host: 127.0.0.1
-#    port: 6379
-#    password: 123
-#  session:
-#    store-type: redis
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123qwe
 
 sso:
   server:

@@ -16,6 +16,8 @@ public class AppConstant {
 
     public static final String REFRESH_CUSTOMER_COMPLETE_DESCRIBE = "REFRESH_CUSTOMER_COMPLETE_DESCRIBE";
 
+    public static final String SOURCEID_KEY_PREFIX = "processed:";
+
 
     public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE = "您刚和客户**%s**通完电话，该客户的匹配度：**%s**。\n" +
             "\n" +
