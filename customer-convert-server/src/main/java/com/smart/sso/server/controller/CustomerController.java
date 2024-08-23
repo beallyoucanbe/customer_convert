@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
@@ -101,9 +103,28 @@ public class CustomerController {
         if (Boolean.TRUE.equals(hasKey)) {
             // key已经存在，说明已经处理过
             log.error("source id 已存在， 跳过不处理: " + sourceId);
-            return ResultUtils.success(null);
+        } else {
+            customerInfoService.callback(sourceId);
         }
-        customerInfoService.callback(sourceId);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "客户识别回调")
+    @GetMapping("/customer/redis_init")
+    public BaseResponse<Void> redisInit() {
+        String filePath = "/opt/customer-convert/callback/sourceid.txt";
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("2024-08-23")){
+                    continue;
+                }
+                String redisKey = SOURCEID_KEY_PREFIX + line.trim();
+                redisTemplate.opsForValue().set(redisKey, "processed");
+            }
+        } catch (IOException e) {
+            log.error("初始化redis 失败");
+        }
         return ResultUtils.success(null);
     }
 
