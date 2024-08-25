@@ -49,7 +49,6 @@ public class CustomerInfo implements Serializable {
     private String reservedInfo;
     // 预留属性
     private String reservedProperty;
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

@@ -113,19 +113,13 @@ public class MessageServiceImpl implements MessageService {
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
         updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
-        CustomerInfo customerInfoUpdate = new CustomerInfo();
-        customerInfoUpdate.setId(customerInfo.getId());
-        customerInfoUpdate.setUpdateTimeTelephone(customerInfo.getUpdateTimeTelephone());
-        customerInfoUpdate.setUpdateTime(LocalDateTime.now());
         if (Objects.isNull(customerCharacter)) {
             // 新建
             customerCharacterMapper.insert(newCustomerCharacter);
-            customerInfoMapper.updateById(customerInfoUpdate);
         } else {
             // 更新
             if (!areEqual(customerCharacter, newCustomerCharacter)){
                 customerCharacterMapper.updateById(newCustomerCharacter);
-                customerInfoMapper.updateById(customerInfoUpdate);
             }
         }
     }
@@ -214,20 +208,13 @@ public class MessageServiceImpl implements MessageService {
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
         updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
-
-        CustomerInfo customerInfoUpdate = new CustomerInfo();
-        customerInfoUpdate.setId(customerInfo.getId());
-        customerInfoUpdate.setUpdateTimeTelephone(customerInfo.getUpdateTimeTelephone());
-        customerInfoUpdate.setUpdateTime(LocalDateTime.now());
         if (Objects.isNull(customerCharacter)) {
             // 新建
             customerCharacterMapper.insert(newCustomerCharacter);
-            customerInfoMapper.updateById(customerInfoUpdate);
         } else {
             // 更新
             if (!areEqual(customerCharacter, newCustomerCharacter)){
                 customerCharacterMapper.updateById(newCustomerCharacter);
-                customerInfoMapper.updateById(customerInfoUpdate);
             }
         }
     }
@@ -393,21 +380,21 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
         latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getModelRecord()) ? customerFeature.getBasic().getFundsVolume().getModelRecord().toString() : null));
+                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCompareValue()) ? customerFeature.getBasic().getFundsVolume().getCompareValue().toString() : null));
         latestCustomerCharacter.setProfitLossSituation(ProfitLossEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getModelRecord()) ? customerFeature.getBasic().getProfitLossSituation().getModelRecord().toString() : null));
+                Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getCompareValue()) ? customerFeature.getBasic().getProfitLossSituation().getCompareValue().toString() : null));
         latestCustomerCharacter.setEarningDesire(EarningDesireEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getEarningDesire().getModelRecord()) ? customerFeature.getBasic().getEarningDesire().getModelRecord().toString() : null));
+                Objects.nonNull(customerFeature.getBasic().getEarningDesire().getCompareValue()) ? customerFeature.getBasic().getEarningDesire().getCompareValue().toString() : null));
 
-        latestCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord()) ? customerFeature.getRecognition().getCourseTeacherApproval().getModelRecord().toString() : null);
-        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getModelRecord().toString() : null);
-        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getModelRecord()) ? customerFeature.getRecognition().getStockSelectionMethod().getModelRecord().toString() : null);
-        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord()) ? customerFeature.getRecognition().getSelfIssueRecognition().getModelRecord().toString() : null);
-        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord()) ? customerFeature.getRecognition().getSoftwareValueApproval().getModelRecord().toString() : null);
+        latestCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getCompareValue()) ? customerFeature.getRecognition().getCourseTeacherApproval().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getCompareValue()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getCompareValue().toString() : null);
+        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getCompareValue()) ? customerFeature.getRecognition().getStockSelectionMethod().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getCompareValue()) ? customerFeature.getRecognition().getSelfIssueRecognition().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getCompareValue()) ? customerFeature.getRecognition().getSoftwareValueApproval().getCompareValue().toString() : null);
         latestCustomerCharacter.setSoftwarePurchaseAttitude(
-                Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getModelRecord().toString() : null);
-        latestCustomerCharacter.setContinuousLearnApproval(Objects.nonNull(customerFeature.getRecognition().getContinuousLearnApproval().getModelRecord()) ? customerFeature.getRecognition().getContinuousLearnApproval().getModelRecord().toString() : null);
-        latestCustomerCharacter.setLearnNewMethodApproval(Objects.nonNull(customerFeature.getRecognition().getLearnNewMethodApproval().getModelRecord()) ? customerFeature.getRecognition().getLearnNewMethodApproval().getModelRecord().toString() : null);
+                Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getCompareValue()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getCompareValue().toString() : null);
+        latestCustomerCharacter.setContinuousLearnApproval(Objects.nonNull(customerFeature.getRecognition().getContinuousLearnApproval().getCompareValue()) ? customerFeature.getRecognition().getContinuousLearnApproval().getCompareValue().toString() : null);
+        latestCustomerCharacter.setLearnNewMethodApproval(Objects.nonNull(customerFeature.getRecognition().getLearnNewMethodApproval().getCompareValue()) ? customerFeature.getRecognition().getLearnNewMethodApproval().getCompareValue().toString() : null);
 
         List<String> advantages = customerSummary.getSummary().getAdvantage();
         List<String> questions = customerSummary.getSummary().getQuestions();
@@ -478,6 +465,7 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         latestCustomerCharacter.setQuestionCount(questionCount);
+        latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());
     }
 
 
