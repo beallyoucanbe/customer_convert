@@ -151,7 +151,7 @@ public class CustomerController {
     @GetMapping("/customer/send_message")
     public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
         log.error("触发客户的特征更新，id: " + id);
-        messageService.sendNoticeForSingle(id);
+        messageService.updateCustomerCharacter(id);
         return ResultUtils.success(null);
     }
 
