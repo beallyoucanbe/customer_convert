@@ -1202,7 +1202,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
             }
             if (questionCount >= 5) {
-                questionStatus.add("质疑应对失败次数多，需参考调整应对话术");
+                questions.add("质疑应对失败次数多，需参考调整应对话术");
             }
 
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
@@ -1215,8 +1215,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     !(Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
                 questions.add("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解");
             }
-            if (stageStatus.getCompletePurchase() == 0) {
-                questionStatus.add("客户完成购买");
+            if (stageStatus.getCompletePurchase() == 1) {
+                advantage.add("客户完成购买");
             }
 
 
