@@ -17,7 +17,6 @@ import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
-import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
@@ -41,6 +40,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,6 +124,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfoMapper.updateConversionRateById(id, conversionRate);
             customerProfile.setConversionRate(conversionRate);
         }
+        customerProfile.setLastCommunicationDate(new Date(customerInfo.getUpdateTime().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli()));
         return customerProfile;
     }
 

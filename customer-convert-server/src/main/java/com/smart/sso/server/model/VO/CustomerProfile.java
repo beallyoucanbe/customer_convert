@@ -1,5 +1,6 @@
 package com.smart.sso.server.model.VO;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.smart.sso.server.model.CustomerStageStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -14,6 +15,7 @@ public class CustomerProfile {
     private String ownerName ;
     private String currentCampaign ;
     private Integer communicationRounds ;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastCommunicationDate ;
     private Long totalDuration ;
     private CustomerStageStatus customerStage ;
