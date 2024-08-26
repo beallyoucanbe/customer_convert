@@ -142,7 +142,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, customerFeature, customerSummary);
         if (Objects.nonNull(summaryResponse)) {
-            summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus));
+            summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
         }
         return summaryResponse;
     }
@@ -916,7 +916,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return new ArrayList<>(keySummaryContent.values());
     }
 
-    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus) {
+    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummaryResponse summaryResponse) {
         CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
 
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
@@ -939,7 +939,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     if (conversionRate.equals("incomplete") &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                            customerInfo.getCommunicationRounds() >= 1) {
+                            customerInfo.getCommunicationRounds() >= 2) {
                         StringBuilder ttt = new StringBuilder("未完成客户匹配度判断（");
                         List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
                         List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
@@ -979,7 +979,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         }
                         ttt.deleteCharAt(ttt.length() - 1);
                         ttt.append("）");
-                        questions.add("未完成客户匹配度判断");
+                        questions.add("尚未完成客户匹配度判断，需继续收集客户信息");
                     }
                 }
             }
@@ -999,7 +999,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     if (tradingStyle == 0 &&
                             Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                            customerInfo.getCommunicationRounds() >= 1) {
+                            customerInfo.getCommunicationRounds() >= 2) {
 
                         StringBuilder ttt = new StringBuilder("未完成客户交易风格了解（");
                         // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
@@ -1022,7 +1022,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         ttt.deleteCharAt(ttt.length() - 1);
                         ttt.append("）");
                         if (ttt.length() > 15) {
-                            questions.add("未完成客户交易风格了解");
+                            questions.add("尚未完成客户交易风格了解，需继续收集客户信息");
                         }
                     }
                 }
@@ -1034,119 +1034,196 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (conversionRate.equals("high") || conversionRate.equals("medium")) {
                 advantage.add("跟进对的客户");
             } else if (conversionRate.equals("low")) {
-                questions.add("跟进错的客户");
+                questions.add("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户");
             }
 
-            // 功能讲解
-            // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
-            // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
-            if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) &&
-                    (Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) {
-                advantage.add("功能讲解让客户理解");
-            } else if (Objects.nonNull(customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) &&
-                    !(Boolean) customerFeatureResponse.getRecognition().getSoftwareFunctionClarity().getCompareValue()) {
-                questions.add("功能讲解未让客户理解");
+            //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
+            //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
+            if (stageStatus.getMatchingJudgment() == 1 && stageStatus.getTransactionStyle() == 1 && stageStatus.getFunctionIntroduction() == 1) {
+                if (((stageStatus.getConfirmValue() == 0 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
+                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
+                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))){
+                    advantage.add("SOP执行顺序正确");
+                }
+            }
+            Set<String> questionStatus = new TreeSet<>();
+            if (stageStatus.getMatchingJudgment() == 0 &&
+                    (stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                questionStatus.add("客户判断");
+            }
+            if (stageStatus.getTransactionStyle() == 0 &&
+                    (stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                questionStatus.add("交易风格了解");
+            }
+            if (stageStatus.getFunctionIntroduction() == 0 &&
+                    (stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                questionStatus.add("针对性功能介绍");
+            }
+            if (stageStatus.getConfirmValue() == 0 &&
+                    (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0) {
+                questionStatus.add("客户确认价值");
+            }
+            if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0) {
+                questionStatus.add("客户确认购买");
             }
 
-            // 让客户认可价值
-            // 优点：-成功让客户认可价值：相关字段全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
-            // 缺点：-未让客户认可价值：相关字段有一个以上为“否”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”，并列出缺具体哪一项不为“是”（可以用括号放在后面显示）
-            CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
-                    (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue() &&
-                    Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
-                    (Boolean) recognition.getStockSelectionMethod().getCompareValue() &&
-                    Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
-                    (Boolean) recognition.getSelfIssueRecognition().getCompareValue() &&
-                    Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
-                    (Boolean) recognition.getLearnNewMethodApproval().getCompareValue() &&
-                    Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
-                    (Boolean) recognition.getContinuousLearnApproval().getCompareValue() &&
-                    Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
-                    (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
-                advantage.add("成功让客户认可价值");
-            } else {
-                StringBuilder ttt = new StringBuilder("未让客户认可价值（");
-                if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
-                        !(Boolean) recognition.getSoftwareFunctionClarity().getCompareValue()) {
-                    ttt.append("客户对软件功能的清晰度，");
-                }
-                if (Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
-                        !(Boolean) recognition.getStockSelectionMethod().getCompareValue()) {
-                    ttt.append("客户对销售讲的选股方法的认可度，");
-                }
-                if (Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
-                        !(Boolean) recognition.getSelfIssueRecognition().getCompareValue()) {
-                    ttt.append("客户对自身问题及影响的认可度，");
-                }
-                if (Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
-                        !(Boolean) recognition.getLearnNewMethodApproval().getCompareValue()) {
-                    ttt.append("客户对自身问题及影响的认可度，");
-                }
-                if (Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
-                        !(Boolean) recognition.getContinuousLearnApproval().getCompareValue()) {
-                    ttt.append("客户对自身问题及影响的认可度，");
-                }
-                if (Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
-                        !(Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
-                    ttt.append("客户对软件价值的认可度，");
+            if (!CollectionUtils.isEmpty(questionStatus)) {
+                StringBuilder ttt = new StringBuilder("SOP 执行顺序错误，需完成前序任务（缺失：");
+                for (String status : questionStatus) {
+                    ttt.append(status).append("，");
                 }
                 ttt.deleteCharAt(ttt.length() - 1);
                 ttt.append("）");
-                if (ttt.length() > 15) {
-                    questions.add("未让客户认可价值");
+                questions.add(ttt.toString());
+            }
+
+            // 痛点和价值量化
+            // 优点：-完成痛点和价值量化放大：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”都为“是”
+            // 缺点：-尚未完成痛点和价值量化放大，需后续完成：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”不都为“是”（前提条件是通话次数大于等于3）
+            CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
+            if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) && infoExplanation.getCustomerIssuesQuantified().getResult() &&
+                    Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) && infoExplanation.getSoftwareValueQuantified().getResult()) {
+                advantage.add("完成痛点和价值量化放大");
+            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds() >= 3){
+                questions.add("尚未完成痛点和价值量化放大，需后续完成");
+            }
+
+            CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
+            // 功能讲解
+            // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
+            // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
+            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue()) {
+                advantage.add("客户对软件功能理解清晰");
+            } else if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
+                    !(Boolean) recognition.getSoftwareFunctionClarity().getCompareValue()) {
+                questions.add("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解");
+            }
+
+            // 选股方法
+            // 优点：-客户认可选股方法：“客户对业务员讲的选股方法的认可度”的值为“是”
+            // 缺点：-客户对选股方法尚未认可，需加强选股成功的真实案例证明：“客户对业务员讲的选股方法的认可度”的值为“否”
+            if (Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
+                    (Boolean) recognition.getStockSelectionMethod().getCompareValue()) {
+                advantage.add("客户认可选股方法");
+            } else if (Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
+                    !(Boolean) recognition.getStockSelectionMethod().getCompareValue()) {
+                questions.add("客户对选股方法尚未认可，需加强选股成功的真实案例证明");
+            }
+
+            // 自身问题
+            // 优点：-客户认可自身问题：“客户对自身问题及影响的认可度”的值为“是”
+            // 缺点：-客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明：“客户对自身问题及影响的认可度”的值为“否”
+            if (Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
+                    (Boolean) recognition.getSelfIssueRecognition().getCompareValue()) {
+                advantage.add("客户认可自身问题");
+            } else if (Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
+                    !(Boolean) recognition.getSelfIssueRecognition().getCompareValue()) {
+                questions.add("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明");
+            }
+
+            // 价值认可
+            // 优点：-客户认可软件价值：字段（不是阶段）“客户对软件价值的认可度”的值为“是”
+            // 缺点：-客户对软件价值尚未认可，需加强使用软件的真实成功案例证明：字段（不是阶段）“客户对软件价值的认可度”的值为“否”
+            if (Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
+                advantage.add("客户认可软件价值");
+            } else if (Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                    !(Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
+                questions.add("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明");
+            }
+
+            // 缺点：- 质疑应对失败次数多，需参考调整应对话术：单个类别的质疑不认可的对话组数大于等于5
+            int questionCount = 0;
+            CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = summaryResponse.getApprovalAnalysis();
+            if (Objects.nonNull(approvalAnalysis)) {
+                if (Objects.nonNull(approvalAnalysis.getMethod()) && !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getMethod().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getIssue()) && !CollectionUtils.isEmpty(approvalAnalysis.getIssue().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getIssue().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getValue()) && !CollectionUtils.isEmpty(approvalAnalysis.getValue().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getValue().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getPrice()) && !CollectionUtils.isEmpty(approvalAnalysis.getPrice().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getPrice().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getPurchase()) && !CollectionUtils.isEmpty(approvalAnalysis.getPurchase().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getPurchase().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getSoftwareOperation()) && !CollectionUtils.isEmpty(approvalAnalysis.getSoftwareOperation().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getSoftwareOperation().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getCourse()) && !CollectionUtils.isEmpty(approvalAnalysis.getCourse().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getCourse().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getNoMoney()) && !CollectionUtils.isEmpty(approvalAnalysis.getNoMoney().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getNoMoney().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
+                }
+                if (Objects.nonNull(approvalAnalysis.getOthers()) && !CollectionUtils.isEmpty(approvalAnalysis.getOthers().getChats())){
+                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getOthers().getChats()) {
+                        if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
+                            questionCount++;
+                        }
+                    }
                 }
             }
+            if (questionCount >= 5) {
+                questionStatus.add("质疑应对失败次数多，需参考调整应对话术");
+            }
+
+            // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
+            // 缺点：- 客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解：字段“客户对软件价值的认可度”的值为“否”
+            // 优点：- 客户完成购买：阶段“客户完成购买”的值为“是”
+            if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
+                    (Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
+                advantage.add("客户确认购买");
+            } else if (Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
+                    !(Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
+                questions.add("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解");
+            }
+            if (stageStatus.getCompletePurchase() == 0) {
+                questionStatus.add("客户完成购买");
+            }
+
+
         } catch (Exception e) {
             log.error("获取优缺点失败", e);
         }
 
-        //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
-        //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
-        if (stageStatus.getMatchingJudgment() == 1 && stageStatus.getTransactionStyle() == 1 && stageStatus.getFunctionIntroduction() == 1) {
-            if (((stageStatus.getConfirmValue() == 0 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
-                    ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
-                    ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))){
-                advantage.add("SOP执行顺序正确");
-            }
-        }
-        Set<String> questionStatus = new TreeSet<>();
-        if (stageStatus.getMatchingJudgment() == 0 &&
-                (stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
-            questionStatus.add("客户判断");
-        }
-        if (stageStatus.getTransactionStyle() == 0 &&
-                (stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
-            questionStatus.add("交易风格了解");
-        }
-        if (stageStatus.getFunctionIntroduction() == 0 &&
-                (stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
-            questionStatus.add("针对性功能介绍");
-        }
-        if (stageStatus.getConfirmValue() == 0 &&
-                (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0) {
-            questionStatus.add("客户确认价值");
-        }
-        if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0) {
-            questionStatus.add("客户确认购买");
-        }
-
-        if (!CollectionUtils.isEmpty(questionStatus)) {
-            StringBuilder ttt = new StringBuilder("SOP执行顺序错误（缺失：");
-            for (String status : questionStatus) {
-                ttt.append(status).append("，");
-            }
-            ttt.deleteCharAt(ttt.length() - 1);
-            ttt.append("）");
-            questions.add(ttt.toString());
-        }
-
-        // 优点：-收集信息快（涉及时间戳，可考虑先去掉）
-        // 缺点：-收集信息慢（涉及时间戳，可考虑先去掉）
-        //-邀约听课成功：“客户回答自己是否会参加课程”的值为“是”（或者用听课次数和听课时长来判断？）
-        //-邀约听课失败：“客户回答自己是否会参加课程”的值为“否”或空（或者用听课次数和听课时长来判断？）（前提条件是通话次数大于等于1 and 通话总时长大于等于2分钟）
-
-        //-质疑应对失败：单个类别的质疑不认可的对话组数大于等于5，并列出是哪几类的质疑应对失败
         processSummary.setAdvantage(advantage);
         processSummary.setQuestions(questions);
         return processSummary;
