@@ -232,7 +232,7 @@ public class MessageServiceImpl implements MessageService {
 
         for (Field field : fields) {
             // 跳过 createTime 和 updateTime 字段
-            if ("createTime".equals(field.getName()) || "updateTime".equals(field.getName())) {
+            if ("createTime".equals(field.getName())) {
                 continue;
             }
             field.setAccessible(true);
@@ -336,6 +336,7 @@ public class MessageServiceImpl implements MessageService {
         }
         String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s", customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerProfile.getCustomerName(),
+                customerInfo.getCustomerId(),
                 rateDesc,
                 complete,
                 incomplete,

@@ -150,6 +150,7 @@ public class CustomerController {
     @ApiOperation(value = "触发给用户发送通知")
     @GetMapping("/customer/send_message")
     public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
+        log.error("触发客户的特征更新，id: " + id);
         messageService.sendNoticeForSingle(id);
         return ResultUtils.success(null);
     }
