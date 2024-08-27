@@ -308,9 +308,9 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryTransactionStyle("true");
             } else if (item.contains("跟进对的客户")) {
                 latestCustomerCharacter.setSummaryFollowCustomer("true");
-            } else if (item.contains("功能讲解让客户理解")) {
+            } else if (item.contains("客户对软件功能理解清晰")) {
                 latestCustomerCharacter.setSummaryFunctionIntroduction("true");
-            } else if (item.contains("成功让客户认可价值")) {
+            } else if (item.contains("客户认可软件价值")) {
                 latestCustomerCharacter.setSummaryConfirmValue("true");
             } else if (item.contains("执行顺序正确")) {
                 latestCustomerCharacter.setSummaryExecuteOrder("true");
@@ -323,11 +323,11 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryMatchJudgment("false");
             } else if (item.contains("未完成客户交易风格了解")) {
                 latestCustomerCharacter.setSummaryTransactionStyle("false");
-            } else if (item.contains("跟进错的客户")) {
+            } else if (item.contains("跟进匹配度低的客户")) {
                 latestCustomerCharacter.setSummaryFollowCustomer("false");
-            } else if (item.contains("功能讲解未让客户理解")) {
+            } else if (item.contains("客户对软件功能尚未理解清晰")) {
                 latestCustomerCharacter.setSummaryFunctionIntroduction("false");
-            } else if (item.contains("未让客户认可价值")) {
+            } else if (item.contains("客户对软件价值尚未认可")) {
                 latestCustomerCharacter.setSummaryConfirmValue("false");
             } else if (item.contains("执行顺序错误")) {
                 latestCustomerCharacter.setSummaryExecuteOrder("false");
