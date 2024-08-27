@@ -13,7 +13,6 @@ import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.Config;
 import com.smart.sso.server.model.CustomerCharacter;
 import com.smart.sso.server.model.CustomerInfo;
-import com.smart.sso.server.model.CustomerStageStatus;
 import com.smart.sso.server.model.TextMessage;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -37,7 +36,6 @@ import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,64 +206,10 @@ public class MessageServiceImpl implements MessageService {
 
     private void sendMessage(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
-        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
-        CustomerFeatureResponse.Recognition recognition = customerFeature.getRecognition();
-        List<String> completeStatus = new ArrayList<>();
-        List<String> incompleteStatus = new ArrayList<>();
+        CustomerProcessSummaryResponse processSummaryResponse = customerInfoService.queryCustomerProcessSummaryById(id);
+        List<String> completeStatus = processSummaryResponse.getSummary().getAdvantage();
+        List<String> incompleteStatus = processSummaryResponse.getSummary().getQuestions();
 
-        CustomerStageStatus customerStage = customerProfile.getCustomerStage();
-        if (customerStage.getTransactionStyle() == 1) {
-            completeStatus.add("客户交易风格了解");
-        }
-
-        if (Objects.nonNull(recognition.getCourseTeacherApproval().getModelRecord())) {
-            if ((Boolean) recognition.getCourseTeacherApproval().getModelRecord()) {
-                completeStatus.add("客户认可老师和课程");
-            } else {
-                incompleteStatus.add("客户对老师和课程不认可");
-            }
-        }
-        if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getModelRecord())) {
-            if ((Boolean) recognition.getSoftwareFunctionClarity().getModelRecord()) {
-                completeStatus.add("客户理解了软件功能");
-            } else {
-                incompleteStatus.add("客户对软件功能不理解");
-            }
-        }
-        if (Objects.nonNull(recognition.getStockSelectionMethod().getModelRecord())) {
-            if ((Boolean) recognition.getStockSelectionMethod().getModelRecord()) {
-                completeStatus.add("客户认可选股方法");
-            } else {
-                incompleteStatus.add("客户对选股方法不认可");
-            }
-        }
-        if (Objects.nonNull(recognition.getSelfIssueRecognition().getModelRecord())) {
-            if ((Boolean) recognition.getSelfIssueRecognition().getModelRecord()) {
-                completeStatus.add("客户认可自身问题");
-            } else {
-                incompleteStatus.add("客户对自身问题不认可");
-            }
-        }
-        if (Objects.nonNull(recognition.getSoftwareValueApproval().getModelRecord())) {
-            if ((Boolean) recognition.getSoftwareValueApproval().getModelRecord()) {
-                completeStatus.add("客户认可软件价值");
-            } else {
-                incompleteStatus.add("客户对软件价值不认可");
-            }
-        }
-        if (customerStage.getConfirmPurchase() == 1) {
-            completeStatus.add("客户确认购买");
-        }
-        if (customerStage.getCompletePurchase() == 1) {
-            completeStatus.add("客户完成购买");
-        }
-
-        if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getModelRecord())) {
-            if (!(Boolean) recognition.getSoftwarePurchaseAttitude().getModelRecord()) {
-                incompleteStatus.add("客户拒绝购买");
-            }
-        }
         // 优缺点都是空，不发送
         if (CollectionUtils.isEmpty(completeStatus) && CollectionUtils.isEmpty(incompleteStatus)) {
             return;
@@ -287,13 +231,13 @@ public class MessageServiceImpl implements MessageService {
             incomplete.append("暂无");
         }
         String rateDesc;
-        if (customerProfile.getConversionRate().equals("low")){
-            rateDesc = conversionRateMap.get(customerProfile.getConversionRate()) + "（不应重点跟进）";
+        if (customerInfo.getConversionRate().equals("low")){
+            rateDesc = conversionRateMap.get(customerInfo.getConversionRate()) + "（不应重点跟进）";
         } else {
-            rateDesc = conversionRateMap.get(customerProfile.getConversionRate());
+            rateDesc = conversionRateMap.get(customerInfo.getConversionRate());
         }
         String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s", customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
-        String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerProfile.getCustomerName(),
+        String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerInfo.getCustomerName(),
                 customerInfo.getCustomerId(),
                 rateDesc,
                 complete,

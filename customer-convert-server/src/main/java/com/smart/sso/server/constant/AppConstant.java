@@ -21,9 +21,9 @@ public class AppConstant {
 
     public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE = "您刚和客户**%s（客户id：%s）**通完电话，该客户的匹配度：**%s**。\n" +
             "\n" +
-            "### 本次通话已完成：\n" +
+            "### 截至本次通话已完成：\n" +
             "<font color=\"warning\">%s</font>\n" +
-            "### 本次通话遗留问题，待下次通话解决：\n" +
+            "### 截至本次通话遗留事项，待下次通话解决：\n" +
             "<font color=\"info\">%s</font>\n" +
             "详细内容链接：[%s](%s)";
 
