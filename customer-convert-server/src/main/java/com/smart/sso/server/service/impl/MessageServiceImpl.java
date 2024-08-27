@@ -210,8 +210,8 @@ public class MessageServiceImpl implements MessageService {
         List<String> completeStatus = processSummaryResponse.getSummary().getAdvantage();
         List<String> incompleteStatus = processSummaryResponse.getSummary().getQuestions();
 
-        // 优缺点都是空，不发送
-        if (CollectionUtils.isEmpty(completeStatus) && CollectionUtils.isEmpty(incompleteStatus)) {
+        // 优点是空，不发送
+        if (CollectionUtils.isEmpty(completeStatus)) {
             return;
         }
         StringBuilder complete = new StringBuilder();
