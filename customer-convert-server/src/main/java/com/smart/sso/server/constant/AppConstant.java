@@ -27,10 +27,10 @@ public class AppConstant {
             "<font color=\"info\">%s</font>\n" +
             "详细内容链接：[%s](%s)";
 
-    public static final String LEADER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您团队的半日报更新。截至%s:\n" +
-            "### 【问题】\n" +
-            "<font color=\"info\">%s</font>\n" +
+    public static final String LEADER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您团队的半日报更新。自上次半日报至%s:\n" +
             "### 【进展】\n" +
             "<font color=\"warning\">%s</font>\n" +
+            "### 【待处理】\n" +
+            "<font color=\"info\">%s</font>\n" +
             "详细内容链接：[%s](%s)";
 }

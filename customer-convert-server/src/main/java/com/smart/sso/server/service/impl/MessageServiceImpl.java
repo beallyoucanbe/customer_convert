@@ -130,7 +130,7 @@ public class MessageServiceImpl implements MessageService {
             incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
         }
         String url = "http://172.16.192.61:8086/share/33/dashboard/1";
-        String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), incomplete, complete, url, url);
+        String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
 
         // 获取要发送的url
         QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();

@@ -1206,24 +1206,21 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
 
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
-            // 缺点：- 客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解：字段“客户对软件价值的认可度”的值为“否”
+            // 缺点：- 客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解：字段“客户对购买软件的态度”的值为“否”
             // 优点：- 客户完成购买：阶段“客户完成购买”的值为“是”
             if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
                     (Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
                 advantage.add("客户确认购买");
-            } else if (Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
-                    !(Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
+            } else if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
+                    !(Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
                 questions.add("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解");
             }
             if (stageStatus.getCompletePurchase() == 1) {
                 advantage.add("客户完成购买");
             }
-
-
         } catch (Exception e) {
             log.error("获取优缺点失败", e);
         }
-
         processSummary.setAdvantage(advantage);
         processSummary.setQuestions(questions);
         return processSummary;
