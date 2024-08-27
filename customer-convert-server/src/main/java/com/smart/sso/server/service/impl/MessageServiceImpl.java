@@ -167,7 +167,7 @@ public class MessageServiceImpl implements MessageService {
         } else {
             // 更新
             if (!areEqual(customerCharacter, newCustomerCharacter)){
-                customerCharacterMapper.updateById(newCustomerCharacter);
+                customerCharacterMapper.updateAllFields(newCustomerCharacter);
             }
         }
     }
