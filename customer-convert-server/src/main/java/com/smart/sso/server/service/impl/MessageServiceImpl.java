@@ -316,6 +316,8 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryExecuteOrder("true");
             } else if (item.contains("邀约听课成功")) {
                 latestCustomerCharacter.setSummaryInvitCourse("true");
+            } else if (item.contains("完成痛点和价值量化放大")) {
+                latestCustomerCharacter.setIssuesValueQuantified("true");
             }
         }
         for (String item : questions) {
@@ -333,6 +335,10 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryExecuteOrder("false");
             } else if (item.contains("邀约听课失败")) {
                 latestCustomerCharacter.setSummaryInvitCourse("false");
+            } else if (item.contains("未完成痛点和价值量化放大")) {
+                latestCustomerCharacter.setIssuesValueQuantified("false");
+            } else if (item.contains("质疑应对失败次数多")) {
+                latestCustomerCharacter.setDoubtFrequent("true");
             }
         }
         // 总结质疑应对中

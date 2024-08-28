@@ -54,6 +54,8 @@ public class CustomerCharacter implements Serializable {
     private String summaryConfirmValue;
     private String summaryExecuteOrder;
     private String summaryInvitCourse;
+    private String issuesValueQuantified;
+    private String doubtFrequent;
 
     private Integer questionCount;
 
