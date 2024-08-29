@@ -87,7 +87,7 @@ public class MessageServiceImpl implements MessageService {
         QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
         queryWrapper1.in("owner_name", members);
         queryWrapper1.in("current_campaign", currentCampaign);
-        queryWrapper1.gt("update_time", dateTime);
+        queryWrapper1.gt("update_time_telephone", dateTime);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
         Map<String, Integer> questions = new LinkedHashMap<>();
         questions.put("未完成客户匹配度判断", 0);
@@ -185,7 +185,7 @@ public class MessageServiceImpl implements MessageService {
 
         for (Field field : fields) {
             // 跳过 createTime 和 updateTime 字段
-            if ("createTime".equals(field.getName())) {
+            if ("createTime".equals(field.getName()) || "update_time_telephone".equals(field.getName())) {
                 continue;
             }
             field.setAccessible(true);

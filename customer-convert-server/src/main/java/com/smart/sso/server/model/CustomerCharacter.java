@@ -61,5 +61,6 @@ public class CustomerCharacter implements Serializable {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    private LocalDateTime  updateTime;
+    private LocalDateTime updateTime;
+    private LocalDateTime updateTimeTelephone;
 }
