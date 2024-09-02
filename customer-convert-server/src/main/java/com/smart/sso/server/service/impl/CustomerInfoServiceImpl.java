@@ -537,6 +537,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public String getChatContent(String path) {
         String filePath = "/opt/customer-convert/callback/files/" + path; // 文件路径
         StringBuilder content = new StringBuilder();
+        content.append("源文件名：").append(path).append(System.lineSeparator());
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = br.readLine()) != null) {
