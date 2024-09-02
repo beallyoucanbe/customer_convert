@@ -90,21 +90,26 @@ public class MessageServiceImpl implements MessageService {
         queryWrapper1.gt("update_time_telephone", dateTime);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
         Map<String, Integer> questions = new LinkedHashMap<>();
-        questions.put("未完成客户匹配度判断", 0);
-        questions.put("跟进错的客户", 0);
-        questions.put("未完成客户交易风格了解", 0);
-        questions.put("未完成针对性介绍功能", 0);
-        questions.put("客户对老师和课程不认可", 0);
-        questions.put("客户对软件功能不理解", 0);
-        questions.put("客户对选股方法不认可", 0);
-        questions.put("客户对自身问题不认可", 0);
-        questions.put("客户对软件价值不认可", 0);
-        questions.put("客户拒绝购买", 0);
+        questions.put("尚未完成客户资金体量收集，需继续收集客户信息", 0);
+        questions.put("尚未完成客户匹配度判断，需继续收集客户信息", 0);
+        questions.put("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 0);
+        questions.put("尚未完成客户交易风格了解，需继续收集客户信息", 0);
+        questions.put("SOP执行顺序错误，需完成前序任务", 0);
+        questions.put("尚未完成痛点和价值量化放大，需后续完成", 0);
+        questions.put("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解", 0);
+        questions.put("客户对选股方法尚未认可，需加强选股成功的真实案例证明", 0);
+        questions.put("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 0);
+        questions.put("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明", 0);
+        questions.put("质疑应对失败次数多，需参考调整应对话", 0);
+        questions.put("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解", 0);
         Map<String, Integer> advantages = new LinkedHashMap<>();
+        advantages.put("完成客户资金体量收集", 0);
         advantages.put("完成客户匹配度判断", 0);
+        advantages.put("跟进对的客户", 0);
         advantages.put("完成客户交易风格了解", 0);
-        advantages.put("客户认可老师和课程", 0);
-        advantages.put("客户理解了软件功能", 0);
+        advantages.put("SOP执行顺序正确", 0);
+        advantages.put("痛点和价值量化放大", 0);
+        advantages.put("客户对软件功能理解清晰", 0);
         advantages.put("客户认可选股方法", 0);
         advantages.put("客户认可自身问题", 0);
         advantages.put("客户认可软件价值", 0);
@@ -129,7 +134,7 @@ public class MessageServiceImpl implements MessageService {
             }
             incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
         }
-        String url = "http://172.16.192.61:8086/share/33/dashboard/1";
+        String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
         String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
 
         // 获取要发送的url
@@ -236,7 +241,7 @@ public class MessageServiceImpl implements MessageService {
         } else {
             rateDesc = conversionRateMap.get(customerInfo.getConversionRate());
         }
-        String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s", customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerInfo.getCustomerName(),
                 customerInfo.getCustomerId(),
                 rateDesc,
@@ -392,17 +397,12 @@ public class MessageServiceImpl implements MessageService {
             if (character.getMatchingJudgmentStage()) {
                 advantages.merge("完成客户匹配度判断", 1, Integer::sum);
             } else {
-                questions.merge("未完成客户匹配度判断", 1, Integer::sum);
+                questions.merge("尚未完成客户匹配度判断，需继续收集客户信息", 1, Integer::sum);
             }
             if (character.getTransactionStyleStage()) {
                 advantages.merge("完成客户交易风格了解", 1, Integer::sum);
             } else {
-                questions.merge("未完成客户交易风格了解", 1, Integer::sum);
-            }
-            if (character.getFunctionIntroductionStage()) {
-                advantages.merge("完成客户交易风格了解", 1, Integer::sum);
-            } else {
-                questions.merge("未完成针对性介绍功能", 1, Integer::sum);
+                questions.merge("尚未完成客户交易风格了解，需继续收集客户信息", 1, Integer::sum);
             }
             if (character.getConfirmPurchaseStage()) {
                 advantages.merge("客户确认购买", 1, Integer::sum);
@@ -411,33 +411,54 @@ public class MessageServiceImpl implements MessageService {
                 advantages.merge("客户完成购买", 1, Integer::sum);
             }
 
-            if (!StringUtils.isEmpty(character.getCourseTeacherApproval()) &&
-                    Boolean.parseBoolean(character.getCourseTeacherApproval())) {
-                advantages.merge("客户认可老师和课程", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getCourseTeacherApproval()) &&
-                    !Boolean.parseBoolean(character.getCourseTeacherApproval())) {
-                questions.merge("客户对老师和课程不认可", 1, Integer::sum);
+            if (!StringUtils.isEmpty(character.getFundsVolume())) {
+                advantages.merge("完成客户资金体量收集", 1, Integer::sum);
+            } else {
+                questions.merge("尚未完成客户资金体量收集，需继续收集客户信息", 1, Integer::sum);
+            }
+
+            if (!StringUtils.isEmpty(character.getConversionRate())){
+                if (character.getConversionRate().equals("high") || character.getConversionRate().equals("medium")) {
+                    advantages.merge("跟进对的客户", 1, Integer::sum);
+                } else if (character.getConversionRate().equals("low")) {
+                    questions.merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
+                }
+            }
+
+            if (!StringUtils.isEmpty(character.getSummaryExecuteOrder()) &&
+                    Boolean.parseBoolean(character.getSummaryExecuteOrder())) {
+                advantages.merge("SOP执行顺序正确", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getSummaryExecuteOrder()) &&
+                    !Boolean.parseBoolean(character.getSummaryExecuteOrder())) {
+                questions.merge("SOP执行顺序错误，需完成前序任务", 1, Integer::sum);
+            }
+            if (!StringUtils.isEmpty(character.getIssuesValueQuantified()) &&
+                    Boolean.parseBoolean(character.getIssuesValueQuantified())) {
+                advantages.merge("痛点和价值量化放大", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getIssuesValueQuantified()) &&
+                    !Boolean.parseBoolean(character.getIssuesValueQuantified())) {
+                questions.merge("尚未完成痛点和价值量化放大，需后续完成", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) &&
                     Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                advantages.merge("客户理解了软件功能", 1, Integer::sum);
+                advantages.merge("客户对软件功能理解清晰", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) &&
                     !Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                questions.merge("客户对软件功能不理解", 1, Integer::sum);
+                questions.merge("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getStockSelectionMethod()) &&
                     Boolean.parseBoolean(character.getStockSelectionMethod())) {
                 advantages.merge("客户认可选股方法", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getStockSelectionMethod()) &&
                     !Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                questions.merge("客户对选股方法不认可", 1, Integer::sum);
+                questions.merge("客户对选股方法尚未认可，需加强选股成功的真实案例证明", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) &&
                     Boolean.parseBoolean(character.getSelfIssueRecognition())) {
                 advantages.merge("客户认可自身问题", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) &&
                     !Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                questions.merge("客户对自身问题不认可", 1, Integer::sum);
+                questions.merge("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) &&
                     Boolean.parseBoolean(character.getSoftwareValueApproval())) {
@@ -451,8 +472,11 @@ public class MessageServiceImpl implements MessageService {
                 questions.merge("客户拒绝购买", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
+                    Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
+                advantages.merge("跟进对的客户", 1, Integer::sum);
+            } else if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
                     !Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
-                questions.merge("跟进错的客户", 1, Integer::sum);
+                questions.merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
             }
         }
     }
