@@ -38,4 +38,6 @@ public interface CustomerInfoService {
 
     String getChatContent(String path);
 
+    void updateCharacterCostTime(String id);
+
 }

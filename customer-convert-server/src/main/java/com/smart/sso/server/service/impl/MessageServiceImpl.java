@@ -384,6 +384,11 @@ public class MessageServiceImpl implements MessageService {
         }
         for (CustomerCharacter character : characterList) {
             sendMessage(character.getId());
+            try {
+                customerInfoService.updateCharacterCostTime(character.getId());
+            } catch (Exception e) {
+                log.error("更新特征的提取时间失败：" + character.getId());
+            }
             if (character.getMatchingJudgmentStage()) {
                 advantages.merge("完成客户匹配度判断", 1, Integer::sum);
             } else {

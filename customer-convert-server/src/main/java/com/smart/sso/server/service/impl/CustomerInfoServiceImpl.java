@@ -9,11 +9,13 @@ import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.enums.ProfitLossEnum;
+import com.smart.sso.server.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.CustomerRelationMapper;
 import com.smart.sso.server.mapper.CustomerSummaryMapper;
+import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -61,6 +63,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private ConfigMapper configMapper;
     @Autowired
     private CustomerRelationMapper customerRelationMapper;
+    @Autowired
+    private TelephoneRecordMapper telephoneRecordMapper;
+    @Autowired
+    private CharacterCostTimeMapper characterCostTimeMapper;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     private SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -541,6 +547,158 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         return content.toString();
     }
+
+    @Override
+    public void updateCharacterCostTime(String id) {
+        // 总结各个特征的花费的时间
+        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
+        QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
+        queryWrapperInfo.eq("customer_id", customerInfo.getCustomerId());
+        queryWrapperInfo.orderByAsc("communication_time");
+        // 查看该客户的所有通话记录，并且按照顺序排列
+        List<TelephoneRecord> customerFeatureList = telephoneRecordMapper.selectList(queryWrapperInfo);
+        CharacterCostTime characterCostTime = new CharacterCostTime();
+        characterCostTime.setId(customerInfo.getId());
+        characterCostTime.setCustomerId(customerInfo.getCustomerId());
+        characterCostTime.setCustomerName(customerInfo.getCustomerName());
+        characterCostTime.setOwnerId(customerInfo.getOwnerId());
+        characterCostTime.setOwnerName(customerInfo.getOwnerName());
+        int communicationTime = 0; // 累计通话时间
+        int communicationRound = 1; // 累计通话轮次
+        for (TelephoneRecord telephoneRecord : customerFeatureList) {
+            // 该次通话有记录特征提取的时间，并且之前没有记录过
+            if (Objects.nonNull(telephoneRecord.getTimeFundsVolume()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeFundsVolume().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundFundsVolume())) {
+                characterCostTime.setCommunicationDurationFundsVolume(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeFundsVolume().getTs()));
+                characterCostTime.setCommunicationRoundFundsVolume(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeEarningDesire()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeEarningDesire().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundEarningDesire())) {
+                characterCostTime.setCommunicationDurationFearningDesire(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeEarningDesire().getTs()));
+                characterCostTime.setCommunicationRoundEarningDesire(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeCourseTeacherApproval()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeCourseTeacherApproval().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundCourseTeacherApproval())) {
+                characterCostTime.setCommunicationDurationCourseTeacherApproval(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeCourseTeacherApproval().getTs()));
+                characterCostTime.setCommunicationRoundCourseTeacherApproval(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeSoftwareFunctionClarity()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwareFunctionClarity().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwareFunctionClarity())) {
+                characterCostTime.setCommunicationDurationSoftwareFunctionClarity(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeSoftwareFunctionClarity().getTs()));
+                characterCostTime.setCommunicationRoundSoftwareFunctionClarity(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeStockSelectionMethod()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeStockSelectionMethod().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundStockSelectionMethod())) {
+                characterCostTime.setCommunicationDurationStockSelectionMethod(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeStockSelectionMethod().getTs()));
+                characterCostTime.setCommunicationRoundStockSelectionMethod(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeSelfIssueRecognition()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeSelfIssueRecognition().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundSelfIssueRecognition())) {
+                characterCostTime.setCommunicationDurationSelfIssueRecognition(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeSelfIssueRecognition().getTs()));
+                characterCostTime.setCommunicationRoundSelfIssueRecognition(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeLearnNewMethodApproval()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeLearnNewMethodApproval().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundLearnNewMethodApproval())) {
+                characterCostTime.setCommunicationDurationLearnNewMethodApproval(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeLearnNewMethodApproval().getTs()));
+                characterCostTime.setCommunicationRoundLearnNewMethodApproval(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeContinuousLearnApproval()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeContinuousLearnApproval().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundContinuousLearnApproval())) {
+                characterCostTime.setCommunicationDurationContinuousLearnApproval(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeContinuousLearnApproval().getTs()));
+                characterCostTime.setCommunicationRoundContinuousLearnApproval(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeSoftwareValueApproval()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwareValueApproval().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwareValueApproval())) {
+                characterCostTime.setCommunicationDurationSoftwareValueApproval(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeSoftwareValueApproval().getTs()));
+                characterCostTime.setCommunicationRoundSoftwareValueApproval(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwarePurchaseAttitude().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwarePurchaseAttitude())) {
+                characterCostTime.setCommunicationDurationSoftwarePurchaseAttitude(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeSoftwarePurchaseAttitude().getTs()));
+                characterCostTime.setCommunicationRoundSoftwarePurchaseAttitude(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeCustomerIssuesQuantified()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeCustomerIssuesQuantified().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundCustomerIssuesQuantified())) {
+                characterCostTime.setCommunicationDurationCustomerIssuesQuantified(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeCustomerIssuesQuantified().getTs()));
+                characterCostTime.setCommunicationRoundCustomerIssuesQuantified(communicationRound);
+            }
+            if (Objects.nonNull(telephoneRecord.getTimeSoftwareValueQuantified()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwareValueQuantified().getTs()) &&
+                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwareValueQuantified())) {
+                characterCostTime.setCommunicationDurationSoftwareValueQuantified(communicationTime +
+                        Integer.parseInt(telephoneRecord.getTimeSoftwareValueQuantified().getTs()));
+                characterCostTime.setCommunicationRoundSoftwareValueQuantified(communicationRound);
+            }
+            communicationRound++;
+            communicationTime += telephoneRecord.getCommunicationDuration();
+        }
+        // 是否发生变化，有变化则更新
+        CharacterCostTime oldCharacterCostTime = characterCostTimeMapper.selectById(id);
+        if (Objects.isNull(oldCharacterCostTime)) {
+            // 新建
+            characterCostTimeMapper.insert(characterCostTime);
+        } else {
+            // 更新
+            if (!areEqual(oldCharacterCostTime, characterCostTime)) {
+                characterCostTimeMapper.updateById(characterCostTime);
+            }
+        }
+    }
+
+    public boolean areEqual(CharacterCostTime cc1, CharacterCostTime cc2) {
+        if (cc1 == cc2) {
+            return true;
+        }
+        if (cc1 == null || cc2 == null) {
+            return false;
+        }
+
+        // 获取CustomerCharacter类的所有字段
+        Field[] fields = CharacterCostTime.class.getDeclaredFields();
+
+        for (Field field : fields) {
+            // 跳过 createTime 和 updateTime 字段
+            if ("createTime".equals(field.getName()) || "update_time".equals(field.getName())) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                // 获取两个对象的字段值
+                Object value1 = field.get(cc1);
+                Object value2 = field.get(cc2);
+                if (!Objects.equals(value1, value2)) { // 比较字段值，如果不相等，返回 false
+                    return false;
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {
         return customerInfoList.stream().map(item -> {
@@ -1039,24 +1197,39 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
             //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
             //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
-            if (stageStatus.getMatchingJudgment() == 1 && stageStatus.getTransactionStyle() == 1 && stageStatus.getFunctionIntroduction() == 1) {
-                if (((stageStatus.getConfirmValue() == 0 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
-                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() == 0)) ||
-                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))){
+            if (stageStatus.getMatchingJudgment() == 1 &&
+                    stageStatus.getTransactionStyle() == 1 &&
+                    stageStatus.getFunctionIntroduction() == 1) {
+                if (((stageStatus.getConfirmValue() == 0 &&
+                        stageStatus.getConfirmPurchase() == 0 &&
+                        stageStatus.getCompletePurchase() == 0)) ||
+                        ((stageStatus.getConfirmValue() == 1 &&
+                                stageStatus.getConfirmPurchase() == 0 &&
+                                stageStatus.getCompletePurchase() == 0)) ||
+                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))) {
                     advantage.add("SOP执行顺序正确");
                 }
             }
             Set<String> questionStatus = new TreeSet<>();
             if (stageStatus.getMatchingJudgment() == 0 &&
-                    (stageStatus.getTransactionStyle() + stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                    (stageStatus.getTransactionStyle() +
+                            stageStatus.getFunctionIntroduction() +
+                            stageStatus.getConfirmValue() +
+                            stageStatus.getConfirmPurchase() +
+                            stageStatus.getCompletePurchase()) > 0) {
                 questionStatus.add("客户判断");
             }
             if (stageStatus.getTransactionStyle() == 0 &&
-                    (stageStatus.getFunctionIntroduction() + stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                    (stageStatus.getFunctionIntroduction() +
+                            stageStatus.getConfirmValue() +
+                            stageStatus.getConfirmPurchase() +
+                            stageStatus.getCompletePurchase()) > 0) {
                 questionStatus.add("交易风格了解");
             }
             if (stageStatus.getFunctionIntroduction() == 0 &&
-                    (stageStatus.getConfirmValue() + stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0){
+                    (stageStatus.getConfirmValue() +
+                            stageStatus.getConfirmPurchase() +
+                            stageStatus.getCompletePurchase()) > 0) {
                 questionStatus.add("针对性功能介绍");
             }
             if (stageStatus.getConfirmValue() == 0 &&
@@ -1081,10 +1254,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-完成痛点和价值量化放大：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”都为“是”
             // 缺点：-尚未完成痛点和价值量化放大，需后续完成：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”不都为“是”（前提条件是通话次数大于等于3）
             CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-            if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) && infoExplanation.getCustomerIssuesQuantified().getResult() &&
-                    Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) && infoExplanation.getSoftwareValueQuantified().getResult()) {
+            if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
+                    infoExplanation.getCustomerIssuesQuantified().getResult() &&
+                    Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
+                    infoExplanation.getSoftwareValueQuantified().getResult()) {
                 advantage.add("完成痛点和价值量化放大");
-            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) && customerInfo.getCommunicationRounds() >= 3){
+            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                    customerInfo.getCommunicationRounds() >= 3) {
                 questions.add("尚未完成痛点和价值量化放大，需后续完成");
             }
 
@@ -1137,63 +1313,72 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             int questionCount = 0;
             CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = summaryResponse.getApprovalAnalysis();
             if (Objects.nonNull(approvalAnalysis)) {
-                if (Objects.nonNull(approvalAnalysis.getMethod()) && !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getMethod()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getMethod().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getIssue()) && !CollectionUtils.isEmpty(approvalAnalysis.getIssue().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getIssue()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getIssue().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getIssue().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getValue()) && !CollectionUtils.isEmpty(approvalAnalysis.getValue().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getValue()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getValue().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getValue().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getPrice()) && !CollectionUtils.isEmpty(approvalAnalysis.getPrice().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getPrice()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getPrice().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getPrice().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getPurchase()) && !CollectionUtils.isEmpty(approvalAnalysis.getPurchase().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getPurchase()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getPurchase().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getPurchase().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getSoftwareOperation()) && !CollectionUtils.isEmpty(approvalAnalysis.getSoftwareOperation().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getSoftwareOperation()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getSoftwareOperation().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getSoftwareOperation().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getCourse()) && !CollectionUtils.isEmpty(approvalAnalysis.getCourse().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getCourse()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getCourse().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getCourse().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getNoMoney()) && !CollectionUtils.isEmpty(approvalAnalysis.getNoMoney().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getNoMoney()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getNoMoney().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getNoMoney().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
                     }
                 }
-                if (Objects.nonNull(approvalAnalysis.getOthers()) && !CollectionUtils.isEmpty(approvalAnalysis.getOthers().getChats())){
+                if (Objects.nonNull(approvalAnalysis.getOthers()) &&
+                        !CollectionUtils.isEmpty(approvalAnalysis.getOthers().getChats())) {
                     for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getOthers().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;

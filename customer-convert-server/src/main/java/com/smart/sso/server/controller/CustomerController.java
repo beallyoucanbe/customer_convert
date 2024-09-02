@@ -152,6 +152,7 @@ public class CustomerController {
     public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
         log.error("触发客户的特征更新，id: " + id);
         messageService.updateCustomerCharacter(id);
+        customerInfoService.updateCharacterCostTime(id);
         return ResultUtils.success(null);
     }
 
