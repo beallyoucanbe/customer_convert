@@ -19,7 +19,7 @@ public class AppConstant {
     public static final String SOURCEID_KEY_PREFIX = "processed:";
 
 
-    public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE = "您刚和客户**%s（客户id：%s）**通完电话，该客户的匹配度：**%s**。\n" +
+    public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE_BAK = "您刚和客户**%s（客户id：%s）**通完电话，该客户的匹配度：**%s**。\n" +
             "\n" +
             "### 截至本次通话已完成：\n" +
             "<font color=\"warning\">%s</font>\n" +
@@ -28,6 +28,14 @@ public class AppConstant {
             "详细内容链接：[%s](%s)";
 
     public static final String LEADER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您团队的半日报更新。自上次半日报至%s:\n" +
+            "### 【进展】\n" +
+            "<font color=\"warning\">%s</font>\n" +
+            "### 【待完成】\n" +
+            "<font color=\"info\">%s</font>\n" +
+            "详细内容链接：[%s](%s)";
+
+
+    public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您的半日报更新。自上次半日报至%s:\n" +
             "### 【进展】\n" +
             "<font color=\"warning\">%s</font>\n" +
             "### 【待完成】\n" +

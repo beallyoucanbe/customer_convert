@@ -110,36 +110,12 @@ public class SchedulTask {
 
     /**
      * 每天9点，12点和18点执行团队总结任务
-     * 以下是您团队的半日报更新。截至X月X日XX：XX：
-     * 【问题】
-     * 未完成客户匹配度判断：当前共计30个
-     * 跟进错的客户：当前共计10个
-     * 未完成客户交易风格了解：当前共计9个
-     * 未完成针对性介绍功能：当前共计15个
-     * 客户对老师和课程不认可：当前共计15个
-     * 客户对软件功能不理解：当前共计15个
-     * 客户对选股方法不认可：当前共计15个
-     * 客户对自身问题不认可：当前共计15个
-     * 客户对软件价值不认可：当前共计15个
-     * 客户拒绝购买：当前共计15个
-     * <p>
-     * 【进展】
-     * 完成客户匹配度判断：当前共计30个
-     * 完成客户交易风格了解：当前共计9个
-     * 客户认可老师和课程：当前共计20个
-     * 客户理解了软件功能：当前共计20个
-     * 客户认可选股方法：当前共计20个
-     * 客户认可自身问题：当前共计20个
-     * 客户认可软件价值：当前共计20个
-     * 客户确认购买：当前共计9个
-     * 客户完成购买：当前共计5个
-     * 详细内容链接：http://xxxxxxxxx（BI对应看板页面链接）
      */
     @Scheduled(cron = "0 0 9,12,18 * * ?")
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
-        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        LocalDateTime dateTime = LocalDateTime.of(2024, 9, 1, 12, 0, 0);
         QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
         // 筛选时间
         queryWrapperInfo.gt("update_time", dateTime);

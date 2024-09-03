@@ -458,12 +458,12 @@ public class MessageServiceImpl implements MessageService {
                 summaryMessage.getQuestions().merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
             }
 
-            if (ownerSummaryMessages.containsKey(character.getOwnerId())){
-                ownerSummaryMessages.get(character.getOwnerId()).add(summaryMessage);
+            if (ownerSummaryMessages.containsKey(character.getOwnerName())){
+                ownerSummaryMessages.get(character.getOwnerName()).add(summaryMessage);
             } else {
                 List<SummaryMessage> messageList = new ArrayList<>();
                 messageList.add(summaryMessage);
-                ownerSummaryMessages.put(character.getOwnerId(), messageList);
+                ownerSummaryMessages.put(character.getOwnerName(), messageList);
             }
         }
         // 统计个人的消息，发送
@@ -496,8 +496,28 @@ public class MessageServiceImpl implements MessageService {
                 }
                 incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
             }
+
             String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
-            String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
+            String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
+
+            // 获取要发送的url
+            QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
+            queryWrapper2.eq("name", entry.getKey());
+            Config config = configMapper.selectOne(queryWrapper2);
+            String notifyUrl;
+            if (Objects.isNull(config)) {
+                log.error("没有配置该销售的报警url，暂不发送");
+                return;
+            } else {
+                notifyUrl = config.getValue();
+            }
+            TextMessage textMessage = new TextMessage();
+            TextMessage.TextContent textContent = new TextMessage.TextContent();
+            textContent.setContent(message);
+            textMessage.setMsgtype("markdown");
+            textMessage.setMarkdown(textContent);
+            sendMessageToChat(notifyUrl, textMessage);
         }
     }
 }
