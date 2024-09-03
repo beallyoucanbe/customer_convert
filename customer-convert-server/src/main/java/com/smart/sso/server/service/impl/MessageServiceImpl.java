@@ -10,10 +10,7 @@ import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
-import com.smart.sso.server.model.Config;
-import com.smart.sso.server.model.CustomerCharacter;
-import com.smart.sso.server.model.CustomerInfo;
-import com.smart.sso.server.model.TextMessage;
+import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
@@ -36,10 +33,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 
 @Service
@@ -89,46 +83,33 @@ public class MessageServiceImpl implements MessageService {
         queryWrapper1.in("current_campaign", currentCampaign);
         queryWrapper1.gt("update_time_telephone", dateTime);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
-        Map<String, Integer> questions = new LinkedHashMap<>();
-        questions.put("尚未完成客户资金体量收集，需继续收集客户信息", 0);
-        questions.put("尚未完成客户匹配度判断，需继续收集客户信息", 0);
-        questions.put("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 0);
-        questions.put("尚未完成客户交易风格了解，需继续收集客户信息", 0);
-        questions.put("SOP执行顺序错误，需完成前序任务", 0);
-        questions.put("尚未完成痛点和价值量化放大，需后续完成", 0);
-        questions.put("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解", 0);
-        questions.put("客户对选股方法尚未认可，需加强选股成功的真实案例证明", 0);
-        questions.put("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 0);
-        questions.put("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明", 0);
-        questions.put("质疑应对失败次数多，需参考调整应对话", 0);
-        questions.put("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解", 0);
-        Map<String, Integer> advantages = new LinkedHashMap<>();
-        advantages.put("完成客户资金体量收集", 0);
-        advantages.put("完成客户匹配度判断", 0);
-        advantages.put("跟进对的客户", 0);
-        advantages.put("完成客户交易风格了解", 0);
-        advantages.put("SOP执行顺序正确", 0);
-        advantages.put("痛点和价值量化放大", 0);
-        advantages.put("客户对软件功能理解清晰", 0);
-        advantages.put("客户认可选股方法", 0);
-        advantages.put("客户认可自身问题", 0);
-        advantages.put("客户认可软件价值", 0);
-        advantages.put("客户确认购买", 0);
-        advantages.put("客户完成购买", 0);
+        Map<String, List<SummaryMessage>> ownerSummaryMessages = new HashMap<>();
         // 对获取的所有客户进行总结
-        execute(characterList, questions, advantages);
-
+        execute(characterList, ownerSummaryMessages);
+        SummaryMessage summaryMessage = new SummaryMessage();
+        for (List<SummaryMessage> entry : ownerSummaryMessages.values()) {
+            for (SummaryMessage item : entry) {
+                for (String key : summaryMessage.getAdvantages().keySet()) {
+                    summaryMessage.getAdvantages().put(key,
+                            summaryMessage.getAdvantages().get(key) + item.getAdvantages().get(key));
+                }
+                for (String key : summaryMessage.getQuestions().keySet()) {
+                    summaryMessage.getQuestions().put(key,
+                            summaryMessage.getQuestions().get(key) + item.getQuestions().get(key));
+                }
+            }
+        }
         StringBuilder complete = new StringBuilder();
         StringBuilder incomplete = new StringBuilder();
         int i = 1;
-        for (Map.Entry<String, Integer> item : advantages.entrySet()) {
+        for (Map.Entry<String, Integer> item : summaryMessage.getAdvantages().entrySet()) {
             if (item.getValue() == 0) {
                 continue;
             }
             complete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
         }
         i = 1;
-        for (Map.Entry<String, Integer> item : questions.entrySet()) {
+        for (Map.Entry<String, Integer> item : summaryMessage.getQuestions().entrySet()) {
             if (item.getValue() == 0) {
                 continue;
             }
@@ -383,101 +364,140 @@ public class MessageServiceImpl implements MessageService {
     }
 
 
-    private void execute(List<CustomerCharacter> characterList, Map<String, Integer> questions, Map<String, Integer> advantages) {
+    private void execute(List<CustomerCharacter> characterList, Map<String, List<SummaryMessage>> ownerSummaryMessages) {
         if (CollectionUtils.isEmpty(characterList)) {
             return;
         }
         for (CustomerCharacter character : characterList) {
-            sendMessage(character.getId());
+            SummaryMessage summaryMessage = new SummaryMessage();
             try {
                 customerInfoService.updateCharacterCostTime(character.getId());
             } catch (Exception e) {
                 log.error("更新特征的提取时间失败：" + character.getId());
             }
             if (character.getMatchingJudgmentStage()) {
-                advantages.merge("完成客户匹配度判断", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("完成客户匹配度判断", 1, Integer::sum);
             } else {
-                questions.merge("尚未完成客户匹配度判断，需继续收集客户信息", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("尚未完成客户匹配度判断，需继续收集客户信息", 1, Integer::sum);
             }
             if (character.getTransactionStyleStage()) {
-                advantages.merge("完成客户交易风格了解", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("完成客户交易风格了解", 1, Integer::sum);
             } else {
-                questions.merge("尚未完成客户交易风格了解，需继续收集客户信息", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("尚未完成客户交易风格了解，需继续收集客户信息", 1, Integer::sum);
             }
             if (character.getConfirmPurchaseStage()) {
-                advantages.merge("客户确认购买", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("客户确认购买", 1, Integer::sum);
             }
             if (character.getCompletePurchaseStage()) {
-                advantages.merge("客户完成购买", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("客户完成购买", 1, Integer::sum);
             }
-
             if (!StringUtils.isEmpty(character.getFundsVolume())) {
-                advantages.merge("完成客户资金体量收集", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("完成客户资金体量收集", 1, Integer::sum);
             } else {
-                questions.merge("尚未完成客户资金体量收集，需继续收集客户信息", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("尚未完成客户资金体量收集，需继续收集客户信息", 1, Integer::sum);
             }
-
             if (!StringUtils.isEmpty(character.getConversionRate())){
                 if (character.getConversionRate().equals("high") || character.getConversionRate().equals("medium")) {
-                    advantages.merge("跟进对的客户", 1, Integer::sum);
+                    summaryMessage.getAdvantages().merge("跟进对的客户", 1, Integer::sum);
                 } else if (character.getConversionRate().equals("low")) {
-                    questions.merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
+                    summaryMessage.getQuestions().merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
                 }
             }
 
             if (!StringUtils.isEmpty(character.getSummaryExecuteOrder()) &&
                     Boolean.parseBoolean(character.getSummaryExecuteOrder())) {
-                advantages.merge("SOP执行顺序正确", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("SOP执行顺序正确", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSummaryExecuteOrder()) &&
                     !Boolean.parseBoolean(character.getSummaryExecuteOrder())) {
-                questions.merge("SOP执行顺序错误，需完成前序任务", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("SOP执行顺序错误，需完成前序任务", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getIssuesValueQuantified()) &&
                     Boolean.parseBoolean(character.getIssuesValueQuantified())) {
-                advantages.merge("痛点和价值量化放大", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("痛点和价值量化放大", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getIssuesValueQuantified()) &&
                     !Boolean.parseBoolean(character.getIssuesValueQuantified())) {
-                questions.merge("尚未完成痛点和价值量化放大，需后续完成", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("尚未完成痛点和价值量化放大，需后续完成", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) &&
                     Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                advantages.merge("客户对软件功能理解清晰", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("客户对软件功能理解清晰", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) &&
                     !Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                questions.merge("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getStockSelectionMethod()) &&
                     Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                advantages.merge("客户认可选股方法", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("客户认可选股方法", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getStockSelectionMethod()) &&
                     !Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                questions.merge("客户对选股方法尚未认可，需加强选股成功的真实案例证明", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户对选股方法尚未认可，需加强选股成功的真实案例证明", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) &&
                     Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                advantages.merge("客户认可自身问题", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("客户认可自身问题", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) &&
                     !Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                questions.merge("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) &&
                     Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                advantages.merge("客户认可软件价值", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("客户认可软件价值", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) &&
                     !Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                questions.merge("客户对软件价值不认可", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户对软件价值不认可", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSoftwarePurchaseAttitude()) &&
                     !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
-                questions.merge("客户拒绝购买", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户拒绝购买", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
                     Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
-                advantages.merge("跟进对的客户", 1, Integer::sum);
+                summaryMessage.getAdvantages().merge("跟进对的客户", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
                     !Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
-                questions.merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
             }
+
+            if (ownerSummaryMessages.containsKey(character.getOwnerId())){
+                ownerSummaryMessages.get(character.getOwnerId()).add(summaryMessage);
+            } else {
+                List<SummaryMessage> messageList = new ArrayList<>();
+                messageList.add(summaryMessage);
+                ownerSummaryMessages.put(character.getOwnerId(), messageList);
+            }
+        }
+        // 统计个人的消息，发送
+        for (Map.Entry<String, List<SummaryMessage>> entry : ownerSummaryMessages.entrySet()) {
+            SummaryMessage messages = new SummaryMessage();
+            for (SummaryMessage item : entry.getValue()) {
+                for (String key : messages.getAdvantages().keySet()){
+                    messages.getAdvantages().put(key,
+                            messages.getAdvantages().get(key) + item.getAdvantages().get(key));
+                }
+                for (String key : messages.getQuestions().keySet()){
+                    messages.getQuestions().put(key,
+                            messages.getQuestions().get(key) + item.getQuestions().get(key));
+                }
+            }
+
+            StringBuilder complete = new StringBuilder();
+            StringBuilder incomplete = new StringBuilder();
+            int i = 1;
+            for (Map.Entry<String, Integer> item : messages.getAdvantages().entrySet()) {
+                if (item.getValue() == 0) {
+                    continue;
+                }
+                complete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
+            }
+            i = 1;
+            for (Map.Entry<String, Integer> item : messages.getQuestions().entrySet()) {
+                if (item.getValue() == 0) {
+                    continue;
+                }
+                incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
+            }
+            String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
+            String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
         }
     }
 }
