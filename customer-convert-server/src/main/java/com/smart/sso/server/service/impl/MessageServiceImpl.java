@@ -444,11 +444,11 @@ public class MessageServiceImpl implements MessageService {
                 summaryMessage.getAdvantages().merge("客户认可软件价值", 1, Integer::sum);
             } else if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) &&
                     !Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                summaryMessage.getQuestions().merge("客户对软件价值不认可", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSoftwarePurchaseAttitude()) &&
                     !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
-                summaryMessage.getQuestions().merge("客户拒绝购买", 1, Integer::sum);
+                summaryMessage.getQuestions().merge("客户尚未确认购买，需暂停劝说客户购买，明确客户顾虑点进行针对性化解", 1, Integer::sum);
             }
             if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
                     Boolean.parseBoolean(character.getSummaryFollowCustomer())) {

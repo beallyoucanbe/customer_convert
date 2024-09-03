@@ -25,7 +25,7 @@ public class SummaryMessage {
         questions.put("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 0);
         questions.put("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明", 0);
         questions.put("质疑应对失败次数多，需参考调整应对话", 0);
-        questions.put("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解", 0);
+        questions.put("客户尚未确认购买，需暂停劝说客户购买，明确客户顾虑点进行针对性化解", 0);
 
         advantages = new LinkedHashMap<>();
         advantages.put("完成客户资金体量收集", 0);
