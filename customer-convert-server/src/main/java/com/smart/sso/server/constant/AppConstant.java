@@ -14,6 +14,8 @@ public class AppConstant {
     public static final String REFRESH_CONVERSION_RATE = "REFRESH_CONVERSION_RATE";
     public static final String SEND_MESSAGE_STATE = "SEND_MESSAGE_STATE";
 
+    public static final String PURCHASE_STATE_CHECK = "PURCHASE_STATE_CHECK";
+
     public static final String REFRESH_CUSTOMER_COMPLETE_DESCRIBE = "REFRESH_CUSTOMER_COMPLETE_DESCRIBE";
 
     public static final String SOURCEID_KEY_PREFIX = "processed:";
@@ -40,5 +42,9 @@ public class AppConstant {
             "<font color=\"warning\">%s</font>\n" +
             "### 【待完成】\n" +
             "<font color=\"info\">%s</font>\n" +
+            "详细内容链接：[%s](%s)";
+
+    public static final String CUSTOMER_PURCHASE_TEMPLATE = "您团队的%s在%s与客户**%s**通完电话。\n" +
+            "客户对购买软件的态度为：**%s**\n" +
             "详细内容链接：[%s](%s)";
 }

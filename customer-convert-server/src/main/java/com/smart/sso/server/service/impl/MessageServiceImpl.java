@@ -1,6 +1,7 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
@@ -33,6 +34,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -154,6 +156,29 @@ public class MessageServiceImpl implements MessageService {
             // 更新
             if (!areEqual(customerCharacter, newCustomerCharacter)){
                 customerCharacterMapper.updateAllFields(newCustomerCharacter);
+            }
+        }
+        // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
+        if (Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude()) &&
+                !newCustomerCharacter.getCompletePurchaseStage()){
+            String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
+                    "确认购买" : "尚未确认购买";
+            String messageUrl = getLeaderMessageUrl(newCustomerCharacter.getOwnerName());
+            if (Objects.nonNull(messageUrl)){
+                String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
+                        customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+                String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
+                        newCustomerCharacter.getOwnerName(),
+                        customerInfo.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                        newCustomerCharacter.getCustomerName(),
+                        messageDescribe,
+                        url, url);
+                TextMessage textMessage = new TextMessage();
+                TextMessage.TextContent textContent = new TextMessage.TextContent();
+                textContent.setContent(message);
+                textMessage.setMsgtype("markdown");
+                textMessage.setMarkdown(textContent);
+                sendMessageToChat(messageUrl, textMessage);
             }
         }
     }
@@ -519,5 +544,39 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setMarkdown(textContent);
             sendMessageToChat(notifyUrl, textMessage);
         }
+    }
+
+    /**
+     * 根据组员名称获取组长的企微消息推送url
+     * @param ownerName
+     * @return
+     */
+    private String getLeaderMessageUrl(String ownerName){
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有配置组长信息，请先配置");
+            return null;
+        }
+        List<LeadMemberRequest> leadMemberList = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
+        });
+        for (LeadMemberRequest leadMember : leadMemberList) {
+            if (leadMember.getMembers().contains(ownerName)){
+                // 获取要发送的url
+                QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
+                queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
+                queryWrapper2.eq("name", leadMember.getArea());
+                Config urlConfig = configMapper.selectOne(queryWrapper2);
+                if (Objects.isNull(urlConfig)) {
+                    log.error("没有配置该销售的报警url，暂不发送");
+                    return null;
+                } else {
+                    return urlConfig.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

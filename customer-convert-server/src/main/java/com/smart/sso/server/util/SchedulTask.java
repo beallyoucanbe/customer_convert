@@ -4,11 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
-import com.smart.sso.server.mapper.ConfigMapper;
-import com.smart.sso.server.mapper.CustomerCharacterMapper;
-import com.smart.sso.server.mapper.CustomerFeatureMapper;
-import com.smart.sso.server.mapper.CustomerInfoMapper;
-import com.smart.sso.server.mapper.ScheduledTasksMapper;
+import com.smart.sso.server.mapper.*;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
@@ -21,7 +17,9 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -41,6 +39,10 @@ public class SchedulTask {
     private ConfigMapper configMapper;
     @Autowired
     private CustomerCharacterMapper customerCharacterMapper;
+
+    @Autowired
+    private CustomerRelationMapper customerRelationMapper;
+
     @Autowired
     private MessageService messageService;
 
@@ -102,6 +104,79 @@ public class SchedulTask {
             } catch (Exception e) {
                 log.error("客户{}匹配度更新失败，错误信息：{}", customerFeature.getId(), e.getMessage());
                 scheduledTasksMapper.updateStatusById(newTasks.getId(), "failed");
+            }
+        }
+        // 更新成功，更新任务状态
+        scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
+    }
+
+    /**
+     * 每天8点半执行购买状态同步任务
+     */
+    @Scheduled(cron = "0 30 8 * * ?")
+    public void purchaseTask() {
+        log.error("开始执行客户购买状态同步任务");
+        QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
+        taskQueryWrapper.eq("task_name", AppConstant.PURCHASE_STATE_CHECK);
+        taskQueryWrapper.eq("status", "in_progress");
+
+        ScheduledTask tasks = scheduledTasksMapper.selectOne(taskQueryWrapper);
+        if (Objects.nonNull(tasks)) {
+            // 这里判断时间，防止意外崩溃的情况
+            LocalDateTime dateTimeToCompare = tasks.getCreateTime();
+            // 计算时间差
+            Duration duration = Duration.between(dateTimeToCompare, LocalDateTime.now());
+            // 超过半小时就强制退出
+            if (duration.getSeconds() > 1800) {
+                scheduledTasksMapper.updateStatusById(tasks.getId(), "abort");
+            }
+            log.error("有任务正在执行，该次不执行");
+            return;
+        }
+        // 插入新的任务
+        ScheduledTask newTasks = new ScheduledTask();
+        newTasks.setId(CommonUtils.generatePrimaryKey());
+        newTasks.setTaskName(AppConstant.PURCHASE_STATE_CHECK);
+        newTasks.setStatus("in_progress");
+        scheduledTasksMapper.insert(newTasks);
+
+        // 开始执行实际的任务
+        QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("customer_signed", 1);
+        List<CustomerRelation> customerRelationList= customerRelationMapper.selectList(queryWrapper);
+        // 对每一个支付定金的客户，检查销售记录值是否正确
+        if (CollectionUtils.isEmpty(customerRelationList)) {
+            return;
+        }
+        for (CustomerRelation item : customerRelationList) {
+
+            QueryWrapper<CustomerInfo> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.eq("owner_id", item.getOwnerId());
+            queryWrapper2.eq("customer_id", item.getCustomerId().toString());
+            CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper2);
+            CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
+            try {
+                if (Objects.isNull(customerFeature)){
+                    continue;
+                }
+                if (Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
+                    Map<String, Object> tag =
+                            JsonUtil.readValue(JsonUtil.serialize(customerFeature.getSoftwarePurchaseAttitudeSales()),
+                                    new TypeReference<Map<String, Object>>() {});
+                    if (Objects.nonNull(tag.get("tag")) && (Boolean)tag.get("tag")) {
+                        continue;
+                    }
+                    tag.put("tag", true);
+                    customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(),
+                            JsonUtil.serialize(tag));
+                } else {
+                    Map<String, Object> tag = new HashMap<>();
+                    tag.put("tag", true);
+                    customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(),
+                            JsonUtil.serialize(tag));
+                }
+            } catch (Exception e) {
+                log.error("执行购买状态任务失败：" + customerFeature.getId());
             }
         }
         // 更新成功，更新任务状态
