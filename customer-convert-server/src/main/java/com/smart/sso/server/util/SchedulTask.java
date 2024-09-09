@@ -197,7 +197,7 @@ public class SchedulTask {
         List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
         for (CustomerInfo item : customerFeatureList) {
             try {
-                messageService.updateCustomerCharacter(item.getId());
+                messageService.updateCustomerCharacter(item.getId(), false);
             } catch (Exception e) {
                log.error("更新CustomerCharacter失败，ID={}", item.getId(), e);
             }

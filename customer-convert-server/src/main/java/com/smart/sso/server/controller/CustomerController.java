@@ -151,8 +151,9 @@ public class CustomerController {
     @GetMapping("/customer/send_message")
     public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
         log.error("触发客户的特征更新，id: " + id);
-        messageService.updateCustomerCharacter(id);
+        messageService.updateCustomerCharacter(id, true);
         customerInfoService.updateCharacterCostTime(id);
+
         return ResultUtils.success(null);
     }
 
@@ -172,7 +173,7 @@ public class CustomerController {
         List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapper);
         for (CustomerInfo item : customerFeatureList) {
             try {
-                messageService.updateCustomerCharacter(item.getId());
+                messageService.updateCustomerCharacter(item.getId(), false);
             } catch (Exception e) {
                 log.error("更新CustomerCharacter失败：ID=" + item.getId());
             }

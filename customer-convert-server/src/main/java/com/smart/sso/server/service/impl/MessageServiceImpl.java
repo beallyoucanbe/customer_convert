@@ -141,7 +141,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void updateCustomerCharacter(String id) {
+    public void updateCustomerCharacter(String id,  boolean checkPurchaseAttitude) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
@@ -159,7 +159,7 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
-        if (Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude()) &&
+        if (checkPurchaseAttitude && Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude()) &&
                 !newCustomerCharacter.getCompletePurchaseStage()){
             String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                     "确认购买" : "尚未确认购买";
