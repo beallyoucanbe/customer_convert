@@ -1,0 +1,54 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
+
+logging:
+  level:
+    root: info
+
+spring:
+  application:
+    name: wuyou
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss  #时间戳统一转换为指定格式
+    time-zone:  GMT+8  # 时区修改为东8区
+    property-naming-strategy: SNAKE_CASE
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/customer_test?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: my-secret-pw
+    hikari:
+      max-lifetime: 120000
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  freemarker:
+    charset: UTF-8
+    suffix: .html
+    content-type: text/html; charset=utf-8
+    template-loader: classpath:/templates
+    request-context-attribute: request
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123qwe
+
+sso:
+  server:
+    url: http://server.smart-sso.com:8080
+  app:
+    id: server1
+    secret: 123456
+  timeout: 7200
+  session:
+    manager: local
+
+mybatis-plus:
+  typeHandlersPackage: com.smart.sso.server.handler
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl

@@ -460,6 +460,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             int exitCode = process.waitFor();
             String redisKey = SOURCEID_KEY_PREFIX + sourceId;
             redisTemplate.opsForValue().set(redisKey, "processed");
+
+            Process process1 = ShellUtils.saPythonRun("/home/opsuser/hsw/test_chat/process_text.py", params.length, params);
+            exitCode = process1.waitFor();
             log.error("Python脚本执行完成，退出码：" + exitCode);
         } catch (Exception e) {
             // 这里只负责调用对用的脚本
