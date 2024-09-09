@@ -60,7 +60,7 @@ public class MessageServiceImpl implements MessageService {
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
-        log.error("发送消息内容：" + JsonUtil.serialize(message));
+        log.error("发送消息内容：" + JsonUtil.serialize(message) + url);
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         // 发送 POST 请求
@@ -69,6 +69,7 @@ public class MessageServiceImpl implements MessageService {
         if (response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();
         } else {
+            log.error("Failed to send message: " + response.getStatusCode());
             throw new RuntimeException("Failed to send message: " + response.getStatusCode());
         }
     }
