@@ -284,7 +284,12 @@ public class ShellUtils {
         command[1] = pythonFilePath;
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         // 设置日志文件为追加模式
-        File logFile = new File("/opt/customer-convert/callback/logs/call.log");
+        File logFile;
+        if (pythonFilePath.contains("test")){
+            logFile = new File("/opt/customer-convert/callback/logs/call_test.log");
+        } else {
+            logFile = new File("/opt/customer-convert/callback/logs/call.log");
+        }
         FileOutputStream fos = new FileOutputStream(logFile, true); // 'true' 表示追加模式
 
         // 重定向错误输出流到日志文件
