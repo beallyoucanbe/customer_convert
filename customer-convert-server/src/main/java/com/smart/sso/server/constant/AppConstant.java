@@ -44,7 +44,7 @@ public class AppConstant {
             "<font color=\"info\">%s</font>\n" +
             "详细内容链接：[%s](%s)";
 
-    public static final String CUSTOMER_PURCHASE_TEMPLATE = "您团队的**%s**在%s与客户**%s**通完电话。\n" +
+    public static final String CUSTOMER_PURCHASE_TEMPLATE = "您团队的**%s**在%s与客户**%s**通完电话，今日通话总时长**30分钟以上**。\n" +
             "客户对购买软件的态度为：**%s**\n" +
             "详细内容链接：[%s](%s)";
 }

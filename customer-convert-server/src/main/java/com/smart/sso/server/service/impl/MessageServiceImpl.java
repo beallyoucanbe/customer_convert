@@ -11,6 +11,7 @@ import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -33,7 +34,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -52,6 +55,8 @@ public class MessageServiceImpl implements MessageService {
     private ConfigMapper configMapper;
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
+    @Autowired
+    private TelephoneRecordMapper telephoneRecordMapper;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -162,6 +167,20 @@ public class MessageServiceImpl implements MessageService {
         // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
         if (checkPurchaseAttitude && Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude()) &&
                 !newCustomerCharacter.getCompletePurchaseStage()){
+            // 给该客户当天的通话时间大于30分钟
+            QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
+            LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+            queryWrapperInfo.eq("customer_id", customerInfo.getCustomerId());
+            queryWrapperInfo.gt("communication_time", startOfDay);
+            // 查看该客户的所有通话记录，并且按照顺序排列
+            List<TelephoneRecord> telephoneRecordList = telephoneRecordMapper.selectList(queryWrapperInfo);
+            int communicationDurationSum = 0;
+            for (TelephoneRecord item : telephoneRecordList) {
+                communicationDurationSum += item.getCommunicationDuration();
+            }
+            if (communicationDurationSum < 30) {
+                return;
+            }
             String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                     "确认购买" : "尚未确认购买";
             String messageUrl = getLeaderMessageUrl(newCustomerCharacter.getOwnerName());
