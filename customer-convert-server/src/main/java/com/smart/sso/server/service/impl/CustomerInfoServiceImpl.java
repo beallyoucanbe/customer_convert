@@ -851,10 +851,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 返回值类型是boolen
             if (type == Boolean.class) {
                 resultAnswer = deletePunctuation(resultAnswer);
-                if ("是".equals(resultAnswer)) {
+                if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer)) {
                     featureVO.setModelRecord(Boolean.TRUE);
                 } else {
-                    if ("否".equals(resultAnswer)) {
+                    if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer)) {
                         featureVO.setModelRecord(Boolean.FALSE);
                     }
                 }

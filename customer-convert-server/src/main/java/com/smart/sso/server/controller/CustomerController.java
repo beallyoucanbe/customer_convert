@@ -73,7 +73,7 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户特征信息")
     @GetMapping("/customer/{id}/features")
-    public BaseResponse<CustomerFeatureResponse> c(@PathVariable(value = "id") String id) {
+    public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "id") String id) {
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(id);
         return ResultUtils.success(FeatureProfile);
     }
