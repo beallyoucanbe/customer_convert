@@ -44,7 +44,7 @@ def send_customer_log_alarm(data):
     if data["success"] < 5 or data["error"] > 3:
         # 判断当前时间
         if is_working_hour():
-            message = '过去半小时的通话量为：' + str(data["success"]) + '，报错数为：' + str(data["error"])
+            message = datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ': 过去半小时的通话量为：' + str(data["success"]) + '，报错数为：' + str(data["error"])
             send_dingtalk_message(message)
 
 def send_nginx_log_alarm(data):
