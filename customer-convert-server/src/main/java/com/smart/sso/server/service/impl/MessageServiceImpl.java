@@ -40,6 +40,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.smart.sso.server.constant.AppConstant.CUSTOMER_DASHBOARD_URL;
+
 
 @Service
 @Slf4j
@@ -123,8 +125,8 @@ public class MessageServiceImpl implements MessageService {
             }
             incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
         }
-        String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
-        String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
+        String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete,
+                CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
 
         // 获取要发送的url
         QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
@@ -292,13 +294,12 @@ public class MessageServiceImpl implements MessageService {
         } else {
             rateDesc = conversionRateMap.get(customerInfo.getConversionRate());
         }
-        String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
         String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerInfo.getCustomerName(),
                 customerInfo.getCustomerId(),
                 rateDesc,
                 complete,
                 incomplete,
-                url, url);
+                CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
 
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
@@ -567,8 +568,8 @@ public class MessageServiceImpl implements MessageService {
                 incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
             }
 
-            String url = "http://172.16.192.61:8086/preview/33/dashboard/1";
-            String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete, url, url);
+            String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete,
+                    CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
 
             // 获取要发送的url
             QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();

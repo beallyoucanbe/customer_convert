@@ -38,11 +38,7 @@ public class SchedulTask {
     @Autowired
     private ConfigMapper configMapper;
     @Autowired
-    private CustomerCharacterMapper customerCharacterMapper;
-
-    @Autowired
     private CustomerRelationMapper customerRelationMapper;
-
     @Autowired
     private MessageService messageService;
 

@@ -20,6 +20,8 @@ public class AppConstant {
 
     public static final String SOURCEID_KEY_PREFIX = "processed:";
 
+    public static final String CUSTOMER_DASHBOARD_URL = "http://172.16.192.61:8086/preview/33/dashboard/27";
+
 
     public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE_BAK = "您刚和客户**%s（客户id：%s）**通完电话，该客户的匹配度：**%s**。\n" +
             "\n" +
