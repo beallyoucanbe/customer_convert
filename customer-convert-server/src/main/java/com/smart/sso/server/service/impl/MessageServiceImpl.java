@@ -183,22 +183,47 @@ public class MessageServiceImpl implements MessageService {
             }
             String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                     "确认购买" : "尚未确认购买";
-            String messageUrl = getLeaderMessageUrl(newCustomerCharacter.getOwnerName());
-            if (Objects.nonNull(messageUrl)){
+            String leaderMessageUrl = getLeaderMessageUrl(newCustomerCharacter.getOwnerName());
+            String ownerMessageUrl = getOwnerMessageUrl(newCustomerCharacter.getOwnerName());
+            if (Objects.nonNull(leaderMessageUrl)){
                 String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
                         customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+                StringBuilder possibleReasonStringBuilder = new StringBuilder();
+                if (messageDescribe.equals("尚未确认购买")) {
+                    if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareFunctionClarity()) && newCustomerCharacter.getSoftwareFunctionClarity().equals("false")){
+                        possibleReasonStringBuilder.append("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解。\n");
+                    }
+                    if (!StringUtils.isEmpty(newCustomerCharacter.getStockSelectionMethod()) && newCustomerCharacter.getStockSelectionMethod().equals("false")){
+                        possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
+                    }
+                    if (!StringUtils.isEmpty(newCustomerCharacter.getSelfIssueRecognition()) && newCustomerCharacter.getSelfIssueRecognition().equals("false")){
+                        possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
+                    }
+                    if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareValueApproval()) && newCustomerCharacter.getSoftwareValueApproval().equals("false")){
+                        possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
+                    }
+                }
+                if (possibleReasonStringBuilder.length() > 1){
+                    possibleReasonStringBuilder.insert(0, "客户的顾虑点可能是：\n<font color=\"info\">");
+                    possibleReasonStringBuilder.append("</font>");
+                }
                 String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
                         newCustomerCharacter.getOwnerName(),
                         customerInfo.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                         newCustomerCharacter.getCustomerName(),
                         messageDescribe,
+                        possibleReasonStringBuilder,
                         url, url);
                 TextMessage textMessage = new TextMessage();
                 TextMessage.TextContent textContent = new TextMessage.TextContent();
                 textContent.setContent(message);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
-                sendMessageToChat(messageUrl, textMessage);
+                sendMessageToChat(leaderMessageUrl, textMessage);
+                String target = "**";
+                int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
+                textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
+                sendMessageToChat(ownerMessageUrl, textMessage);
             }
         }
     }
@@ -598,5 +623,22 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         return null;
+    }
+
+    /**
+     * 根据组员名称获取企微消息推送url
+     * @param ownerName
+     * @return
+     */
+    private String getOwnerMessageUrl(String ownerName){
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
+        queryWrapper.eq("name", ownerName);
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有配置组员信息，请先配置");
+            return null;
+        }
+        return config.getValue();
     }
 }
