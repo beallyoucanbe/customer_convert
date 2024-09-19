@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,7 +187,8 @@ public class SchedulTask {
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
-        LocalDateTime dateTime = LocalDateTime.of(2024, 9, 1, 12, 0, 0);
+        LocalDateTime dateTime = LocalDateTime.now().minusDays(3).with(LocalTime.MIN);
+//        LocalDateTime dateTime = LocalDateTime.of(2024, 9, 1, 12, 0, 0);
         QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
         // 筛选时间
         queryWrapperInfo.gt("update_time", dateTime);
