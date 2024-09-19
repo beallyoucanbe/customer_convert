@@ -187,7 +187,7 @@ public class SchedulTask {
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
-        LocalDateTime dateTime = LocalDateTime.now().minusDays(3).with(LocalTime.MIN);
+        LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
 //        LocalDateTime dateTime = LocalDateTime.of(2024, 9, 1, 12, 0, 0);
         QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
         // 筛选时间
