@@ -199,10 +199,10 @@ public class MessageServiceImpl implements MessageService {
                         possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
                     }
                     if (!StringUtils.isEmpty(newCustomerCharacter.getSelfIssueRecognition()) && newCustomerCharacter.getSelfIssueRecognition().equals("false")){
-                        possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
+                        possibleReasonStringBuilder.append("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明。\n");
                     }
                     if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareValueApproval()) && newCustomerCharacter.getSoftwareValueApproval().equals("false")){
-                        possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
+                        possibleReasonStringBuilder.append("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明。\n");
                     }
                 }
                 if (possibleReasonStringBuilder.length() > 1){
