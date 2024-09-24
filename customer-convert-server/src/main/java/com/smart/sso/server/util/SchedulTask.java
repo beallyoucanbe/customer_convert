@@ -146,16 +146,15 @@ public class SchedulTask {
             return;
         }
         for (CustomerRelation item : customerRelationList) {
-
-            QueryWrapper<CustomerInfo> queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.eq("owner_id", item.getOwnerId());
-            queryWrapper2.eq("customer_id", item.getCustomerId().toString());
-            CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper2);
-            CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
             try {
-                if (Objects.isNull(customerFeature)){
+                QueryWrapper<CustomerInfo> queryWrapper2 = new QueryWrapper<>();
+                queryWrapper2.eq("owner_id", item.getOwnerId());
+                queryWrapper2.eq("customer_id", item.getCustomerId().toString());
+                CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper2);
+                if (Objects.isNull(customerInfo)){
                     continue;
                 }
+                CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
                 if (Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
                     Map<String, Object> tag =
                             JsonUtil.readValue(JsonUtil.serialize(customerFeature.getSoftwarePurchaseAttitudeSales()),
@@ -173,7 +172,7 @@ public class SchedulTask {
                             JsonUtil.serialize(tag));
                 }
             } catch (Exception e) {
-                log.error("执行购买状态任务失败：" + customerFeature.getId());
+                log.error("执行购买状态任务失败：" + item.getCustomerId());
             }
         }
         // 更新成功，更新任务状态
