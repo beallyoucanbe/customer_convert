@@ -189,4 +189,12 @@ public class CustomerController {
         return ResultUtils.success(newMembers);
     }
 
+
+    @ApiOperation(value = "更新组长和组员的关系（增量）")
+    @PostMapping("/customer/statistics")
+    public BaseResponse<List<LeadMemberRequest>> statistics() {
+        customerInfoService.statistics();
+        return ResultUtils.success(null);
+    }
+
 }

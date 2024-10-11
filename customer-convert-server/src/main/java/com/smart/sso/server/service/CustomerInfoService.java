@@ -40,4 +40,6 @@ public interface CustomerInfoService {
 
     void updateCharacterCostTime(String id);
 
+    void statistics();
+
 }

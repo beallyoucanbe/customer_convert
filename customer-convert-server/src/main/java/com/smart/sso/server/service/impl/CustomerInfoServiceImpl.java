@@ -671,6 +671,84 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
+    @Override
+    public void statistics() {
+        QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
+        // 筛选时间
+        queryWrapperInfo.eq("current_campaign", "361");
+        List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
+        System.out.println("总客户数："  + customerFeatureList.size());
+        int customerNum = 0;
+        int featureNum = 0;
+        List<String> result = new ArrayList<>();
+        for (CustomerInfo customerInfo : customerFeatureList) {
+            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getId());
+            boolean tttt = true;
+            if (!equal(featureProfile.getBasic().getFundsVolume())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getBasic().getEarningDesire())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getCourseTeacherApproval())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getSoftwareFunctionClarity())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getStockSelectionMethod())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getSelfIssueRecognition())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getLearnNewMethodApproval())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getContinuousLearnApproval())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getSoftwareValueApproval())) {
+                tttt = false;
+                featureNum++;
+            }
+            if (!equal(featureProfile.getRecognition().getSoftwarePurchaseAttitude())) {
+                tttt = false;
+                featureNum++;
+            }
+
+            if (!tttt) {
+                customerNum++;
+                result.add(customerInfo.getId());
+            }
+        }
+        System.out.println("customerNum=" + customerNum + ", featureNum = " + featureNum);
+        System.out.println(JsonUtil.serialize(result));
+    }
+
+    private boolean equal(CustomerFeatureResponse.Feature feature){
+        if (Objects.isNull(feature.getSalesManualTag())){
+            return true;
+        }
+        if (Objects.isNull(feature.getModelRecord()) && Objects.isNull(feature.getSalesManualTag())){
+            return true;
+        } else if (Objects.isNull(feature.getModelRecord()) || Objects.isNull(feature.getSalesManualTag())) {
+            return false;
+        } else if (feature.getModelRecord().equals(feature.getSalesManualTag())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean areEqual(CharacterCostTime cc1, CharacterCostTime cc2) {
         if (cc1 == cc2) {
             return true;
