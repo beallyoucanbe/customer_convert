@@ -23,7 +23,7 @@ public class TelephoneRecord {
     private String currentCampaign;
     private Integer communicationDuration;
     private Timestamp communicationTime;
-
+    private String callId;
 
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> fundsVolume;

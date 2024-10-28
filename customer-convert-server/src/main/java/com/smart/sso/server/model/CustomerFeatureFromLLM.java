@@ -16,6 +16,7 @@ public class CustomerFeatureFromLLM {
     private String currentCampaign;
     private Integer communicationDuration;
     private Timestamp communicationTime;
+    private String callId;
 
     private CommunicationContent fundsVolume;
     private CommunicationContent earningDesire;

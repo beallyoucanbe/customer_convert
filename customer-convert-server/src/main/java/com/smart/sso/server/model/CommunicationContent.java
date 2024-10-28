@@ -14,6 +14,7 @@ public class CommunicationContent {
     private String answerTag;
     private String doubleText;
     private String doubleTag;
+    private String callId;
 }
 
 
