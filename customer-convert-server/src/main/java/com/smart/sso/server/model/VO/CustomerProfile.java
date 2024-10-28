@@ -11,6 +11,7 @@ import java.util.Date;
 public class CustomerProfile {
     @JsonProperty("name")
     private String customerName ;
+    private String customerId ;
     @JsonProperty("owner")
     private String ownerName ;
     private String currentCampaign ;

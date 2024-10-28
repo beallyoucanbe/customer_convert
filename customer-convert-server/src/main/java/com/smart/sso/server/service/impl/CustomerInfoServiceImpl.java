@@ -511,27 +511,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             config.setValue(JsonUtil.serialize(members));
             configMapper.updateById(config);
         }
-//        else {
-//            // 增量写入
-//            List<LeadMemberRequest> listMap = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
-//            });
-//            HashMap<String, LeadMemberRequest> areaSet = listMap.stream().map(LeadMemberRequest::getArea).collect(Collectors.toSet());
-//            for (LeadMemberRequest item : members) {
-//                if (areaSet.contains(item.getArea())) {
-//
-//                    List<String> membersOld = listMap.get(entry.getKey());
-//                    for (String member : entry.getValue()) {
-//                        if (!membersOld.contains(member)) {
-//                            membersOld.add(member);
-//                        }
-//                    }
-//                } else {
-//                    listMap.add(item);
-//                }
-//            }
-//            config.setValue(JsonUtil.serialize(listMap));
-//            configMapper.updateById(config);
-//        }
         return JsonUtil.readValue(configMapper.selectOne(queryWrapper).getValue(), new TypeReference<List<LeadMemberRequest>>() {
         });
     }

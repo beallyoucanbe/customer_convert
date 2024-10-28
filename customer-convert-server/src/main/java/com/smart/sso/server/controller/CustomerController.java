@@ -70,16 +70,17 @@ public class CustomerController {
     }
 
     @ApiOperation(value = "获取客户基本信息")
-    @GetMapping("/customer/{id}/profile")
-    public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "id") String id) {
+    @GetMapping("/customer/${customer_id}/campaign/${campaign_id}/profile")
+    public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "customer_id") String customerId,
+                                                            @PathVariable(value = "campaign_id") String campaignId) {
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
         return ResultUtils.success(customerProfile);
     }
 
-    // /api/customer/${customer_id}/campaign/${campaign_id}/features
     @ApiOperation(value = "获取客户特征信息")
-    @GetMapping("/customer/{id}/features")
-    public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "id") String id) {
+    @GetMapping("/customer/${customer_id}/campaign/${campaign_id}/features")
+    public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
+                                                                     @PathVariable(value = "campaign_id") String campaignId) {
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(id);
         return ResultUtils.success(FeatureProfile);
     }
@@ -203,7 +204,7 @@ public class CustomerController {
     }
 
 
-    @ApiOperation(value = "更新组长和组员的关系（增量）")
+    @ApiOperation(value = "统计数据")
     @PostMapping("/customer/statistics")
     public BaseResponse<List<LeadMemberRequest>> statistics() {
         customerInfoService.statistics();

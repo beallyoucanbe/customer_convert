@@ -11,6 +11,7 @@ public class CustomerListVO {
     private String id ;
     @JsonProperty("name")
     private String customerName ;
+    private String customerId ;
     @JsonProperty("owner")
     private String ownerName ;
     private String currentCampaign ;
