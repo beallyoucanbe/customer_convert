@@ -3,6 +3,7 @@ package com.smart.sso.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
+import com.smart.sso.server.config.RedisConfig;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -12,6 +13,7 @@ import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
+import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.util.CommonUtils;
@@ -19,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,6 +47,8 @@ public class CustomerController {
     private CustomerInfoService customerInfoService;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private ConfigService configService;
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
@@ -85,7 +90,7 @@ public class CustomerController {
         return ResultUtils.success(customerSummary);
     }
 
-    @ApiOperation(value = "修改客户过程总结")
+    @ApiOperation(value = "修改客户特征信息")
     @PostMapping("/customer/{id}/features")
     public BaseResponse<CustomerProcessSummaryResponse> modifyCustomerFeatures(@PathVariable(value = "id") String id,
                                                                                @RequestBody CustomerFeatureResponse customerFeatureRequest) {
@@ -97,6 +102,13 @@ public class CustomerController {
     @PostMapping("/customer/callback")
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
+        String staffId = callBackRequest.getData().getCall().getStaffId();
+        if (CollectionUtils.isEmpty(RedisConfig.staffIdList)){
+            RedisConfig.staffIdList.addAll(configService.getStaffIds());
+        }
+        if (!RedisConfig.staffIdList.contains(staffId)) {
+            log.error("staff id 不参加活动， 跳过不处理: " + staffId);
+        }
         String redisKey = SOURCEID_KEY_PREFIX + sourceId;
         // 检查key是否存在于Redis中
         Boolean hasKey = redisTemplate.hasKey(redisKey);
@@ -109,7 +121,7 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
-    @ApiOperation(value = "客户识别回调")
+    @ApiOperation(value = "redis 缓存预热，初始化")
     @GetMapping("/customer/redis_init")
     public BaseResponse<Void> redisInit() {
         String filePath = "/opt/customer-convert/callback/sourceid.txt";

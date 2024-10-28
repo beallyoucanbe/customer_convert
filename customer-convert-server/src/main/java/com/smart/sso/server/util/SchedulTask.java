@@ -2,11 +2,13 @@ package com.smart.sso.server.util;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smart.sso.server.config.RedisConfig;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.mapper.*;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
+import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,8 @@ public class SchedulTask {
     private CustomerRelationMapper customerRelationMapper;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private ConfigService configService;
 
     @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
@@ -266,5 +270,13 @@ public class SchedulTask {
         }
         // 更新成功，更新任务状态
         scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
+    }
+
+    /**
+     * 这次参加活动的员工id
+     */
+    @Scheduled(cron = "0 0 */1 * * ?")
+    public void refreshStaffId() {
+        RedisConfig.staffIdList.addAll(configService.getStaffIds());
     }
 }

@@ -6,8 +6,13 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Configuration
 public class RedisConfig {
+
+    public static Set<String> staffIdList = new HashSet<>();
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
