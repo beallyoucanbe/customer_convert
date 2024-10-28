@@ -25,6 +25,7 @@ import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
 import com.smart.sso.server.util.ShellUtils;
@@ -69,6 +70,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CharacterCostTimeMapper characterCostTimeMapper;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private TelephoneRecordService recordService;
     private SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd HH");
     private SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy-MM-dd");
@@ -115,12 +118,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerProfile queryCustomerById(String id) {
-        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
-        CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
+    public CustomerProfile queryCustomerById(String customerId, String campaignId) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
+        CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
+        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, campaignId);
+
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
-        customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, customerFeature, customerSummary));
+        customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM));
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
@@ -135,9 +139,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerFeatureResponse queryCustomerFeatureById(String id) {
-        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
-        return convert2CustomerFeatureResponse(customerFeature);
+    public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String campaignId) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
+        CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
+        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, campaignId);
+        return convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
     }
 
     @Override
@@ -249,7 +255,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature customerFeature, CustomerSummary customerSummary) {
+    public CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM) {
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
         CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
@@ -778,25 +784,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return customerProfile;
     }
 
-    public CustomerFeatureResponse convert2CustomerFeatureResponse(CustomerFeature customerFeature) {
-        if (Objects.isNull(customerFeature)) {
+    public CustomerFeatureResponse convert2CustomerFeatureResponse(CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM) {
+        if (Objects.isNull(featureFromLLM)) {
             return null;
         }
         CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
-        // Profile
-        CustomerFeatureResponse.Profile profile = new CustomerFeatureResponse.Profile();
-        profile.setCustomerLifecycle(customerFeature.getCustomerLifecycle());
-        profile.setHasComputerVersion(customerFeature.getHasComputerVersion());
-        profile.setClassCount(customerFeature.getClassCount());
-        profile.setPasswordEarnest(customerFeature.getPasswordEarnest());
-        profile.setUsageFrequency(customerFeature.getUsageFrequency());
-        profile.setClassLength(customerFeature.getClassLength());
-        customerFeatureResponse.setProfile(profile);
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertFeatureByOverwrite(customerFeature.getFundsVolumeModel(), customerFeature.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
-        basic.setProfitLossSituation(convertFeatureByOverwrite(customerFeature.getProfitLossSituationModel(), customerFeature.getProfitLossSituationSales(), ProfitLossEnum.class, String.class));
-        basic.setEarningDesire(convertFeatureByOverwrite(customerFeature.getEarningDesireModel(), customerFeature.getEarningDesireSales(), EarningDesireEnum.class, String.class));
+        basic.setFundsVolume(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        basic.setEarningDesire(convertFeatureByOverwrite(featureFromLLM.getEarningDesire(), featureFromSale.getEarningDesireSales(), EarningDesireEnum.class, String.class));
         customerFeatureResponse.setBasic(basic);
 
         // TradingMethod 客户自己的交易方法
@@ -859,7 +855,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
 
-    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(List<FeatureContent> featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
+    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
         // 多通电话覆盖+规则加工
         String resultAnswer = null;
@@ -867,16 +863,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String original = null;
         String callId = null;
         // 获取
-        if (!CollectionUtils.isEmpty(featureContentByModel)) {
-            for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
-                        !featureContentByModel.get(i).getAnswer().equals("无") &&
-                        !featureContentByModel.get(i).getAnswer().equals("null")) {
-                    resultAnswerLatest = featureContentByModel.get(i).getAnswer();
-                    original = Objects.nonNull(featureContentByModel.get(i).getOriginal()) ? featureContentByModel.get(i).getOriginal() : featureContentByModel.get(i).getAnswer();
-                    callId = featureContentByModel.get(i).getCallId();
-                    break;
-                }
+        if (Objects.nonNull(featureContentByModel)) {
+            if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
+                    !featureContentByModel.get(i).getAnswer().equals("无") &&
+                    !featureContentByModel.get(i).getAnswer().equals("null")) {
+                resultAnswerLatest = featureContentByModel.get(i).getAnswer();
+                original = Objects.nonNull(featureContentByModel.get(i).getOriginal()) ? featureContentByModel.get(i).getOriginal() : featureContentByModel.get(i).getAnswer();
+                callId = featureContentByModel.get(i).getCallId();
             }
         }
         // 如果最后一个非空值为null，结果就是null

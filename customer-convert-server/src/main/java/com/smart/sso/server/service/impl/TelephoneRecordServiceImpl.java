@@ -15,7 +15,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     private TelephoneRecordMapper recordMapper;
 
     @Override
-    public void getCustomerFeatureFromLLM(String customerId, String currentCampaign) {
+    public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String currentCampaign) {
 
         CustomerFeatureFromLLM customerFeatureFromLLM = new CustomerFeatureFromLLM();
 

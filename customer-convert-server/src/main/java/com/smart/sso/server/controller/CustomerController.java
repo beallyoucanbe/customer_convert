@@ -73,7 +73,7 @@ public class CustomerController {
     @GetMapping("/customer/${customer_id}/campaign/${campaign_id}/profile")
     public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "customer_id") String customerId,
                                                             @PathVariable(value = "campaign_id") String campaignId) {
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerId, campaignId);
         return ResultUtils.success(customerProfile);
     }
 
@@ -81,7 +81,7 @@ public class CustomerController {
     @GetMapping("/customer/${customer_id}/campaign/${campaign_id}/features")
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                      @PathVariable(value = "campaign_id") String campaignId) {
-        CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(id);
+        CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, campaignId);
         return ResultUtils.success(FeatureProfile);
     }
 

@@ -1,9 +1,6 @@
 package com.smart.sso.server.service;
 
-import com.smart.sso.server.model.CustomerFeature;
-import com.smart.sso.server.model.CustomerInfo;
-import com.smart.sso.server.model.CustomerStageStatus;
-import com.smart.sso.server.model.CustomerSummary;
+import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -18,15 +15,15 @@ public interface CustomerInfoService {
 
     CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params);
 
-    CustomerProfile queryCustomerById(String id);
+    CustomerProfile queryCustomerById(String customerId, String campaignId);
 
-    CustomerFeatureResponse queryCustomerFeatureById(String id);
+    CustomerFeatureResponse queryCustomerFeatureById(String customerId, String campaignId);
 
     CustomerProcessSummaryResponse queryCustomerProcessSummaryById(String id);
 
     String getConversionRate(CustomerFeature customerFeature);
 
-    CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature customerFeature, CustomerSummary customerSummary);
+    CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM);
 
     void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeature);
 
