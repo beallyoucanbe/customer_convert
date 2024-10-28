@@ -9,83 +9,83 @@ import java.util.List;
 @Data
 public class CustomerFeatureResponse {
 
-    private Profile profile;
+    private ProcessSummary summary;
     private Basic basic;
-    private TradingMethod tradingMethod;
-    private Recognition recognition;
-    private String note;
+    private Quantified quantified;
+    private Feature softwareFunctionClarity;
+    private Feature stockSelectionMethod;
+    private Feature selfIssueRecognition;
+    private Feature softwareValueApproval;
+    private Feature softwarePurchaseAttitude;
 
     @Getter
     @Setter
-    public static class Profile {
-        private String customerLifecycle;
-        private Boolean hasComputerVersion;
-        private Integer classCount;
-        private String passwordEarnest;
-        private String usageFrequency;
-        private Long classLength;
+    public static class ProcessSummary {
+        // 优势列表
+        private List<String> advantage;
+        // 问题列表
+        private List<String> questions;
     }
 
     @Getter
     @Setter
     public static class Basic {
         private Feature fundsVolume;
-        private Feature profitLossSituation;
         private Feature earningDesire;
     }
 
     @Getter
     @Setter
-    public static class TradingMethod {
-        private FeatureSpecial currentStocks;
-        private FeatureSpecial stockPurchaseReason;
-        private FeatureSpecial tradeTimingDecision;
-        private Feature tradingStyle;
-        private Feature stockMarketAge;
-        private Feature learningAbility;
+    public static class Quantified {
+        private QuantifiedContent customerIssuesQuantified;
+        private QuantifiedContent softwareValueQuantified;
     }
 
     @Getter
     @Setter
-    public static class Recognition {
-        private Feature courseTeacherApproval;
-        private Feature softwareFunctionClarity;
-        private Feature stockSelectionMethod;
-        private Feature selfIssueRecognition;
-        private Feature learnNewMethodApproval;
-        private Feature continuousLearnApproval;
-        private Feature softwareValueApproval;
-        private Feature softwarePurchaseAttitude;
+    public static class QuantifiedContent {
+        private Object result;
+        private OriginChat originChat;
     }
 
     @Getter
     @Setter
     public static class Feature {
+        private Integer standardProcess;
         private String inquired = "no"; // no-need, no, yes
+        private OriginChat inquiredOriginChat;
+        private CustomerConclusion customerConclusion;
+        private CustomerQuestion customerQuestion;
+    }
+    @Getter
+    @Setter
+    public static class CustomerConclusion {
         private Object modelRecord;
-        private String salesRecord;
         private Object salesManualTag;
+        private String salesRecord;
         private Object compareValue;
         private OriginChat originChat;
-        private OriginChat inquiredOriginChat;
     }
 
     @Getter
     @Setter
-    public static class FeatureSpecial {
-        private String inquired = "no"; // no-need, no, yes
+    public static class CustomerQuestion {
         private Object modelRecord;
-        private String salesRecord;
-        private Object salesManualTag;
-        private Object compareValue;
-        private List<OriginChat> originChats;
-        private OriginChat inquiredOriginChat;
+        private OriginChat originChat;
     }
 
     @Getter
     @Setter
     public static class OriginChat {
         private String id;
+        private List<Message> contents;
+    }
+
+    @Getter
+    @Setter
+    public static class Message {
+        private String id;
+        private String time;
         private String content;
     }
 }

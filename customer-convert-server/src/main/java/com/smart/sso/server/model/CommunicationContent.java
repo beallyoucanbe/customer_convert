@@ -9,7 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommunicationContent {
     private String ts;
-    private String content;
+    private String question;
+    private String answerText;
+    private String answerTag;
+    private String doubleText;
+    private String doubleTag;
 }
 
 

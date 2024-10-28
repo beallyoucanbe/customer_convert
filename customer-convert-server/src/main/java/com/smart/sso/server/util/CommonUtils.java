@@ -1,5 +1,6 @@
 package com.smart.sso.server.util;
 
+import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -8,6 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,5 +77,25 @@ public class CommonUtils {
         matcher.appendTail(encodedUrl);
 
         return encodedUrl.toString();
+    }
+
+    public static List<CustomerFeatureResponse.Message> getMessageListFromOriginChat(String chatContent) {
+        List<CustomerFeatureResponse.Message> result = new ArrayList<>();
+        String[] chats = chatContent.split("\n");
+        // 获取Iterator
+        Iterator<String> iterator = Arrays.asList(chats).iterator();
+        // 使用Iterator遍历
+        while (iterator.hasNext()) {
+            CustomerFeatureResponse.Message message = new CustomerFeatureResponse.Message();
+            String element = iterator.next();
+            if (element.split(" ").length >= 2 && (element.contains("2024") || element.contains("2025"))) {
+                message.setId(element.substring(0, element.indexOf(" ")));
+                message.setTime(element.substring(element.indexOf(" ") + 1, element.length()));
+            }
+            if (iterator.hasNext()) {
+                message.setContent(iterator.next());
+            }
+        }
+        return result;
     }
 }

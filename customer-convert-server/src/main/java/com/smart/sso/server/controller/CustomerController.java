@@ -76,6 +76,7 @@ public class CustomerController {
         return ResultUtils.success(customerProfile);
     }
 
+    // /api/customer/${customer_id}/campaign/${campaign_id}/features
     @ApiOperation(value = "获取客户特征信息")
     @GetMapping("/customer/{id}/features")
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "id") String id) {
