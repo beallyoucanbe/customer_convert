@@ -7,6 +7,7 @@ import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
+import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
@@ -147,8 +148,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerProcessSummary queryCustomerProcessSummaryById(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
+        CustomerFeature featureFromSale = customerFeatureMapper.selectById(id);
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
-        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM);
+        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, customerFeature, customerSummary);
         if (Objects.nonNull(summaryResponse)) {
             summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
@@ -202,15 +204,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM) {
-        CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
-        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
+        CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
+        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
         // 客户匹配度判断 值不为“未完成判断”
         if (!"incomplete".equals(getConversionRate(customerFeature))) {
             stageStatus.setMatchingJudgment(1);
         }
 
-        if (Objects.nonNull(customerFeatureResponse)) {
+        if (Objects.nonNull(customerFeature)) {
             // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
             CustomerFeatureResponse.TradingMethod tradingMethod = customerFeatureResponse.getTradingMethod();
             if (Objects.nonNull(tradingMethod.getCurrentStocks().getCompareValue()) &&
@@ -221,25 +223,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 stageStatus.setTransactionStyle(1);
             }
             // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
-            CustomerFeatureResponse.Recognition recognition = customerFeatureResponse.getRecognition();
-            if (Objects.nonNull(recognition.getSoftwareFunctionClarity().getCompareValue()) &&
-                    (Boolean) recognition.getSoftwareFunctionClarity().getCompareValue() &&
-                    Objects.nonNull(recognition.getStockSelectionMethod().getCompareValue()) &&
-                    (Boolean) recognition.getStockSelectionMethod().getCompareValue() &&
-                    Objects.nonNull(recognition.getSelfIssueRecognition().getCompareValue()) &&
-                    (Boolean) recognition.getSelfIssueRecognition().getCompareValue() &&
-                    Objects.nonNull(recognition.getLearnNewMethodApproval().getCompareValue()) &&
-                    (Boolean) recognition.getLearnNewMethodApproval().getCompareValue() &&
-                    Objects.nonNull(recognition.getContinuousLearnApproval().getCompareValue()) &&
-                    (Boolean) recognition.getContinuousLearnApproval().getCompareValue() &&
-                    Objects.nonNull(recognition.getSoftwareValueApproval().getCompareValue()) &&
-                    (Boolean) recognition.getSoftwareValueApproval().getCompareValue()) {
-                stageStatus.setConfirmValue(1);
+            try {
+                if ((Boolean) customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue() &&
+                        (Boolean) customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue() &&
+                        (Boolean) customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue() &&
+                        (Boolean) customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
+                    stageStatus.setConfirmValue(1);
+                }
+            } catch (Exception e) {
+                // 有异常就不变
             }
             // 客户确认购买 客户对购买软件的态度”的值为“是”
-            if (Objects.nonNull(recognition.getSoftwarePurchaseAttitude().getCompareValue()) &&
-                    (Boolean) recognition.getSoftwarePurchaseAttitude().getCompareValue()) {
-                stageStatus.setConfirmPurchase(1);
+            try {
+                if ((Boolean) customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+                    stageStatus.setConfirmPurchase(1);
+                }
+            } catch (Exception e) {
+                // 有异常就不变
             }
         }
 
@@ -754,7 +754,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return customerFeatureResponse;
     }
 
-    public CustomerProcessSummary convert2CustomerProcessSummaryResponse(CustomerFeatureFromLLM featureFromLLM) {
+    public CustomerProcessSummary convert2CustomerProcessSummaryResponse(CustomerFeatureFromLLM featureFromLLM, CustomerFeature featureFromSale) {
         if (Objects.isNull(featureFromLLM)) {
             return null;
         }
@@ -767,6 +767,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         infoExplanation.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
         infoExplanation.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
         customerSummaryResponse.setInfoExplanation(infoExplanation);
+
+        CustomerProcessSummary.TradingMethod tradingMethod = new CustomerProcessSummary.TradingMethod();
+        tradingMethod.setCurrentStocks(converFeaturetByAppend(featureFromLLM.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
+        tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
+        tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
+        tradingMethod.setTradingStyle(convertFeatureByOverwrite(featureFromLLM.getTradingStyle(), featureFromSale.getTradingStyleSales(), null, String.class));
+        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(featureFromLLM.getStockMarketAge(), featureFromSale.getStockMarketAgeSales(), null, String.class));
+        tradingMethod.setLearningAbility(convertFeatureByOverwrite(featureFromLLM.getLearningAbility(), featureFromSale.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
+        customerSummaryResponse.setTradingMethod(tradingMethod);
         return customerSummaryResponse;
     }
 

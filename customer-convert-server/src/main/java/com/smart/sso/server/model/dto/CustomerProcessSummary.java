@@ -13,6 +13,8 @@ public class CustomerProcessSummary {
     private ProcessSummary summary;
     // 信息收集和功能讲解
     private ProcessInfoExplanation infoExplanation;
+    // 客户自己的交易方法
+    private TradingMethod tradingMethod;
 
     @Getter
     @Setter
@@ -45,5 +47,16 @@ public class CustomerProcessSummary {
     public static class ProcessInfoExplanationContent {
         private Boolean result;
         private OriginChat originChat;
+    }
+
+    @Getter
+    @Setter
+    public static class TradingMethod {
+        private CustomerFeatureResponse.Feature currentStocks;
+        private CustomerFeatureResponse.Feature stockPurchaseReason;
+        private CustomerFeatureResponse.Feature tradeTimingDecision;
+        private CustomerFeatureResponse.Feature tradingStyle;
+        private CustomerFeatureResponse.Feature stockMarketAge;
+        private CustomerFeatureResponse.Feature learningAbility;
     }
 }
