@@ -1,6 +1,6 @@
 package com.smart.sso.server.util;
 
-import com.smart.sso.server.model.dto.CustomerFeatureResponse;
+import com.smart.sso.server.model.dto.OriginChat;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -79,14 +79,14 @@ public class CommonUtils {
         return encodedUrl.toString();
     }
 
-    public static List<CustomerFeatureResponse.Message> getMessageListFromOriginChat(String chatContent) {
-        List<CustomerFeatureResponse.Message> result = new ArrayList<>();
+    public static List<OriginChat.Message> getMessageListFromOriginChat(String chatContent) {
+        List<OriginChat.Message> result = new ArrayList<>();
         String[] chats = chatContent.split("\n");
         // 获取Iterator
         Iterator<String> iterator = Arrays.asList(chats).iterator();
         // 使用Iterator遍历
         while (iterator.hasNext()) {
-            CustomerFeatureResponse.Message message = new CustomerFeatureResponse.Message();
+            OriginChat.Message message = new OriginChat.Message();
             String element = iterator.next();
             if (element.split(" ").length >= 2 && (element.contains("2024") || element.contains("2025"))) {
                 message.setRole(element.substring(0, element.indexOf(" ")));
@@ -99,8 +99,8 @@ public class CommonUtils {
         return result;
     }
 
-    public static CustomerFeatureResponse.OriginChat getOriginChatFromChatText(String callId, String chatContent) {
-        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+    public static OriginChat getOriginChatFromChatText(String callId, String chatContent) {
+        OriginChat originChat = new OriginChat();
         originChat.setContents(getMessageListFromOriginChat(chatContent));
         originChat.setId(callId);
         return originChat;

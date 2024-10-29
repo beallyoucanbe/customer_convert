@@ -11,7 +11,7 @@ import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
@@ -87,15 +87,15 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户过程总结")
     @GetMapping("/customer/{id}/summary")
-    public BaseResponse<CustomerProcessSummaryResponse> getCustomerSummary(@PathVariable(value = "id") String id) {
-        CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
+    public BaseResponse<CustomerProcessSummary> getCustomerSummary(@PathVariable(value = "id") String id) {
+        CustomerProcessSummary customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         return ResultUtils.success(customerSummary);
     }
 
     @ApiOperation(value = "修改客户特征信息")
     @PostMapping("/customer/{id}/features")
-    public BaseResponse<CustomerProcessSummaryResponse> modifyCustomerFeatures(@PathVariable(value = "id") String id,
-                                                                               @RequestBody CustomerFeatureResponse customerFeatureRequest) {
+    public BaseResponse<CustomerProcessSummary> modifyCustomerFeatures(@PathVariable(value = "id") String id,
+                                                                       @RequestBody CustomerFeatureResponse customerFeatureRequest) {
         customerInfoService.modifyCustomerFeatureById(id, customerFeatureRequest);
         return ResultUtils.success(null);
     }

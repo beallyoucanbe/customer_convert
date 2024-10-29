@@ -37,16 +37,10 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Quantified {
-        private QuantifiedContent customerIssuesQuantified;
-        private QuantifiedContent softwareValueQuantified;
+        private CustomerProcessSummary.ProcessInfoExplanationContent customerIssuesQuantified;
+        private CustomerProcessSummary.ProcessInfoExplanationContent softwareValueQuantified;
     }
 
-    @Getter
-    @Setter
-    public static class QuantifiedContent {
-        private Object result;
-        private OriginChat originChat;
-    }
 
     @Getter
     @Setter
@@ -72,20 +66,5 @@ public class CustomerFeatureResponse {
     public static class CustomerQuestion {
         private Object modelRecord;
         private OriginChat originChat;
-    }
-
-    @Getter
-    @Setter
-    public static class OriginChat {
-        private String id;
-        private List<Message> contents;
-    }
-
-    @Getter
-    @Setter
-    public static class Message {
-        private String role;
-        private String time;
-        private String content;
     }
 }

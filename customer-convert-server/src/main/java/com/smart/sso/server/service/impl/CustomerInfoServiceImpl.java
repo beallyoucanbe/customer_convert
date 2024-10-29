@@ -7,14 +7,11 @@ import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.enums.LearningAbilityEnum;
-import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.CustomerRelationMapper;
-import com.smart.sso.server.mapper.CustomerSummaryMapper;
 import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
@@ -22,8 +19,9 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
+import com.smart.sso.server.model.dto.OriginChat;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
@@ -58,8 +56,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
     private CustomerFeatureMapper customerFeatureMapper;
-    @Autowired
-    private CustomerSummaryMapper customerSummaryMapper;
     @Autowired
     private ConfigMapper configMapper;
     @Autowired
@@ -123,6 +119,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, campaignId);
 
+        CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
+
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM));
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
@@ -131,7 +129,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 重新判断一下匹配度，防止更新不及时的情况
         String conversionRate = getConversionRate(customerFeature);
         if (!customerInfo.getConversionRate().equals(conversionRate)) {
-            customerInfoMapper.updateConversionRateById(id, conversionRate);
+            customerInfoMapper.updateConversionRateById(customerInfo.getId(), conversionRate);
             customerProfile.setConversionRate(conversionRate);
         }
         customerProfile.setLastCommunicationDate(new Date(customerInfo.getUpdateTime().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli()));
@@ -147,11 +145,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerProcessSummaryResponse queryCustomerProcessSummaryById(String id) {
-        CustomerSummary customerSummary = customerSummaryMapper.selectById(id);
-        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
+    public CustomerProcessSummary queryCustomerProcessSummaryById(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
+        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, customerFeature, customerSummary);
         if (Objects.nonNull(summaryResponse)) {
             summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
@@ -160,95 +157,44 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public String getConversionRate(CustomerFeature customerFeature) {
+    public String getConversionRate(CustomerFeatureResponse customerFeature) {
         // "high", "medium", "low", "incomplete"
         // -较高：资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“高”
         // -中等：(资金体量=“匮乏”或“小于10万” and 赚钱欲望=“高”) or (资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“低”)
         // -较低：资金体量=“匮乏”或“小于10万” and 赚钱欲望=“低”
         // -未完成判断：资金体量=空 or 赚钱欲望=空
         String result = "incomplete";
-        if (Objects.isNull(customerFeature)) {
+        if (Objects.isNull(customerFeature) || Objects.isNull(customerFeature.getBasic())) {
             return result;
         }
-        List<FeatureContent> fundsVolumeModel = customerFeature.getFundsVolumeModel();
-        String fundsVolumeSales = Objects.nonNull(customerFeature.getFundsVolumeSales()) &&
-                Objects.nonNull(customerFeature.getFundsVolumeSales().getTag())
-                ? customerFeature.getFundsVolumeSales().getTag().toString() : null;
-        List<FeatureContent> earningDesireModel = customerFeature.getEarningDesireModel();
-        String earningDesireSales = Objects.nonNull(customerFeature.getEarningDesireSales()) &&
-                Objects.nonNull(customerFeature.getEarningDesireSales().getTag())
-                ? customerFeature.getEarningDesireSales().getTag().toString() : null;
+        CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
+        if ((Objects.isNull(basic.getFundsVolume()) || Objects.isNull(basic.getFundsVolume().getCustomerConclusion())) &&
+                (Objects.isNull(basic.getEarningDesire()) || Objects.isNull(basic.getEarningDesire().getCustomerConclusion()))) {
+            return result;
+        }
         String fundsVolume = null;
         String earningDesire = null;
-        if (!CollectionUtils.isEmpty(fundsVolumeModel)) {
-            // 找到最后一个非null的值
-            for (int i = fundsVolumeModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(fundsVolumeModel.get(i).getAnswer())) {
-                    fundsVolume = fundsVolumeModel.get(i).getAnswer();
-                    if (!fundsVolume.equals("无") && !fundsVolume.equals("null")) {
-                        break;
-                    }
-                }
-            }
+
+        if (Objects.nonNull(basic.getFundsVolume()) && Objects.nonNull(basic.getFundsVolume().getCustomerConclusion())){
+            fundsVolume = Objects.isNull(basic.getFundsVolume().getCustomerConclusion().getCompareValue()) ? null : (String) basic.getFundsVolume().getCustomerConclusion().getCompareValue();
         }
-        if (!CollectionUtils.isEmpty(earningDesireModel)) {
-            for (int i = earningDesireModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(earningDesireModel.get(i).getAnswer())) {
-                    earningDesire = earningDesireModel.get(i).getAnswer();
-                    if (!earningDesire.equals("无") && !earningDesire.equals("null")) {
-                        break;
-                    }
-                }
-            }
+        if (Objects.nonNull(basic.getEarningDesire()) && Objects.nonNull(basic.getEarningDesire().getCustomerConclusion())){
+            earningDesire = Objects.isNull(basic.getEarningDesire().getCustomerConclusion().getCompareValue()) ? null : (String) basic.getEarningDesire().getCustomerConclusion().getCompareValue();
         }
-        if ((StringUtils.isEmpty(fundsVolume) && StringUtils.isEmpty(fundsVolumeSales)) ||
-                (StringUtils.isEmpty(earningDesire) && StringUtils.isEmpty(earningDesireSales))) {
+
+        if (StringUtils.isEmpty(fundsVolume) || StringUtils.isEmpty(earningDesire)) {
             return result;
         }
-        String fundsVolumeStatus = null;
-        String earningDesireStatus = null;
-
-        if (StringUtils.isEmpty(fundsVolumeSales)) {
-            if (fundsVolume.equals("充裕") || fundsVolume.equals("大于等于5万")) {
-                fundsVolumeStatus = "high";
-            } else if (fundsVolume.equals("匮乏") || fundsVolume.equals("小于5万")) {
-                fundsVolumeStatus = "low";
-            }
-        } else {
-            if (fundsVolumeSales.equals("abundant") || fundsVolumeSales.equals("great_equal_five_w")) {
-                fundsVolumeStatus = "high";
-            } else if (fundsVolumeSales.equals("deficient") || fundsVolumeSales.equals("less_five_w")) {
-                fundsVolumeStatus = "low";
-            }
-        }
-
-        if (StringUtils.isEmpty(earningDesireSales)) {
-            if (earningDesire.equals("强")) {
-                earningDesireStatus = "high";
-            } else if (earningDesire.equals("弱")) {
-                earningDesireStatus = "low";
-            }
-        } else {
-            if (earningDesireSales.equals("high")) {
-                earningDesireStatus = "high";
-            } else if (earningDesireSales.equals("low")) {
-                earningDesireStatus = "low";
-            }
-        }
-
-        if (StringUtils.isEmpty(fundsVolumeStatus) || StringUtils.isEmpty(earningDesireStatus)) {
-            return result;
-        }
-        if (fundsVolumeStatus.equals("high") && earningDesireStatus.equals("high")) {
+        if (fundsVolume.equals("high") && earningDesire.equals("high")) {
             return "high";
         }
-        if (fundsVolumeStatus.equals("low") && earningDesireStatus.equals("high")) {
+        if (fundsVolume.equals("low") && earningDesire.equals("high")) {
             return "medium";
         }
-        if (fundsVolumeStatus.equals("high") && earningDesireStatus.equals("low")) {
+        if (fundsVolume.equals("high") && earningDesire.equals("low")) {
             return "medium";
         }
-        if (fundsVolumeStatus.equals("low") && earningDesireStatus.equals("low")) {
+        if (fundsVolume.equals("low") && earningDesire.equals("low")) {
             return "low";
         }
         return result;
@@ -257,7 +203,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM) {
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
-        CustomerProcessSummaryResponse summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
+        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(customerSummary);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
         // 客户匹配度判断 值不为“未完成判断”
         if (!"incomplete".equals(getConversionRate(customerFeature))) {
@@ -299,7 +245,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         if (Objects.nonNull(summaryResponse)) {
             // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
-            CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
+            CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
             if (Objects.nonNull(infoExplanation.getStock()) &&
                     infoExplanation.getStock().getResult() &&
                     Objects.nonNull(infoExplanation.getStockPickReview()) &&
@@ -662,7 +608,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 筛选时间
         queryWrapperInfo.eq("current_campaign", "361");
         List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
-        System.out.println("总客户数："  + customerFeatureList.size());
+        System.out.println("总客户数：" + customerFeatureList.size());
         int customerNum = 0;
         int featureNum = 0;
         List<String> result = new ArrayList<>();
@@ -707,13 +653,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         System.out.println(JsonUtil.serialize(result));
     }
 
-    private boolean equal(CustomerFeatureResponse.Feature feature){
-        if (Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())){
+    private boolean equal(CustomerFeatureResponse.Feature feature) {
+        if (Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;
         }
-        if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) && Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())){
+        if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) &&
+                Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;
-        } else if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) || Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
+        } else if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) ||
+                Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
             return false;
         } else if (feature.getCustomerConclusion().getModelRecord().equals(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;
@@ -784,8 +732,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.setBasic(basic);
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
-        quantified.setCustomerIssuesQuantified(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
-        quantified.setSoftwareValueQuantified(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
+        quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
         customerFeatureResponse.setQuantified(quantified);
 
 //        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
@@ -806,35 +754,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return customerFeatureResponse;
     }
 
-    public CustomerProcessSummaryResponse convert2CustomerProcessSummaryResponse(CustomerSummary customerSummary) {
-        if (Objects.isNull(customerSummary)) {
+    public CustomerProcessSummary convert2CustomerProcessSummaryResponse(CustomerFeatureFromLLM featureFromLLM) {
+        if (Objects.isNull(featureFromLLM)) {
             return null;
         }
-        CustomerProcessSummaryResponse customerSummaryResponse = new CustomerProcessSummaryResponse();
-
-        CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = new CustomerProcessSummaryResponse.ProcessInfoExplanation();
-        infoExplanation.setStock(convertSummaryByOverwrite(customerSummary.getIllustrateBasedStock()));
-        infoExplanation.setTradeBasedIntro(convertSummaryByOverwrite(customerSummary.getTradeStyleIntroduce()));
-        infoExplanation.setStockPickReview(convertSummaryByOverwrite(customerSummary.getStockPickMethodReview()));
-        infoExplanation.setStockTimingReview(convertSummaryByOverwrite(customerSummary.getStockPickTimingReview()));
-        infoExplanation.setSoftwareValueQuantified(convertSummaryByOverwrite(customerSummary.getSoftwareValueQuantified()));
-        infoExplanation.setCustomerIssuesQuantified(convertSummaryByOverwrite(customerSummary.getCustomerIssuesQuantified()));
-
+        CustomerProcessSummary customerSummaryResponse = new CustomerProcessSummary();
+        CustomerProcessSummary.ProcessInfoExplanation infoExplanation = new CustomerProcessSummary.ProcessInfoExplanation();
+        infoExplanation.setStock(convertSummaryByOverwrite(featureFromLLM.getIllustrateBasedStock()));
+        infoExplanation.setTradeBasedIntro(convertSummaryByOverwrite(featureFromLLM.getTradeStyleIntroduce()));
+        infoExplanation.setStockPickReview(convertSummaryByOverwrite(featureFromLLM.getStockPickMethodReview()));
+        infoExplanation.setStockTimingReview(convertSummaryByOverwrite(featureFromLLM.getStockPickTimingReview()));
+        infoExplanation.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
+        infoExplanation.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
         customerSummaryResponse.setInfoExplanation(infoExplanation);
-
-        CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = new CustomerProcessSummaryResponse.ProcessApprovalAnalysis();
-        approvalAnalysis.setMethod(convertProcessContent(customerSummary.getApprovalAnalysisMethod()));
-        approvalAnalysis.setIssue(convertProcessContent(customerSummary.getApprovalAnalysisIssue()));
-        approvalAnalysis.setValue(convertProcessContent(customerSummary.getApprovalAnalysisValue()));
-        approvalAnalysis.setPurchase(convertProcessContent(customerSummary.getApprovalAnalysisPurchase()));
-        approvalAnalysis.setPrice(convertProcessContent(customerSummary.getApprovalAnalysisPrice()));
-        approvalAnalysis.setSoftwareOperation(convertProcessContent(customerSummary.getApprovalAnalysisSoftwareOperation()));
-        approvalAnalysis.setCourse(convertProcessContent(customerSummary.getApprovalAnalysisCourse()));
-        approvalAnalysis.setNoMoney(convertProcessContent(customerSummary.getApprovalAnalysisNoMoney()));
-        approvalAnalysis.setOthers(convertProcessContent(customerSummary.getApprovalAnalysisOthers()));
-
-        customerSummaryResponse.setApprovalAnalysis(approvalAnalysis);
-
         return customerSummaryResponse;
     }
 
@@ -849,7 +781,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     !featureContentByModel.getQuestion().equals("无") &&
                     !featureContentByModel.getQuestion().equals("null")) {
                 featureVO.setInquired("yes");
-                CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+                OriginChat originChat = new OriginChat();
                 originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getQuestion()));
                 originChat.setId(featureContentByModel.getCallId());
                 featureVO.setInquiredOriginChat(originChat);
@@ -870,10 +802,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
             if (Objects.isNull(enumClass)) {
                 customerConclusion.setModelRecord(featureContentByModel.getAnswerTag());
-                CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getAnswerText()));
-                originChat.setId(featureContentByModel.getCallId());
-                customerConclusion.setOriginChat(originChat);
+                customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getAnswerText()));
             } else {
                 // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
                 for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
@@ -883,10 +812,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     // 判断文本是否匹配`text`
                     if (featureContentByModel.getAnswerTag().trim().equals(enumText)) {
                         resultAnswer = value;
-                        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                        originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getAnswerText()));
-                        originChat.setId(featureContentByModel.getCallId());
-                        customerConclusion.setOriginChat(originChat);
+                        customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getAnswerText()));
                     }
                 }
             }
@@ -991,36 +917,27 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return featureVO;
     }
 
-    private CustomerProcessSummaryResponse.ProcessInfoExplanationContent convertSummaryByOverwrite(List<SummaryContent> summaryContentList) {
-
-        CustomerProcessSummaryResponse.ProcessInfoExplanationContent explanationContent =
-                new CustomerProcessSummaryResponse.ProcessInfoExplanationContent();
-
-        if (CollectionUtils.isEmpty(summaryContentList)) {
+    private CustomerProcessSummary.ProcessInfoExplanationContent convertSummaryByOverwrite(CommunicationContent featureFromLLM) {
+        CustomerProcessSummary.ProcessInfoExplanationContent explanationContent =
+                new CustomerProcessSummary.ProcessInfoExplanationContent();
+        if (Objects.isNull(featureFromLLM)) {
             explanationContent.setResult(Boolean.FALSE);
             return explanationContent;
         }
         // 多通电话覆盖+规则加工
-        for (int i = summaryContentList.size() - 1; i >= 0; i--) {
-            SummaryContent item = summaryContentList.get(i);
-            if (!StringUtils.isEmpty(item.getContent().trim())) {
-                explanationContent.setResult(Boolean.TRUE);
-                CustomerProcessSummaryResponse.OriginChat originChat =
-                        new CustomerProcessSummaryResponse.OriginChat();
-                originChat.setId(item.getCallId());
-                originChat.setContent(item.getContent());
-                explanationContent.setOriginChat(originChat);
-                return explanationContent;
-            }
+        if (!StringUtils.isEmpty(featureFromLLM.getQuestion().trim())) {
+            explanationContent.setResult(Boolean.TRUE);
+            explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(featureFromLLM.getCallId(), featureFromLLM.getQuestion()));
+            return explanationContent;
         }
         return explanationContent;
     }
 
-    private CustomerProcessSummaryResponse.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
+    private CustomerProcessSummary.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
         summaryContentList = dataPreprocess(summaryContentList);
-        CustomerProcessSummaryResponse.ProcessContent processContent = new CustomerProcessSummaryResponse.ProcessContent();
+        CustomerProcessSummary.ProcessContent processContent = new CustomerProcessSummary.ProcessContent();
         String recognitionOverall = null;
-        List<CustomerProcessSummaryResponse.Chat> chatList = new ArrayList<>();
+        List<CustomerProcessSummary.Chat> chatList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(summaryContentList)) {
             for (SummaryContent item : summaryContentList) {
                 try {
@@ -1043,11 +960,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         if (!StringUtils.isEmpty(chatRecognition)) {
                             recognitionOverall = chatRecognition;
                         }
-                        CustomerProcessSummaryResponse.Chat chat = new CustomerProcessSummaryResponse.Chat();
+                        CustomerProcessSummary.Chat chat = new CustomerProcessSummary.Chat();
                         chat.setRecognition(chatRecognition);
-                        List<CustomerProcessSummaryResponse.Message> messageList = new ArrayList<>();
+                        List<CustomerProcessSummary.Message> messageList = new ArrayList<>();
                         for (SummaryContentChats.Message dbmessage : dbMessages) {
-                            CustomerProcessSummaryResponse.Message message = new CustomerProcessSummaryResponse.Message();
+                            CustomerProcessSummary.Message message = new CustomerProcessSummary.Message();
                             message.setRole(dbmessage.getRole());
                             message.setContent(dbmessage.getContent());
                             try {
@@ -1097,8 +1014,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return new ArrayList<>(keySummaryContent.values());
     }
 
-    private CustomerProcessSummaryResponse.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummaryResponse summaryResponse) {
-        CustomerProcessSummaryResponse.ProcessSummary processSummary = new CustomerProcessSummaryResponse.ProcessSummary();
+    private CustomerProcessSummary.ProcessSummary getProcessSummary(CustomerFeature customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
+        CustomerProcessSummary.ProcessSummary processSummary = new CustomerProcessSummary.ProcessSummary();
 
         CustomerFeatureResponse customerFeatureResponse = convert2CustomerFeatureResponse(customerFeature);
         List<String> advantage = new ArrayList<>();
@@ -1276,7 +1193,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 痛点和价值量化
             // 优点：-完成痛点和价值量化放大：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”都为“是”
             // 缺点：-尚未完成痛点和价值量化放大，需后续完成：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”不都为“是”（前提条件是通话次数大于等于3）
-            CustomerProcessSummaryResponse.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
+            CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
             if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
                     infoExplanation.getCustomerIssuesQuantified().getResult() &&
                     Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
@@ -1334,11 +1251,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
             // 缺点：- 质疑应对失败次数多，需参考调整应对话术：单个类别的质疑不认可的对话组数大于等于5
             int questionCount = 0;
-            CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = summaryResponse.getApprovalAnalysis();
+            CustomerProcessSummary.ProcessApprovalAnalysis approvalAnalysis = summaryResponse.getApprovalAnalysis();
             if (Objects.nonNull(approvalAnalysis)) {
                 if (Objects.nonNull(approvalAnalysis.getMethod()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getMethod().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getMethod().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1346,7 +1263,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getIssue()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getIssue().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getIssue().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getIssue().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1354,7 +1271,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getValue()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getValue().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getValue().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getValue().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1362,7 +1279,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getPrice()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getPrice().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getPrice().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getPrice().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1370,7 +1287,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getPurchase()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getPurchase().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getPurchase().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getPurchase().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1378,7 +1295,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getSoftwareOperation()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getSoftwareOperation().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getSoftwareOperation().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getSoftwareOperation().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1386,7 +1303,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getCourse()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getCourse().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getCourse().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getCourse().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1394,7 +1311,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getNoMoney()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getNoMoney().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getNoMoney().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getNoMoney().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }
@@ -1402,7 +1319,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 }
                 if (Objects.nonNull(approvalAnalysis.getOthers()) &&
                         !CollectionUtils.isEmpty(approvalAnalysis.getOthers().getChats())) {
-                    for (CustomerProcessSummaryResponse.Chat item : approvalAnalysis.getOthers().getChats()) {
+                    for (CustomerProcessSummary.Chat item : approvalAnalysis.getOthers().getChats()) {
                         if (item.getRecognition().equals(CustomerRecognition.NOT_APPROVED.getText())) {
                             questionCount++;
                         }

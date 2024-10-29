@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Data
-public class CustomerProcessSummaryResponse {
+public class CustomerProcessSummary {
 
     // 总结
     private ProcessSummary summary;
@@ -45,12 +45,5 @@ public class CustomerProcessSummaryResponse {
     public static class ProcessInfoExplanationContent {
         private Boolean result;
         private OriginChat originChat;
-    }
-
-    @Getter
-    @Setter
-    public static class OriginChat {
-        private String id;
-        private String content;
     }
 }

@@ -15,7 +15,7 @@ import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummaryResponse;
+import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
@@ -153,7 +153,7 @@ public class MessageServiceImpl implements MessageService {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
-        CustomerProcessSummaryResponse customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
+        CustomerProcessSummary customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
         updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
@@ -264,7 +264,7 @@ public class MessageServiceImpl implements MessageService {
 
     private void sendMessage(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerProcessSummaryResponse processSummaryResponse = customerInfoService.queryCustomerProcessSummaryById(id);
+        CustomerProcessSummary processSummaryResponse = customerInfoService.queryCustomerProcessSummaryById(id);
         List<String> completeStatus = processSummaryResponse.getSummary().getAdvantage();
         List<String> incompleteStatus = processSummaryResponse.getSummary().getQuestions();
 
@@ -322,7 +322,7 @@ public class MessageServiceImpl implements MessageService {
 
 
     private void updateCharacter(CustomerCharacter latestCustomerCharacter, CustomerInfo customerInfo,
-                                 CustomerProfile customerProfile, CustomerFeatureResponse customerFeature, CustomerProcessSummaryResponse customerSummary) {
+                                 CustomerProfile customerProfile, CustomerFeatureResponse customerFeature, CustomerProcessSummary customerSummary) {
         latestCustomerCharacter.setId(customerInfo.getId());
         latestCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
         latestCustomerCharacter.setCustomerName(customerInfo.getCustomerName());
@@ -400,7 +400,7 @@ public class MessageServiceImpl implements MessageService {
         }
         // 总结质疑应对中
         int questionCount = 0;
-        CustomerProcessSummaryResponse.ProcessApprovalAnalysis approvalAnalysis = customerSummary.getApprovalAnalysis();
+        CustomerProcessSummary.ProcessApprovalAnalysis approvalAnalysis = customerSummary.getApprovalAnalysis();
         if (Objects.nonNull(approvalAnalysis)) {
             if (Objects.nonNull(approvalAnalysis.getMethod()) && !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())){
                 questionCount += approvalAnalysis.getMethod().getChats().size();
