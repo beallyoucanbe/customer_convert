@@ -283,123 +283,55 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeatureRequest) {
-        CustomerFeature customerFeature = customerFeatureMapper.selectById(id);
+    public void modifyCustomerFeatureById(String customerId, String campaignId, CustomerFeatureResponse customerFeatureRequest) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
+        CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
         if (Objects.isNull(customerFeature)) {
             throw new RuntimeException("客户不存在");
         }
         if (Objects.nonNull(customerFeatureRequest.getBasic())) {
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getSalesManualTag()))) {
-                customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getFundsVolume().getSalesManualTag()));
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) && Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()));
             }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesManualTag()))) {
-                customerFeature.setProfitLossSituationSales(new FeatureContentSales(customerFeatureRequest.getBasic().getProfitLossSituation().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getProfitLossSituation().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getSalesManualTag()))) {
-                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getBasic().getEarningDesire().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getEarningDesire().getSalesManualTag()));
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) && Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag()));
             }
         }
-
-        if (Objects.nonNull(customerFeatureRequest.getTradingMethod())) {
-            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks()) &&
-                    (Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesManualTag()))) {
-                customerFeature.setCurrentStocksSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesRecord(),
-                        customerFeatureRequest.getTradingMethod().getCurrentStocks().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason()) &&
-                    (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesManualTag()))) {
-                customerFeature.setStockPurchaseReasonSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesRecord(),
-                        customerFeatureRequest.getTradingMethod().getStockPurchaseReason().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision()) &&
-                    (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesManualTag()))) {
-                customerFeature.setTradeTimingDecisionSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesRecord(),
-                        customerFeatureRequest.getTradingMethod().getTradeTimingDecision().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility()) &&
-                    (Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesManualTag()))) {
-                customerFeature.setLearningAbilitySales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesRecord(),
-                        customerFeatureRequest.getTradingMethod().getLearningAbility().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge()) &&
-                    (Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesManualTag()))) {
-                customerFeature.setStockMarketAgeSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesRecord(),
-                        customerFeatureRequest.getTradingMethod().getStockMarketAge().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle()) &&
-                    (Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesManualTag()))) {
-                customerFeature.setTradingStyleSales(new FeatureContentSales(customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesRecord(),
-                        customerFeatureRequest.getTradingMethod().getTradingStyle().getSalesManualTag()));
-            }
+        if (Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition()) && Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()));
         }
-
-        if (Objects.nonNull(customerFeatureRequest.getRecognition())) {
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesManualTag()))) {
-                customerFeature.setCourseTeacherApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getCourseTeacherApproval().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesManualTag()))) {
-                customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getSelfIssueRecognition().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesManualTag()))) {
-                customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getSoftwareFunctionClarity().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesManualTag()))) {
-                customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getSoftwarePurchaseAttitude().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getContinuousLearnApproval()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesManualTag()))) {
-                customerFeature.setContinuousLearnApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getContinuousLearnApproval().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getLearnNewMethodApproval()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesManualTag()))) {
-                customerFeature.setLearnNewMethodApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getLearnNewMethodApproval().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesManualTag()))) {
-                customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getSoftwareValueApproval().getSalesManualTag()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod()) &&
-                    (Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesManualTag()))) {
-                customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesRecord(),
-                        customerFeatureRequest.getRecognition().getStockSelectionMethod().getSalesManualTag()));
-            }
+        if (Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity()) && Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()));
         }
-        if (Objects.nonNull(customerFeatureRequest.getNote())) {
-            customerFeature.setNote(customerFeatureRequest.getNote());
+        if (Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude()) && Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()));
+        }
+        if (Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval()) && Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()));
+        }
+        if (Objects.nonNull(customerFeatureRequest.getStockSelectionMethod()) && Objects.nonNull(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()));
         }
         customerFeatureMapper.updateById(customerFeature);
     }
@@ -507,88 +439,67 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         int communicationRound = 1; // 累计通话轮次
         for (TelephoneRecord telephoneRecord : customerFeatureList) {
             // 该次通话有记录特征提取的时间，并且之前没有记录过
-            if (Objects.nonNull(telephoneRecord.getTimeFundsVolume()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeFundsVolume().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getFundsVolume()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getFundsVolume().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundFundsVolume())) {
                 characterCostTime.setCommunicationDurationFundsVolume(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeFundsVolume().getTs()));
+                        Integer.parseInt(telephoneRecord.getFundsVolume().get(0).getTs()));
                 characterCostTime.setCommunicationRoundFundsVolume(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeEarningDesire()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeEarningDesire().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getEarningDesire()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getEarningDesire().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundEarningDesire())) {
                 characterCostTime.setCommunicationDurationFearningDesire(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeEarningDesire().getTs()));
+                        Integer.parseInt(telephoneRecord.getEarningDesire().get(0).getTs()));
                 characterCostTime.setCommunicationRoundEarningDesire(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeCourseTeacherApproval()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeCourseTeacherApproval().getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundCourseTeacherApproval())) {
-                characterCostTime.setCommunicationDurationCourseTeacherApproval(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeCourseTeacherApproval().getTs()));
-                characterCostTime.setCommunicationRoundCourseTeacherApproval(communicationRound);
-            }
-            if (Objects.nonNull(telephoneRecord.getTimeSoftwareFunctionClarity()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwareFunctionClarity().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareFunctionClarity()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getSoftwareFunctionClarity().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundSoftwareFunctionClarity())) {
                 characterCostTime.setCommunicationDurationSoftwareFunctionClarity(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeSoftwareFunctionClarity().getTs()));
+                        Integer.parseInt(telephoneRecord.getSoftwareFunctionClarity().get(0).getTs()));
                 characterCostTime.setCommunicationRoundSoftwareFunctionClarity(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeStockSelectionMethod()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeStockSelectionMethod().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getStockSelectionMethod()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getStockSelectionMethod().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundStockSelectionMethod())) {
                 characterCostTime.setCommunicationDurationStockSelectionMethod(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeStockSelectionMethod().getTs()));
+                        Integer.parseInt(telephoneRecord.getStockSelectionMethod().get(0).getTs()));
                 characterCostTime.setCommunicationRoundStockSelectionMethod(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeSelfIssueRecognition()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeSelfIssueRecognition().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getSelfIssueRecognition()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getSelfIssueRecognition().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundSelfIssueRecognition())) {
                 characterCostTime.setCommunicationDurationSelfIssueRecognition(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeSelfIssueRecognition().getTs()));
+                        Integer.parseInt(telephoneRecord.getSelfIssueRecognition().get(0).getTs()));
                 characterCostTime.setCommunicationRoundSelfIssueRecognition(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeLearnNewMethodApproval()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeLearnNewMethodApproval().getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundLearnNewMethodApproval())) {
-                characterCostTime.setCommunicationDurationLearnNewMethodApproval(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeLearnNewMethodApproval().getTs()));
-                characterCostTime.setCommunicationRoundLearnNewMethodApproval(communicationRound);
-            }
-            if (Objects.nonNull(telephoneRecord.getTimeContinuousLearnApproval()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeContinuousLearnApproval().getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundContinuousLearnApproval())) {
-                characterCostTime.setCommunicationDurationContinuousLearnApproval(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeContinuousLearnApproval().getTs()));
-                characterCostTime.setCommunicationRoundContinuousLearnApproval(communicationRound);
-            }
-            if (Objects.nonNull(telephoneRecord.getTimeSoftwareValueApproval()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwareValueApproval().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareValueApproval()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getSoftwareValueApproval().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundSoftwareValueApproval())) {
                 characterCostTime.setCommunicationDurationSoftwareValueApproval(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeSoftwareValueApproval().getTs()));
+                        Integer.parseInt(telephoneRecord.getSoftwareValueApproval().get(0).getTs()));
                 characterCostTime.setCommunicationRoundSoftwareValueApproval(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeSoftwarePurchaseAttitude()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwarePurchaseAttitude().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getSoftwarePurchaseAttitude().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundSoftwarePurchaseAttitude())) {
                 characterCostTime.setCommunicationDurationSoftwarePurchaseAttitude(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeSoftwarePurchaseAttitude().getTs()));
+                        Integer.parseInt(telephoneRecord.getSoftwarePurchaseAttitude().get(0).getTs()));
                 characterCostTime.setCommunicationRoundSoftwarePurchaseAttitude(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeCustomerIssuesQuantified()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeCustomerIssuesQuantified().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getCustomerIssuesQuantified()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getCustomerIssuesQuantified().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundCustomerIssuesQuantified())) {
                 characterCostTime.setCommunicationDurationCustomerIssuesQuantified(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeCustomerIssuesQuantified().getTs()));
+                        Integer.parseInt(telephoneRecord.getCustomerIssuesQuantified().get(0).getTs()));
                 characterCostTime.setCommunicationRoundCustomerIssuesQuantified(communicationRound);
             }
-            if (Objects.nonNull(telephoneRecord.getTimeSoftwareValueQuantified()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getTimeSoftwareValueQuantified().getTs()) &&
+            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareValueQuantified()) &&
+                    !StringUtils.isEmpty(telephoneRecord.getSoftwareValueQuantified().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundSoftwareValueQuantified())) {
                 characterCostTime.setCommunicationDurationSoftwareValueQuantified(communicationTime +
-                        Integer.parseInt(telephoneRecord.getTimeSoftwareValueQuantified().getTs()));
+                        Integer.parseInt(telephoneRecord.getSoftwareValueQuantified().get(0).getTs()));
                 characterCostTime.setCommunicationRoundSoftwareValueQuantified(communicationRound);
             }
             communicationRound++;
@@ -618,7 +529,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         int featureNum = 0;
         List<String> result = new ArrayList<>();
         for (CustomerInfo customerInfo : customerFeatureList) {
-            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getId());
+            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
             boolean tttt = true;
             if (!equal(featureProfile.getBasic().getFundsVolume())) {
                 tttt = false;
@@ -886,74 +797,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return explanationContent;
         }
         return explanationContent;
-    }
-
-    private CustomerProcessSummary.ProcessContent convertProcessContent(List<SummaryContent> summaryContentList) {
-        summaryContentList = dataPreprocess(summaryContentList);
-        CustomerProcessSummary.ProcessContent processContent = new CustomerProcessSummary.ProcessContent();
-        String recognitionOverall = null;
-        List<CustomerProcessSummary.Chat> chatList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(summaryContentList)) {
-            for (SummaryContent item : summaryContentList) {
-                try {
-                    SummaryContentChats contentChats = null;
-                    contentChats = JsonUtil.readValue(item.getContent().replace("\n", ""), new TypeReference<SummaryContentChats>() {
-                    });
-                    String dateString = contentChats.getTime();
-                    for (SummaryContentChats.Chat chatFromDb : contentChats.getChats()) {
-                        List<SummaryContentChats.Message> dbMessages = chatFromDb.getMessages();
-                        String chatRecognition = null;
-                        if (!StringUtils.isEmpty(chatFromDb.getRecognition())) {
-                            if ("是".equals(chatFromDb.getRecognition())) {
-                                chatRecognition = CustomerRecognition.APPROVED.getText();
-                            } else if ("否".equals(chatFromDb.getRecognition())) {
-                                chatRecognition = CustomerRecognition.NOT_APPROVED.getText();
-                            } else {
-                                chatRecognition = CustomerRecognition.UNKNOWN.getText();
-                            }
-                        }
-                        if (!StringUtils.isEmpty(chatRecognition)) {
-                            recognitionOverall = chatRecognition;
-                        }
-                        CustomerProcessSummary.Chat chat = new CustomerProcessSummary.Chat();
-                        chat.setRecognition(chatRecognition);
-                        List<CustomerProcessSummary.Message> messageList = new ArrayList<>();
-                        for (SummaryContentChats.Message dbmessage : dbMessages) {
-                            CustomerProcessSummary.Message message = new CustomerProcessSummary.Message();
-                            message.setRole(dbmessage.getRole());
-                            message.setContent(dbmessage.getContent());
-                            try {
-                                message.setTime(dateFormat1.parse(dateString));
-                            } catch (Exception e) {
-                                try {
-                                    message.setTime(dateFormat2.parse(dateString));
-                                } catch (Exception ex) {
-                                    message.setTime(dateFormat3.parse(dateString));
-                                }
-                            }
-                            messageList.add(message);
-                        }
-                        chat.setMessages(messageList);
-                        chat.setSourceId(item.getCallId());
-                        try {
-                            chat.setTime(dateFormat1.parse(dateString));
-                        } catch (Exception e) {
-                            try {
-                                chat.setTime(dateFormat2.parse(dateString));
-                            } catch (Exception ex) {
-                                chat.setTime(dateFormat3.parse(dateString));
-                            }
-                        }
-                        chatList.add(chat);
-                    }
-                } catch (Exception e) {
-                    log.error("格式转化失败：{}", JsonUtil.serialize(item));
-                }
-            }
-        }
-        processContent.setChats(chatList);
-        processContent.setRecognition(recognitionOverall);
-        return processContent;
     }
 
     private List<SummaryContent> dataPreprocess(List<SummaryContent> summaryContentList) {

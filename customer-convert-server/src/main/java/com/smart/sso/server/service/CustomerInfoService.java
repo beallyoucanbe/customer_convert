@@ -24,7 +24,7 @@ public interface CustomerInfoService {
 
     CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM);
 
-    void modifyCustomerFeatureById(String id, CustomerFeatureResponse customerFeature);
+    void modifyCustomerFeatureById(String customerId, String campaignId, CustomerFeatureResponse customerFeature);
 
     void callback(String sourceId);
 

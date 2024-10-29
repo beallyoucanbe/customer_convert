@@ -93,10 +93,12 @@ public class CustomerController {
     }
 
     @ApiOperation(value = "修改客户特征信息")
-    @PostMapping("/customer/{id}/features")
-    public BaseResponse<CustomerProcessSummary> modifyCustomerFeatures(@PathVariable(value = "id") String id,
+
+    @PostMapping("/api/customer/${customer_id}/campaign/${campaign_id}/features")
+    public BaseResponse<CustomerProcessSummary> modifyCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
+                                                                       @PathVariable(value = "campaign_id") String campaignId,
                                                                        @RequestBody CustomerFeatureResponse customerFeatureRequest) {
-        customerInfoService.modifyCustomerFeatureById(id, customerFeatureRequest);
+        customerInfoService.modifyCustomerFeatureById(customerId, campaignId, customerFeatureRequest);
         return ResultUtils.success(null);
     }
 

@@ -47,7 +47,7 @@ public class SchedulTask {
     @Autowired
     private ConfigService configService;
 
-    @Scheduled(cron = "0 */15 * * * ?")
+//    @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
         // 是否有任务再执行
         log.error("开始执行客户匹配度刷新任务！");
@@ -99,7 +99,8 @@ public class SchedulTask {
         for (CustomerFeature customerFeature : customerFeatureList) {
             try {
                 // 计算当前客户的匹配度
-                String conversionRate = customerInfoService.getConversionRate(customerFeature);
+//                String conversionRate = customerInfoService.getConversionRate(customerFeature);
+                String conversionRate = "";
                 // 将转化概率更新到info 表中
                 customerInfoMapper.updateConversionRateById(customerFeature.getId(), conversionRate);
             } catch (Exception e) {
