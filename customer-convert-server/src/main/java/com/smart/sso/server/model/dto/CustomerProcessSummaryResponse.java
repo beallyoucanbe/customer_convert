@@ -1,11 +1,9 @@
 package com.smart.sso.server.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -15,9 +13,6 @@ public class CustomerProcessSummaryResponse {
     private ProcessSummary summary;
     // 信息收集和功能讲解
     private ProcessInfoExplanation infoExplanation;
-    //疑问
-    private ProcessApprovalAnalysis approvalAnalysis;
-
 
     @Getter
     @Setter
@@ -58,57 +53,4 @@ public class CustomerProcessSummaryResponse {
         private String id;
         private String content;
     }
-
-
-
-    @Getter
-    @Setter
-    public static class ProcessApprovalAnalysis {
-        // 方法认可
-        private ProcessContent method;
-        // 问题认可
-        private ProcessContent issue;
-        // 价值认可
-        private ProcessContent value;
-        // 价格认可
-        private ProcessContent price;
-        // 购买认可
-        private ProcessContent purchase;
-        // 客户学不会软件操作
-        private ProcessContent softwareOperation;
-        // 质疑老师和课程
-        private ProcessContent course;
-        // 客户没钱购买软件
-        private ProcessContent noMoney;
-        // 其它
-        private ProcessContent others;
-    }
-
-    @Getter
-    @Setter
-    public static class ProcessContent {
-        private String recognition;
-        private List<Chat> chats;
-    }
-
-    @Getter
-    @Setter
-    public static class Chat {
-        private String recognition;
-        private String sourceId;
-        private List<Message> messages;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-        private Date time;
-    }
-
-    @Getter
-    @Setter
-    public static class Message {
-        private String role;
-        private String content;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-        private Date time;
-    }
-
-
 }

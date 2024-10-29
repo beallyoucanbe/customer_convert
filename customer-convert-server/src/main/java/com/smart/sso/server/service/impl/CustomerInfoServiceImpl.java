@@ -677,35 +677,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getRecognition().getCourseTeacherApproval())) {
+            if (!equal(featureProfile.getSoftwareFunctionClarity())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getRecognition().getSoftwareFunctionClarity())) {
+            if (!equal(featureProfile.getStockSelectionMethod())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getRecognition().getStockSelectionMethod())) {
+            if (!equal(featureProfile.getSelfIssueRecognition())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getRecognition().getSelfIssueRecognition())) {
+            if (!equal(featureProfile.getSoftwareValueApproval())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getRecognition().getLearnNewMethodApproval())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getRecognition().getContinuousLearnApproval())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getRecognition().getSoftwareValueApproval())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getRecognition().getSoftwarePurchaseAttitude())) {
+            if (!equal(featureProfile.getSoftwarePurchaseAttitude())) {
                 tttt = false;
                 featureNum++;
             }
@@ -720,14 +708,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private boolean equal(CustomerFeatureResponse.Feature feature){
-        if (Objects.isNull(feature.getSalesManualTag())){
+        if (Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())){
             return true;
         }
-        if (Objects.isNull(feature.getModelRecord()) && Objects.isNull(feature.getSalesManualTag())){
+        if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) && Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())){
             return true;
-        } else if (Objects.isNull(feature.getModelRecord()) || Objects.isNull(feature.getSalesManualTag())) {
+        } else if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) || Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
             return false;
-        } else if (feature.getModelRecord().equals(feature.getSalesManualTag())) {
+        } else if (feature.getCustomerConclusion().getModelRecord().equals(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;
         } else {
             return false;
@@ -794,30 +782,26 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setFundsVolume(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         basic.setEarningDesire(convertFeatureByOverwrite(featureFromLLM.getEarningDesire(), featureFromSale.getEarningDesireSales(), EarningDesireEnum.class, String.class));
         customerFeatureResponse.setBasic(basic);
+        // 量化信息
+        CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
+        quantified.setCustomerIssuesQuantified(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        quantified.setSoftwareValueQuantified(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        customerFeatureResponse.setQuantified(quantified);
 
-        // TradingMethod 客户自己的交易方法
-        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
-        tradingMethod.setCurrentStocks(converFeaturetByAppend(customerFeature.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
-        tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
-        tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
-        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null, String.class));
-        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null, String.class));
-        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
-        customerFeatureResponse.setTradingMethod(tradingMethod);
+//        CustomerFeatureResponse.TradingMethod tradingMethod = new CustomerFeatureResponse.TradingMethod();
+//        tradingMethod.setCurrentStocks(converFeaturetByAppend(customerFeature.getCurrentStocksModel(), customerFeature.getCurrentStocksSales()));
+//        tradingMethod.setStockPurchaseReason(converFeaturetByAppend(customerFeature.getStockPurchaseReasonModel(), customerFeature.getStockPurchaseReasonSales()));
+//        tradingMethod.setTradeTimingDecision(converFeaturetByAppend(customerFeature.getTradeTimingDecisionModel(), customerFeature.getTradeTimingDecisionSales()));
+//        tradingMethod.setTradingStyle(convertFeatureByOverwrite(customerFeature.getTradingStyleModel(), customerFeature.getTradingStyleSales(), null, String.class));
+//        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(customerFeature.getStockMarketAgeModel(), customerFeature.getStockMarketAgeSales(), null, String.class));
+//        tradingMethod.setLearningAbility(convertFeatureByOverwrite(customerFeature.getLearningAbilityModel(), customerFeature.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
+//        customerFeatureResponse.setTradingMethod(tradingMethod);
 
-        // Recognition 客户认可度
-        CustomerFeatureResponse.Recognition recognition = new CustomerFeatureResponse.Recognition();
-        recognition.setCourseTeacherApproval(convertFeatureByOverwrite(customerFeature.getCourseTeacherApprovalModel(), customerFeature.getCourseTeacherApprovalSales(), null, Boolean.class));
-        recognition.setSoftwareFunctionClarity(convertFeatureByOverwrite(customerFeature.getSoftwareFunctionClarityModel(), customerFeature.getSoftwareFunctionClaritySales(), null, Boolean.class));
-        recognition.setStockSelectionMethod(convertFeatureByOverwrite(customerFeature.getStockSelectionMethodModel(), customerFeature.getStockSelectionMethodSales(), null, Boolean.class));
-        recognition.setSelfIssueRecognition(convertFeatureByOverwrite(customerFeature.getSelfIssueRecognitionModel(), customerFeature.getSelfIssueRecognitionSales(), null, Boolean.class));
-        recognition.setContinuousLearnApproval(convertFeatureByOverwrite(customerFeature.getContinuousLearnApprovalModel(), customerFeature.getContinuousLearnApprovalSales(), null, Boolean.class));
-        recognition.setLearnNewMethodApproval(convertFeatureByOverwrite(customerFeature.getLearnNewMethodApprovalModel(), customerFeature.getLearnNewMethodApprovalSales(), null, Boolean.class));
-        recognition.setSoftwareValueApproval(convertFeatureByOverwrite(customerFeature.getSoftwareValueApprovalModel(), customerFeature.getSoftwareValueApprovalSales(), null, Boolean.class));
-        recognition.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(customerFeature.getSoftwarePurchaseAttitudeModel(), customerFeature.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
-        customerFeatureResponse.setRecognition(recognition);
-        // Note
-        customerFeatureResponse.setNote(customerFeature.getNote());
+        customerFeatureResponse.setSoftwareFunctionClarity(convertFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
+        customerFeatureResponse.setStockSelectionMethod(convertFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
+        customerFeatureResponse.setSelfIssueRecognition(convertFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
+        customerFeatureResponse.setSoftwareValueApproval(convertFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
+        customerFeatureResponse.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
 
         return customerFeatureResponse;
     }
@@ -857,30 +841,39 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private CustomerFeatureResponse.Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
         CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
-        // 多通电话覆盖+规则加工
         String resultAnswer = null;
-        String resultAnswerLatest = null;
-        String original = null;
-        String callId = null;
-        // 获取
+        //“已询问”有三个值：“是”、“否”、“不需要”。
         if (Objects.nonNull(featureContentByModel)) {
-            if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
-                    !featureContentByModel.get(i).getAnswer().equals("无") &&
-                    !featureContentByModel.get(i).getAnswer().equals("null")) {
-                resultAnswerLatest = featureContentByModel.get(i).getAnswer();
-                original = Objects.nonNull(featureContentByModel.get(i).getOriginal()) ? featureContentByModel.get(i).getOriginal() : featureContentByModel.get(i).getAnswer();
-                callId = featureContentByModel.get(i).getCallId();
+            //如果question 有值，就是 ‘是’;
+            if (!StringUtils.isEmpty(featureContentByModel.getQuestion()) &&
+                    !featureContentByModel.getQuestion().equals("无") &&
+                    !featureContentByModel.getQuestion().equals("null")) {
+                featureVO.setInquired("yes");
+                CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+                originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getQuestion()));
+                originChat.setId(featureContentByModel.getCallId());
+                featureVO.setInquiredOriginChat(originChat);
+            }
+            //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’，这种情况下是没有原文的；
+            if (featureVO.getInquired().equals("no")) {
+                if (!StringUtils.isEmpty(featureContentByModel.getAnswerText()) &&
+                        !featureContentByModel.getAnswerText().equals("无") &&
+                        !featureContentByModel.getAnswerText().equals("null")) {
+                    featureVO.setInquired("no-need");
+                }
             }
         }
-        // 如果最后一个非空值为null，结果就是null
-        if (!StringUtils.isEmpty(resultAnswerLatest)) {
+
+        // 构建结论
+        CustomerFeatureResponse.CustomerConclusion customerConclusion = new CustomerFeatureResponse.CustomerConclusion();
+        if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerTag())) {
             // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
             if (Objects.isNull(enumClass)) {
-                resultAnswer = resultAnswerLatest;
+                customerConclusion.setModelRecord(featureContentByModel.getAnswerTag());
                 CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                originChat.setContent(original);
-                originChat.setId(callId);
-                featureVO.setOriginChat(originChat);
+                originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getAnswerText()));
+                originChat.setId(featureContentByModel.getCallId());
+                customerConclusion.setOriginChat(originChat);
             } else {
                 // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
                 for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
@@ -888,13 +881,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     String value = getFieldValue(enumConstant, "value");
                     String enumText = getFieldValue(enumConstant, "text");
                     // 判断文本是否匹配`text`
-                    if (resultAnswerLatest.trim().equals(enumText)) {
+                    if (featureContentByModel.getAnswerTag().trim().equals(enumText)) {
                         resultAnswer = value;
                         CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                        originChat.setContent(original);
-                        originChat.setId(callId);
-                        featureVO.setOriginChat(originChat);
-                        break;
+                        originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getAnswerText()));
+                        originChat.setId(featureContentByModel.getCallId());
+                        customerConclusion.setOriginChat(originChat);
                     }
                 }
             }
@@ -902,53 +894,30 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (type == Boolean.class) {
                 resultAnswer = deletePunctuation(resultAnswer);
                 if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer)) {
-                    featureVO.setModelRecord(Boolean.TRUE);
+                    customerConclusion.setModelRecord(Boolean.TRUE);
                 } else {
                     if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer)) {
-                        featureVO.setModelRecord(Boolean.FALSE);
+                        customerConclusion.setModelRecord(Boolean.FALSE);
                     }
                 }
             } else {
-                featureVO.setModelRecord(resultAnswer);
+                customerConclusion.setModelRecord(resultAnswer);
             }
         }
-        featureVO.setSalesRecord(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getContent());
-        featureVO.setSalesManualTag(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getTag());
+        customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getContent());
+        customerConclusion.setSalesManualTag(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getTag());
+        customerConclusion.setCompareValue(Objects.nonNull(featureContentBySales.getTag()) ? featureContentBySales.getTag() :
+                customerConclusion.getModelRecord());
+        featureVO.setCustomerConclusion(customerConclusion);
 
-        //“已询问”有三个值：“是”、“否”、“不需要”。
-        if (!CollectionUtils.isEmpty(featureContentByModel)) {
-            //如果 funds_volume_model json list 中有一个 question 有值，就是 ‘是’;
-            for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion()) &&
-                        !featureContentByModel.get(i).getQuestion().equals("无") &&
-                        !featureContentByModel.get(i).getQuestion().equals("null")) {
-                    featureVO.setInquired("yes");
-                    CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                    originChat.setContent(featureContentByModel.get(i).getQuestion());
-                    originChat.setId(featureContentByModel.get(i).getCallId());
-                    featureVO.setInquiredOriginChat(originChat);
-                    break;
-                }
-            }
-            //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’；
-            if (featureVO.getInquired().equals("no")) {
-                for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
-                            !featureContentByModel.get(i).getAnswer().equals("无") &&
-                            !featureContentByModel.get(i).getAnswer().equals("null")) {
-                        featureVO.setInquired("no-need");
-                        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-                        originChat.setContent(featureContentByModel.get(i).getQuestion());
-                        originChat.setId(featureContentByModel.get(i).getCallId());
-                        featureVO.setInquiredOriginChat(originChat);
-                        break;
-                    }
-                }
-            }
+        // 构建问题
+        if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getDoubtTag())) {
+            CustomerFeatureResponse.CustomerQuestion customerQuestion = new CustomerFeatureResponse.CustomerQuestion();
+            customerQuestion.setModelRecord(featureContentByModel.getDoubtTag());
+            customerQuestion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getDoubtText()));
+            featureVO.setCustomerQuestion(customerQuestion);
         }
-        featureVO.setCompareValue(Objects.nonNull(featureVO.getSalesManualTag()) ? featureVO.getSalesManualTag() :
-                featureVO.getModelRecord());
-        //否则就是 ‘否’
+
         return featureVO;
     }
 

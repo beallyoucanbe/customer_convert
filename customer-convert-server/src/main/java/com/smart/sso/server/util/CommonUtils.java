@@ -89,7 +89,7 @@ public class CommonUtils {
             CustomerFeatureResponse.Message message = new CustomerFeatureResponse.Message();
             String element = iterator.next();
             if (element.split(" ").length >= 2 && (element.contains("2024") || element.contains("2025"))) {
-                message.setId(element.substring(0, element.indexOf(" ")));
+                message.setRole(element.substring(0, element.indexOf(" ")));
                 message.setTime(element.substring(element.indexOf(" ") + 1, element.length()));
             }
             if (iterator.hasNext()) {
@@ -97,5 +97,12 @@ public class CommonUtils {
             }
         }
         return result;
+    }
+
+    public static CustomerFeatureResponse.OriginChat getOriginChatFromChatText(String callId, String chatContent) {
+        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
+        originChat.setContents(getMessageListFromOriginChat(chatContent));
+        originChat.setId(callId);
+        return originChat;
     }
 }

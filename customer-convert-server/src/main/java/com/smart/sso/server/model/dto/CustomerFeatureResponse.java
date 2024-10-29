@@ -84,7 +84,7 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Message {
-        private String id;
+        private String role;
         private String time;
         private String content;
     }
