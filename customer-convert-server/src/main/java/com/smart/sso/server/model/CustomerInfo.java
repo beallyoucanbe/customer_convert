@@ -40,9 +40,8 @@ public class CustomerInfo implements Serializable {
     // 沟通轮次
     private Integer communicationRounds;
     // 最近沟通日期
+    @TableField(exist = false)
     private Date lastCommunicationDate;
-    // 沟通总时长，单位s
-    private Long totalDuration;
     // 租户Id
     private String tenantId;
     // 预留信息

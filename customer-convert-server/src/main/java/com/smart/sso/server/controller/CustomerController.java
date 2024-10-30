@@ -70,7 +70,7 @@ public class CustomerController {
     }
 
     @ApiOperation(value = "获取客户基本信息")
-    @GetMapping("/customer/${customer_id}/campaign/${campaign_id}/profile")
+    @GetMapping("/customer/{customer_id}/campaign/{campaign_id}/profile")
     public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "customer_id") String customerId,
                                                             @PathVariable(value = "campaign_id") String campaignId) {
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerId, campaignId);
@@ -78,7 +78,7 @@ public class CustomerController {
     }
 
     @ApiOperation(value = "获取客户特征信息")
-    @GetMapping("/customer/${customer_id}/campaign/${campaign_id}/features")
+    @GetMapping("/customer/{customer_id}/campaign/{campaign_id}/features")
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                      @PathVariable(value = "campaign_id") String campaignId) {
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, campaignId);
@@ -94,7 +94,7 @@ public class CustomerController {
 
     @ApiOperation(value = "修改客户特征信息")
 
-    @PostMapping("/api/customer/${customer_id}/campaign/${campaign_id}/features")
+    @PostMapping("/api/customer/{customer_id}/campaign/{campaign_id}/features")
     public BaseResponse<CustomerProcessSummary> modifyCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                        @PathVariable(value = "campaign_id") String campaignId,
                                                                        @RequestBody CustomerFeatureResponse customerFeatureRequest) {

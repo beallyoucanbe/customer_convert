@@ -151,8 +151,8 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void updateCustomerCharacter(String id,  boolean checkPurchaseAttitude) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(id);
-        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(id);
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
         CustomerProcessSummary customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
@@ -340,21 +340,16 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
         latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCompareValue()) ? customerFeature.getBasic().getFundsVolume().getCompareValue().toString() : null));
-        latestCustomerCharacter.setProfitLossSituation(ProfitLossEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getProfitLossSituation().getCompareValue()) ? customerFeature.getBasic().getProfitLossSituation().getCompareValue().toString() : null));
+                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue().toString() : null));
         latestCustomerCharacter.setEarningDesire(EarningDesireEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getEarningDesire().getCompareValue()) ? customerFeature.getBasic().getEarningDesire().getCompareValue().toString() : null));
+                Objects.nonNull(customerFeature.getBasic().getEarningDesire().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getEarningDesire().getCustomerConclusion().getCompareValue().toString() : null));
 
-        latestCustomerCharacter.setCourseTeacherApproval(Objects.nonNull(customerFeature.getRecognition().getCourseTeacherApproval().getCompareValue()) ? customerFeature.getRecognition().getCourseTeacherApproval().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getRecognition().getSoftwareFunctionClarity().getCompareValue()) ? customerFeature.getRecognition().getSoftwareFunctionClarity().getCompareValue().toString() : null);
-        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getRecognition().getStockSelectionMethod().getCompareValue()) ? customerFeature.getRecognition().getStockSelectionMethod().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getRecognition().getSelfIssueRecognition().getCompareValue()) ? customerFeature.getRecognition().getSelfIssueRecognition().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getRecognition().getSoftwareValueApproval().getCompareValue()) ? customerFeature.getRecognition().getSoftwareValueApproval().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue()) ? customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) ? customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setSoftwarePurchaseAttitude(
-                Objects.nonNull(customerFeature.getRecognition().getSoftwarePurchaseAttitude().getCompareValue()) ? customerFeature.getRecognition().getSoftwarePurchaseAttitude().getCompareValue().toString() : null);
-        latestCustomerCharacter.setContinuousLearnApproval(Objects.nonNull(customerFeature.getRecognition().getContinuousLearnApproval().getCompareValue()) ? customerFeature.getRecognition().getContinuousLearnApproval().getCompareValue().toString() : null);
-        latestCustomerCharacter.setLearnNewMethodApproval(Objects.nonNull(customerFeature.getRecognition().getLearnNewMethodApproval().getCompareValue()) ? customerFeature.getRecognition().getLearnNewMethodApproval().getCompareValue().toString() : null);
+                Objects.nonNull(customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
 
         List<String> advantages = customerSummary.getSummary().getAdvantage();
         List<String> questions = customerSummary.getSummary().getQuestions();
@@ -398,39 +393,6 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setDoubtFrequent("true");
             }
         }
-        // 总结质疑应对中
-        int questionCount = 0;
-        CustomerProcessSummary.ProcessApprovalAnalysis approvalAnalysis = customerSummary.getApprovalAnalysis();
-        if (Objects.nonNull(approvalAnalysis)) {
-            if (Objects.nonNull(approvalAnalysis.getMethod()) && !CollectionUtils.isEmpty(approvalAnalysis.getMethod().getChats())){
-                questionCount += approvalAnalysis.getMethod().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getIssue()) && !CollectionUtils.isEmpty(approvalAnalysis.getIssue().getChats())){
-                questionCount += approvalAnalysis.getIssue().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getValue()) && !CollectionUtils.isEmpty(approvalAnalysis.getValue().getChats())){
-                questionCount += approvalAnalysis.getValue().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getPrice()) && !CollectionUtils.isEmpty(approvalAnalysis.getPrice().getChats())){
-                questionCount += approvalAnalysis.getPrice().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getPurchase()) && !CollectionUtils.isEmpty(approvalAnalysis.getPurchase().getChats())){
-                questionCount += approvalAnalysis.getPurchase().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getSoftwareOperation()) && !CollectionUtils.isEmpty(approvalAnalysis.getSoftwareOperation().getChats())){
-                questionCount += approvalAnalysis.getSoftwareOperation().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getCourse()) && !CollectionUtils.isEmpty(approvalAnalysis.getCourse().getChats())){
-                questionCount += approvalAnalysis.getCourse().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getNoMoney()) && !CollectionUtils.isEmpty(approvalAnalysis.getNoMoney().getChats())){
-                questionCount += approvalAnalysis.getNoMoney().getChats().size();
-            }
-            if (Objects.nonNull(approvalAnalysis.getOthers()) && !CollectionUtils.isEmpty(approvalAnalysis.getOthers().getChats())){
-                questionCount += approvalAnalysis.getOthers().getChats().size();
-            }
-        }
-        latestCustomerCharacter.setQuestionCount(questionCount);
         latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());
     }
 

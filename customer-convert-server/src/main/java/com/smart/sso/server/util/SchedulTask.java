@@ -115,7 +115,7 @@ public class SchedulTask {
     /**
      * 每天8点半执行购买状态同步任务
      */
-    @Scheduled(cron = "0 30 8 * * ?")
+//    @Scheduled(cron = "0 30 8 * * ?")
     public void purchaseTask() {
         log.error("开始执行客户购买状态同步任务");
         QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
@@ -187,7 +187,7 @@ public class SchedulTask {
     /**
      * 每天9点，12点和18点执行团队总结任务
      */
-    @Scheduled(cron = "0 0 9,12,18 * * ?")
+//    @Scheduled(cron = "0 0 9,12,18 * * ?")
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
@@ -276,7 +276,7 @@ public class SchedulTask {
     /**
      * 这次参加活动的员工id
      */
-    @Scheduled(cron = "0 0 */1 * * ?")
+//    @Scheduled(cron = "0 0 */1 * * ?")
     public void refreshStaffId() {
         RedisConfig.staffIdList.addAll(configService.getStaffIds());
     }
