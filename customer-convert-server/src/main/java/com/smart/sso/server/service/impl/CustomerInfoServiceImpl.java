@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.enums.ConfigTypeEnum;
-import com.smart.sso.server.enums.CustomerRecognition;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
@@ -36,7 +35,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,10 +62,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private TelephoneRecordService recordService;
-    private SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-    private SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd HH");
-    private SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy-MM-dd");
-
 
     @Override
     public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -141,6 +135,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
+        customerFeature.setTradingMethod(summaryResponse.getTradingMethod());
         return customerFeature;
     }
 
