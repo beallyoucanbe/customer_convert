@@ -7,7 +7,6 @@ import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.enums.ProfitLossEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
@@ -264,9 +263,9 @@ public class MessageServiceImpl implements MessageService {
 
     private void sendMessage(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerProcessSummary processSummaryResponse = customerInfoService.queryCustomerProcessSummaryById(id);
-        List<String> completeStatus = processSummaryResponse.getSummary().getAdvantage();
-        List<String> incompleteStatus = processSummaryResponse.getSummary().getQuestions();
+        CustomerFeatureResponse featureResponse = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        List<String> completeStatus = featureResponse.getSummary().getAdvantage();
+        List<String> incompleteStatus = featureResponse.getSummary().getQuestions();
 
         // 优点是空，不发送
         if (CollectionUtils.isEmpty(completeStatus)) {
@@ -351,8 +350,8 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setSoftwarePurchaseAttitude(
                 Objects.nonNull(customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
 
-        List<String> advantages = customerSummary.getSummary().getAdvantage();
-        List<String> questions = customerSummary.getSummary().getQuestions();
+        List<String> advantages = customerFeature.getSummary().getAdvantage();
+        List<String> questions = customerFeature.getSummary().getQuestions();
         for (String item : advantages) {
             if (item.contains("完成客户匹配度判断")) {
                 latestCustomerCharacter.setSummaryMatchJudgment("true");

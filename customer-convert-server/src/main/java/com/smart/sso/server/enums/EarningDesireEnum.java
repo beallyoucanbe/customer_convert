@@ -6,6 +6,7 @@ import org.springframework.util.StringUtils;
 @Getter
 public enum EarningDesireEnum {
     HIGH("high", "强"),
+    MEDIUM("medium", "中等"),
     LOW("low", "弱");
 
     private final String value;

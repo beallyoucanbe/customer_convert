@@ -12,11 +12,12 @@ public class CustomerFeatureResponse {
     private ProcessSummary summary;
     private Basic basic;
     private Quantified quantified;
-    private Feature softwareFunctionClarity;
-    private Feature stockSelectionMethod;
-    private Feature selfIssueRecognition;
-    private Feature softwareValueApproval;
-    private Feature softwarePurchaseAttitude;
+    private CustomerProcessSummary.TradingMethod tradingMethod;
+    private BaseFeature softwareFunctionClarity;
+    private BaseFeature stockSelectionMethod;
+    private BaseFeature selfIssueRecognition;
+    private BaseFeature softwareValueApproval;
+    private BaseFeature softwarePurchaseAttitude;
 
     @Getter
     @Setter
@@ -30,8 +31,8 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     public static class Basic {
-        private Feature fundsVolume;
-        private Feature earningDesire;
+        private BaseFeature fundsVolume;
+        private BaseFeature earningDesire;
     }
 
     @Getter
@@ -39,32 +40,5 @@ public class CustomerFeatureResponse {
     public static class Quantified {
         private CustomerProcessSummary.ProcessInfoExplanationContent customerIssuesQuantified;
         private CustomerProcessSummary.ProcessInfoExplanationContent softwareValueQuantified;
-    }
-
-
-    @Getter
-    @Setter
-    public static class Feature {
-        private Integer standardProcess;
-        private String inquired = "no"; // no-need, no, yes
-        private OriginChat inquiredOriginChat;
-        private CustomerConclusion customerConclusion;
-        private CustomerQuestion customerQuestion;
-    }
-    @Getter
-    @Setter
-    public static class CustomerConclusion {
-        private Object modelRecord;
-        private Object salesManualTag;
-        private String salesRecord;
-        private Object compareValue;
-        private OriginChat originChat;
-    }
-
-    @Getter
-    @Setter
-    public static class CustomerQuestion {
-        private Object modelRecord;
-        private OriginChat originChat;
     }
 }

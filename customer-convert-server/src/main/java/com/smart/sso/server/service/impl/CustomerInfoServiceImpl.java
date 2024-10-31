@@ -17,12 +17,7 @@ import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
-import com.smart.sso.server.model.dto.CustomerFeatureResponse;
-import com.smart.sso.server.model.dto.CustomerInfoListRequest;
-import com.smart.sso.server.model.dto.CustomerInfoListResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummary;
-import com.smart.sso.server.model.dto.LeadMemberRequest;
-import com.smart.sso.server.model.dto.OriginChat;
+import com.smart.sso.server.model.dto.*;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
@@ -142,7 +137,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, campaignId);
-        return convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
+        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
+        CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
+        CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
+        customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
+        return customerFeature;
     }
 
     @Override
@@ -150,13 +149,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(id);
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
-        CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
-        CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
-        CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
-        if (Objects.nonNull(summaryResponse)) {
-            summaryResponse.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
-        }
-        return summaryResponse;
+        return convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
     }
 
     @Override
@@ -569,15 +562,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         System.out.println(JsonUtil.serialize(result));
     }
 
-    private boolean equal(CustomerFeatureResponse.Feature feature) {
+    private boolean equal(Feature feature) {
         if (Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;
         }
-        if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) &&
-                Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
-            return true;
-        } else if (Objects.isNull(feature.getCustomerConclusion().getModelRecord()) ||
-                Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
+        if (Objects.isNull(feature.getCustomerConclusion().getModelRecord())) {
             return false;
         } else if (feature.getCustomerConclusion().getModelRecord().equals(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;
@@ -643,8 +632,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
-        basic.setEarningDesire(convertFeatureByOverwrite(featureFromLLM.getEarningDesire(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), EarningDesireEnum.class, String.class));
+        basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        basic.setEarningDesire(convertBaseFeatureByOverwrite(featureFromLLM.getEarningDesire(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), EarningDesireEnum.class, String.class));
         customerFeatureResponse.setBasic(basic);
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
@@ -652,11 +641,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
         customerFeatureResponse.setQuantified(quantified);
 
-        customerFeatureResponse.setSoftwareFunctionClarity(convertFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
-        customerFeatureResponse.setStockSelectionMethod(convertFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
-        customerFeatureResponse.setSelfIssueRecognition(convertFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
-        customerFeatureResponse.setSoftwareValueApproval(convertFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
-        customerFeatureResponse.setSoftwarePurchaseAttitude(convertFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
+        customerFeatureResponse.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
+        customerFeatureResponse.setStockSelectionMethod(convertBaseFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
+        customerFeatureResponse.setSelfIssueRecognition(convertBaseFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
+        customerFeatureResponse.setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
+        customerFeatureResponse.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
 
         return customerFeatureResponse;
     }
@@ -676,19 +665,41 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerSummaryResponse.setInfoExplanation(infoExplanation);
 
         CustomerProcessSummary.TradingMethod tradingMethod = new CustomerProcessSummary.TradingMethod();
-        tradingMethod.setCurrentStocks(convertFeatureByOverwrite(featureFromLLM.getCurrentStocks(), Objects.isNull(featureFromSale) ? null : featureFromSale.getCurrentStocksSales(), null, String.class));
-        tradingMethod.setStockPurchaseReason(convertFeatureByOverwrite(featureFromLLM.getStockPurchaseReason(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockPurchaseReasonSales(), null, String.class));
-        tradingMethod.setTradeTimingDecision(convertFeatureByOverwrite(featureFromLLM.getTradeTimingDecision(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradeTimingDecisionSales(), null, String.class));
-        tradingMethod.setTradingStyle(convertFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
-        tradingMethod.setStockMarketAge(convertFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
-        tradingMethod.setLearningAbility(convertFeatureByOverwrite(featureFromLLM.getLearningAbility(), Objects.isNull(featureFromSale) ? null : featureFromSale.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
+        tradingMethod.setCurrentStocks(convertTradeMethodFeatureByOverwrite(featureFromLLM.getCurrentStocks(), Objects.isNull(featureFromSale) ? null : featureFromSale.getCurrentStocksSales(), null, String.class));
+        tradingMethod.setStockPurchaseReason(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockPurchaseReason(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockPurchaseReasonSales(), null, String.class));
+        tradingMethod.setTradeTimingDecision(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradeTimingDecision(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradeTimingDecisionSales(), null, String.class));
+        tradingMethod.setTradingStyle(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
+        tradingMethod.setStockMarketAge(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
+        tradingMethod.setLearningAbility(convertTradeMethodFeatureByOverwrite(featureFromLLM.getLearningAbility(), Objects.isNull(featureFromSale) ? null : featureFromSale.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
+
+        tradingMethod.getCurrentStocks().setStandardAction(infoExplanation.getStock());
+        tradingMethod.getStockPurchaseReason().setStandardAction(infoExplanation.getStockPickReview());
+        tradingMethod.getTradeTimingDecision().setStandardAction(infoExplanation.getStockTimingReview());
+        tradingMethod.getTradingStyle().setStandardAction(infoExplanation.getTradeBasedIntro());
+
         customerSummaryResponse.setTradingMethod(tradingMethod);
         return customerSummaryResponse;
     }
 
 
-    private CustomerFeatureResponse.Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
-        CustomerFeatureResponse.Feature featureVO = new CustomerFeatureResponse.Feature();
+    private BaseFeature convertBaseFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
+        BaseFeature baseFeature = new BaseFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type));
+        // 构建问题
+        if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getDoubtTag())) {
+            BaseFeature.CustomerQuestion customerQuestion = new BaseFeature.CustomerQuestion();
+            customerQuestion.setModelRecord(featureContentByModel.getDoubtTag());
+            customerQuestion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getDoubtText()));
+            baseFeature.setCustomerQuestion(customerQuestion);
+        }
+        return baseFeature;
+    }
+
+    private TradeMethodFeature convertTradeMethodFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
+        return new TradeMethodFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type));
+    }
+
+    private Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
+        Feature featureVO = new Feature();
         String resultAnswer = null;
         //“已询问”有三个值：“是”、“否”、“不需要”。
         if (Objects.nonNull(featureContentByModel)) {
@@ -713,7 +724,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 
         // 构建结论
-        CustomerFeatureResponse.CustomerConclusion customerConclusion = new CustomerFeatureResponse.CustomerConclusion();
+        Feature.CustomerConclusion customerConclusion = new Feature.CustomerConclusion();
         if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerTag())) {
             // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
             if (Objects.isNull(enumClass)) {
@@ -751,15 +762,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerConclusion.setCompareValue(Objects.nonNull(customerConclusion.getSalesManualTag()) ? customerConclusion.getSalesManualTag() :
                 customerConclusion.getModelRecord());
         featureVO.setCustomerConclusion(customerConclusion);
-
-        // 构建问题
-        if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getDoubtTag())) {
-            CustomerFeatureResponse.CustomerQuestion customerQuestion = new CustomerFeatureResponse.CustomerQuestion();
-            customerQuestion.setModelRecord(featureContentByModel.getDoubtTag());
-            customerQuestion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getDoubtText()));
-            featureVO.setCustomerQuestion(customerQuestion);
-        }
-
         return featureVO;
     }
 
@@ -803,8 +805,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return new ArrayList<>(keySummaryContent.values());
     }
 
-    private CustomerProcessSummary.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
-        CustomerProcessSummary.ProcessSummary processSummary = new CustomerProcessSummary.ProcessSummary();
+    private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
+        CustomerFeatureResponse.ProcessSummary processSummary = new CustomerFeatureResponse.ProcessSummary();
         List<String> advantage = new ArrayList<>();
         List<String> questions = new ArrayList<>();
 

@@ -9,8 +9,6 @@ import java.util.List;
 @Data
 public class CustomerProcessSummary {
 
-    // 总结
-    private ProcessSummary summary;
     // 信息收集和功能讲解
     private ProcessInfoExplanation infoExplanation;
     // 客户自己的交易方法
@@ -52,11 +50,11 @@ public class CustomerProcessSummary {
     @Getter
     @Setter
     public static class TradingMethod {
-        private CustomerFeatureResponse.Feature currentStocks;
-        private CustomerFeatureResponse.Feature stockPurchaseReason;
-        private CustomerFeatureResponse.Feature tradeTimingDecision;
-        private CustomerFeatureResponse.Feature tradingStyle;
-        private CustomerFeatureResponse.Feature stockMarketAge;
-        private CustomerFeatureResponse.Feature learningAbility;
+        private TradeMethodFeature currentStocks;
+        private TradeMethodFeature stockPurchaseReason;
+        private TradeMethodFeature tradeTimingDecision;
+        private TradeMethodFeature tradingStyle;
+        private TradeMethodFeature stockMarketAge;
+        private TradeMethodFeature learningAbility;
     }
 }
