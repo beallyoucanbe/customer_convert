@@ -11,13 +11,8 @@ public class CustomerFeatureResponse {
 
     private ProcessSummary summary;
     private Basic basic;
-    private Quantified quantified;
     private CustomerProcessSummary.TradingMethod tradingMethod;
-    private BaseFeature softwareFunctionClarity;
-    private BaseFeature stockSelectionMethod;
-    private BaseFeature selfIssueRecognition;
-    private BaseFeature softwareValueApproval;
-    private BaseFeature softwarePurchaseAttitude;
+
 
     @Getter
     @Setter
@@ -33,6 +28,12 @@ public class CustomerFeatureResponse {
     public static class Basic {
         private BaseFeature fundsVolume;
         private BaseFeature earningDesire;
+        private BaseFeature softwareFunctionClarity;
+        private BaseFeature stockSelectionMethod;
+        private BaseFeature selfIssueRecognition;
+        private BaseFeature softwareValueApproval;
+        private BaseFeature softwarePurchaseAttitude;
+        private Quantified quantified;
     }
 
     @Getter

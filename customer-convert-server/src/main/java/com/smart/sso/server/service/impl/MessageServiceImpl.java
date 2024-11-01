@@ -343,12 +343,12 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setEarningDesire(EarningDesireEnum.getTextByValue(
                 Objects.nonNull(customerFeature.getBasic().getEarningDesire().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getEarningDesire().getCustomerConclusion().getCompareValue().toString() : null));
 
-        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue()) ? customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) ? customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setSoftwarePurchaseAttitude(
-                Objects.nonNull(customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
+                Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
 
         List<String> advantages = customerFeature.getSummary().getAdvantage();
         List<String> questions = customerFeature.getSummary().getQuestions();

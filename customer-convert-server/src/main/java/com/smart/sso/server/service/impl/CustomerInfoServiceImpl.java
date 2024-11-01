@@ -217,10 +217,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
             // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
             try {
-                if ((Boolean) customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue() &&
-                        (Boolean) customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue() &&
-                        (Boolean) customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue() &&
-                        (Boolean) customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue() &&
+                        (Boolean) customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue() &&
+                        (Boolean) customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue() &&
+                        (Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
                     stageStatus.setConfirmValue(1);
                 }
             } catch (Exception e) {
@@ -228,7 +228,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
             // 客户确认购买 客户对购买软件的态度”的值为“是”
             try {
-                if ((Boolean) customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
                     stageStatus.setConfirmPurchase(1);
                 }
             } catch (Exception e) {
@@ -296,35 +296,35 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag()));
             }
         }
-        if (Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition()) && Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()));
+        if (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition()) && Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()));
         }
-        if (Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity()) && Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()));
+        if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity()) && Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()));
         }
-        if (Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude()) && Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()));
+        if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude()) && Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()));
         }
-        if (Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval()) && Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()));
+        if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval()) && Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()));
         }
-        if (Objects.nonNull(customerFeatureRequest.getStockSelectionMethod()) && Objects.nonNull(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()));
+        if (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod()) && Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion()) &&
+                (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord()) ||
+                        Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
+            customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
+                    customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()));
         }
         customerFeatureMapper.updateById(customerFeature);
     }
@@ -532,23 +532,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getSoftwareFunctionClarity())) {
+            if (!equal(featureProfile.getBasic().getSoftwareFunctionClarity())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getStockSelectionMethod())) {
+            if (!equal(featureProfile.getBasic().getStockSelectionMethod())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getSelfIssueRecognition())) {
+            if (!equal(featureProfile.getBasic().getSelfIssueRecognition())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getSoftwareValueApproval())) {
+            if (!equal(featureProfile.getBasic().getSoftwareValueApproval())) {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getSoftwarePurchaseAttitude())) {
+            if (!equal(featureProfile.getBasic().getSoftwarePurchaseAttitude())) {
                 tttt = false;
                 featureNum++;
             }
@@ -634,19 +634,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         basic.setEarningDesire(convertBaseFeatureByOverwrite(featureFromLLM.getEarningDesire(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), EarningDesireEnum.class, String.class));
-        customerFeatureResponse.setBasic(basic);
+
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
         quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
         quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
-        customerFeatureResponse.setQuantified(quantified);
+        basic.setQuantified(quantified);
 
-        customerFeatureResponse.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
-        customerFeatureResponse.setStockSelectionMethod(convertBaseFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
-        customerFeatureResponse.setSelfIssueRecognition(convertBaseFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
-        customerFeatureResponse.setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
-        customerFeatureResponse.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
-
+        basic.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
+        basic.setStockSelectionMethod(convertBaseFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
+        basic.setSelfIssueRecognition(convertBaseFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
+        basic.setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
+        basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
+        customerFeatureResponse.setBasic(basic);
         return customerFeatureResponse;
     }
 
@@ -935,7 +935,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
             // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
             try {
-                if ((Boolean) customerFeature.getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) {
                     advantage.add("客户对软件功能理解清晰");
                 } else {
                     questions.add("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解");
@@ -948,7 +948,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-客户认可选股方法：“客户对业务员讲的选股方法的认可度”的值为“是”
             // 缺点：-客户对选股方法尚未认可，需加强选股成功的真实案例证明：“客户对业务员讲的选股方法的认可度”的值为“否”
             try {
-                if (Objects.nonNull(customerFeature.getStockSelectionMethod().getCustomerConclusion().getCompareValue())) {
+                if (Objects.nonNull(customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue())) {
                     advantage.add("客户认可选股方法");
                 } else {
                     questions.add("客户对选股方法尚未认可，需加强选股成功的真实案例证明");
@@ -961,7 +961,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-客户认可自身问题：“客户对自身问题及影响的认可度”的值为“是”
             // 缺点：-客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明：“客户对自身问题及影响的认可度”的值为“否”
             try {
-                if ((Boolean) customerFeature.getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) {
                     advantage.add("客户认可自身问题");
                 } else {
                     questions.add("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明");
@@ -973,7 +973,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 价值认可
             // 优点：-客户认可软件价值：字段（不是阶段）“客户对软件价值的认可度”的值为“是”
             // 缺点：-客户对软件价值尚未认可，需加强使用软件的真实成功案例证明：字段（不是阶段）“客户对软件价值的认可度”的值为“否”
-            if ((Boolean) customerFeature.getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
+            if ((Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
                 advantage.add("客户认可软件价值");
             } else {
                 questions.add("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明");
@@ -983,7 +983,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
             // 缺点：- 客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解：字段“客户对购买软件的态度”的值为“否”
             // 优点：- 客户完成购买：阶段“客户完成购买”的值为“是”
-            if ((Boolean) customerFeature.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+            if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
                 advantage.add("客户确认购买");
             } else {
                 questions.add("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解");
