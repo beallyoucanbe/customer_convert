@@ -14,7 +14,8 @@ public class CustomerProfile {
     private String customerId ;
     @JsonProperty("owner")
     private String ownerName ;
-    private String currentCampaign ;
+    private String activityName;
+    private String activityId;
     private Integer communicationRounds ;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastCommunicationDate ;

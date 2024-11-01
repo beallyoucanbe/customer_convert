@@ -77,8 +77,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!StringUtils.isEmpty(params.getConversionRate())) {
             queryWrapper.eq("conversion_rate", params.getConversionRate());
         }
-        if (!StringUtils.isEmpty(params.getCurrentCampaign())) {
-            queryWrapper.like("current_campaign", params.getCurrentCampaign());
+        if (!StringUtils.isEmpty(params.getActivityName())) {
+            queryWrapper.like("activity_name", params.getActivityName());
         }
 
         String sortOrder = params.getSortBy();
@@ -104,10 +104,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerProfile queryCustomerById(String customerId, String campaignId) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
+    public CustomerProfile queryCustomerById(String customerId, String activityId) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
-        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, campaignId);
+        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
 
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
 
@@ -127,10 +127,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String campaignId) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
+    public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String activityId) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
-        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, campaignId);
+        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
@@ -143,7 +143,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public CustomerProcessSummary queryCustomerProcessSummaryById(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(id);
-        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerInfo.getCustomerId(), customerInfo.getActivityId());
         return convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
     }
 
@@ -271,8 +271,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public void modifyCustomerFeatureById(String customerId, String campaignId, CustomerFeatureResponse customerFeatureRequest) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, campaignId);
+    public List<ActivityInfo> getActivityInfoByCustomerId(String customerId) {
+        return customerInfoMapper.selectActivityInfoByCustomerId(customerId);
+    }
+
+    @Override
+    public void modifyCustomerFeatureById(String customerId, String activityId, CustomerFeatureResponse customerFeatureRequest) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
         if (Objects.isNull(customerFeature)) {
             throw new RuntimeException("客户不存在");
@@ -517,7 +522,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         int featureNum = 0;
         List<String> result = new ArrayList<>();
         for (CustomerInfo customerInfo : customerFeatureList) {
-            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
             boolean tttt = true;
             if (!equal(featureProfile.getBasic().getFundsVolume())) {
                 tttt = false;

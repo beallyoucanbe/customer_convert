@@ -20,7 +20,7 @@ public class TelephoneRecord {
     private String customerName;
     private String ownerId;
     private String ownerName;
-    private String currentCampaign;
+    private String activityId;
     private Integer communicationDuration;
     private Timestamp communicationTime;
     private String callId;

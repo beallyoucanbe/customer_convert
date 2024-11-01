@@ -12,14 +12,14 @@ public class CustomerInfoListRequest extends PageRequest implements Serializable
     private String customerName;
     private String ownerName;
     private String conversionRate;
-    private String currentCampaign;
+    private String activityName;
 
     public CustomerInfoListRequest(int page, int limit, String sortBy, String order,
-                                   String customerName, String ownerName, String conversionRate, String currentCampaign) {
+                                   String customerName, String ownerName, String conversionRate, String activityName) {
         super(page, limit, sortBy, order);
         this.customerName = customerName;
         this.ownerName = ownerName;
         this.conversionRate = conversionRate;
-        this.currentCampaign = currentCampaign;
+        this.activityName = activityName;
     }
 }

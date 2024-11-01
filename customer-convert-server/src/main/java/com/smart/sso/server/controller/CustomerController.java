@@ -5,6 +5,7 @@ import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.config.RedisConfig;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
+import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CallBackRequest;
@@ -63,25 +64,25 @@ public class CustomerController {
                                                                   @RequestParam(value = "name", required = false) String customerName,
                                                                   @RequestParam(value = "owner", required = false) String ownerName,
                                                                   @RequestParam(value = "conversion_rate", required = false) String conversionRate,
-                                                                  @RequestParam(value = "current_campaign", required = false) String currentCampaign) {
-        CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order, customerName, ownerName, conversionRate, currentCampaign);
+                                                                  @RequestParam(value = "activity_name", required = false) String  activityName) {
+        CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order, customerName, ownerName, conversionRate, activityName);
         CustomerInfoListResponse commonPageList = customerInfoService.queryCustomerInfoList(params);
         return ResultUtils.success(commonPageList);
     }
 
     @ApiOperation(value = "获取客户基本信息")
-    @GetMapping("/customer/{customer_id}/campaign/{campaign_id}/profile")
+    @GetMapping("/customer/{customer_id}/activity/{activity_id}/profile")
     public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "customer_id") String customerId,
-                                                            @PathVariable(value = "campaign_id") String campaignId) {
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerId, campaignId);
+                                                            @PathVariable(value = "activity_id") String activityId) {
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerId, activityId);
         return ResultUtils.success(customerProfile);
     }
 
     @ApiOperation(value = "获取客户特征信息")
-    @GetMapping("/customer/{customer_id}/campaign/{campaign_id}/features")
+    @GetMapping("/customer/{customer_id}/activity/{activity_id}/features")
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
-                                                                     @PathVariable(value = "campaign_id") String campaignId) {
-        CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, campaignId);
+                                                                     @PathVariable(value = "activity_id") String activityId) {
+        CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, activityId);
         return ResultUtils.success(FeatureProfile);
     }
 
@@ -92,13 +93,19 @@ public class CustomerController {
         return ResultUtils.success(customerSummary);
     }
 
-    @ApiOperation(value = "修改客户特征信息")
+    @ApiOperation(value = "获取客户参加的活动列表")
+    @GetMapping("/customer/{customer_id}/activities")
+    public BaseResponse<List<ActivityInfo>> getCustomerActivityInfo(@PathVariable(value = "customer_id") String customerId) {
+        List<ActivityInfo> activityInfoList = customerInfoService.getActivityInfoByCustomerId(customerId);
+        return ResultUtils.success(activityInfoList);
+    }
 
-    @PostMapping("/api/customer/{customer_id}/campaign/{campaign_id}/features")
+    @ApiOperation(value = "修改客户特征信息")
+    @PostMapping("/api/customer/{customer_id}/activity/{activity_id}/features")
     public BaseResponse<CustomerProcessSummary> modifyCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
-                                                                       @PathVariable(value = "campaign_id") String campaignId,
+                                                                       @PathVariable(value = "activity_id") String activityId,
                                                                        @RequestBody CustomerFeatureResponse customerFeatureRequest) {
-        customerInfoService.modifyCustomerFeatureById(customerId, campaignId, customerFeatureRequest);
+        customerInfoService.modifyCustomerFeatureById(customerId, activityId, customerFeatureRequest);
         return ResultUtils.success(null);
     }
 

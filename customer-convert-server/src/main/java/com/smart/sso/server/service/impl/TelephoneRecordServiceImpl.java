@@ -21,14 +21,14 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     private TelephoneRecordMapper recordMapper;
 
     @Override
-    public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String currentCampaign) {
+    public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String activityId) {
 
         CustomerFeatureFromLLM customerFeatureFromLLM = new CustomerFeatureFromLLM();
 
         QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
         // 按照沟通时间倒序排列
         queryWrapper.eq("customer_id", customerId);
-        queryWrapper.eq("current_campaign", currentCampaign);
+        queryWrapper.eq("activity_id", activityId);
         queryWrapper.orderBy(false, false, "communication_time");
         List<TelephoneRecord> records = recordMapper.selectList(queryWrapper);
         // 对该客户下的所有的通话记录进行总结

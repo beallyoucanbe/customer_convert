@@ -14,7 +14,8 @@ public class CustomerListVO {
     private String customerId ;
     @JsonProperty("owner")
     private String ownerName ;
-    private String currentCampaign ;
+    private String activityName;
+    private String activityId;
     // 客户匹配度
     // -较高：资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“高”
     // -中等：(资金体量=“匮乏”或“小于10万” and 赚钱欲望=“高”) or (资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“低”)

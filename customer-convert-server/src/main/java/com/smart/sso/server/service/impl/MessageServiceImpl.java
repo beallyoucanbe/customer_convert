@@ -150,8 +150,8 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void updateCustomerCharacter(String id,  boolean checkPurchaseAttitude) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
-        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getActivityId());
+        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         CustomerProcessSummary customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
@@ -188,7 +188,7 @@ public class MessageServiceImpl implements MessageService {
             String ownerMessageUrl = getOwnerMessageUrl(newCustomerCharacter.getOwnerName());
             if (Objects.nonNull(leaderMessageUrl)){
                 String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
-                        customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+                        customerInfo.getCustomerId(), customerInfo.getActivityId());
                 StringBuilder possibleReasonStringBuilder = new StringBuilder();
                 if (messageDescribe.equals("尚未确认购买")) {
                     if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareFunctionClarity()) && newCustomerCharacter.getSoftwareFunctionClarity().equals("false")){
@@ -263,7 +263,7 @@ public class MessageServiceImpl implements MessageService {
 
     private void sendMessage(String id) {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerFeatureResponse featureResponse = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getCurrentCampaign());
+        CustomerFeatureResponse featureResponse = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         List<String> completeStatus = featureResponse.getSummary().getAdvantage();
         List<String> incompleteStatus = featureResponse.getSummary().getQuestions();
 
@@ -327,7 +327,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setCustomerName(customerInfo.getCustomerName());
         latestCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
         latestCustomerCharacter.setOwnerName(customerInfo.getOwnerName());
-        latestCustomerCharacter.setCurrentCampaign(customerProfile.getCurrentCampaign());
+        latestCustomerCharacter.setCurrentCampaign(customerProfile.getActivityId());
         latestCustomerCharacter.setConversionRate(conversionRateMap.get(customerProfile.getConversionRate()));
 
         latestCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);

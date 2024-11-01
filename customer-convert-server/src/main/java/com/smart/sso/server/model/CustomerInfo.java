@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.smart.sso.server.handler.CustomerStageStatusTypeHandler;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -30,24 +29,19 @@ public class CustomerInfo implements Serializable {
     private String ownerName;
     // 责任人Id
     private String ownerId;
-    // 当前归属活动
-    private String currentCampaign;
+    // 活动名称
+    private String activityName;
+    private String activityId;
     // 转化概率，枚举值
     private String conversionRate;
-    // 客户阶段，0-5
-    @TableField(typeHandler = CustomerStageStatusTypeHandler.class)
-    private CustomerStageStatus customerStage;
     // 沟通轮次
     private Integer communicationRounds;
+    // 客户阶段，0-5
+    @TableField(exist = false)
+    private CustomerStageStatus customerStage;
     // 最近沟通日期
     @TableField(exist = false)
     private Date lastCommunicationDate;
-    // 租户Id
-    private String tenantId;
-    // 预留信息
-    private String reservedInfo;
-    // 预留属性
-    private String reservedProperty;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
