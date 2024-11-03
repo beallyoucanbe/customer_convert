@@ -2,9 +2,11 @@ package com.smart.sso.server.model.dto;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Data
+@NoArgsConstructor
 public class BaseFeature extends Feature {
     private Integer standardProcess;
     private CustomerQuestion customerQuestion;

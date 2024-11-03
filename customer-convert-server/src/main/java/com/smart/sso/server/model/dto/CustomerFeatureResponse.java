@@ -1,8 +1,6 @@
 package com.smart.sso.server.model.dto;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -25,6 +23,8 @@ public class CustomerFeatureResponse {
 
     @Getter
     @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Basic {
         private BaseFeature fundsVolume;
         private BaseFeature earningDesire;

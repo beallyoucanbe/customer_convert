@@ -1,10 +1,10 @@
 package com.smart.sso.server.model.dto;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Feature {
     private String inquired = "no"; // no-need, no, yes
     private OriginChat inquiredOriginChat;
