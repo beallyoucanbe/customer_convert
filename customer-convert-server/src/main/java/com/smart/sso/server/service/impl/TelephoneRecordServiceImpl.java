@@ -483,8 +483,14 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public ChatDetail getChatDetail(String customerId, String activityId, String chatId) {
-        TelephoneRecord record = recordMapper.selectById(chatId);
+    public ChatDetail getChatDetail(String customerId, String activityId, String callId) {
+        QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
+        // 按照沟通时间倒序排列
+        queryWrapper.eq("customer_id", customerId);
+        queryWrapper.eq("activity_id", activityId);
+        queryWrapper.eq("call_id", callId);
+        queryWrapper.orderBy(false, false, "communication_time");
+        TelephoneRecord record = recordMapper.selectOne(queryWrapper);
         if (Objects.isNull(record)) {
             return null;
         }

@@ -12,7 +12,7 @@ public interface TelephoneRecordService {
      */
     CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String currentCampaign);
 
-    ChatDetail getChatDetail(String customerId, String activityId, String chatId);
+    ChatDetail getChatDetail(String customerId, String activityId, String callId);
 
     List<ChatHistoryVO> getChatHistory(String customerId, String activityId);
 

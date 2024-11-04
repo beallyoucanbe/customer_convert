@@ -191,8 +191,8 @@ public class CustomerController {
     @GetMapping("/customer/{customer_id}/activity/{activity_id}/chat_detail")
     public BaseResponse<ChatDetail> getChatContent2(@PathVariable(value = "customer_id") String customerId,
                                                     @PathVariable(value = "activity_id") String activityId,
-                                                    @RequestParam(value = "id") String chatId) {
-        return ResultUtils.success(recordService.getChatDetail(customerId, activityId, chatId));
+                                                    @RequestParam(value = "id") String callId) {
+        return ResultUtils.success(recordService.getChatDetail(customerId, activityId, callId));
     }
 
     @ApiOperation(value = "全量初始化")

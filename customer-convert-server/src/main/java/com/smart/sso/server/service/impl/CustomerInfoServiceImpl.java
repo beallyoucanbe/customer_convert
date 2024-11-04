@@ -157,17 +157,21 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return result;
         }
         CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
-        if ((Objects.isNull(basic.getFundsVolume()) || Objects.isNull(basic.getFundsVolume().getCustomerConclusion())) &&
-                (Objects.isNull(basic.getEarningDesire()) || Objects.isNull(basic.getEarningDesire().getCustomerConclusion()))) {
+        if ((Objects.isNull(basic.getFundsVolume()) ||
+                Objects.isNull(basic.getFundsVolume().getCustomerConclusion())) &&
+                (Objects.isNull(basic.getEarningDesire()) ||
+                        Objects.isNull(basic.getEarningDesire().getCustomerConclusion()))) {
             return result;
         }
         String fundsVolume = null;
         String earningDesire = null;
 
-        if (Objects.nonNull(basic.getFundsVolume()) && Objects.nonNull(basic.getFundsVolume().getCustomerConclusion())) {
+        if (Objects.nonNull(basic.getFundsVolume()) &&
+                Objects.nonNull(basic.getFundsVolume().getCustomerConclusion())) {
             fundsVolume = Objects.isNull(basic.getFundsVolume().getCustomerConclusion().getCompareValue()) ? null : (String) basic.getFundsVolume().getCustomerConclusion().getCompareValue();
         }
-        if (Objects.nonNull(basic.getEarningDesire()) && Objects.nonNull(basic.getEarningDesire().getCustomerConclusion())) {
+        if (Objects.nonNull(basic.getEarningDesire()) &&
+                Objects.nonNull(basic.getEarningDesire().getCustomerConclusion())) {
             earningDesire = Objects.isNull(basic.getEarningDesire().getCustomerConclusion().getCompareValue()) ? null : (String) basic.getEarningDesire().getCustomerConclusion().getCompareValue();
         }
 
@@ -278,51 +282,59 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
         if (Objects.isNull(customerFeature)) {
-            throw new RuntimeException("客户不存在");
+            customerFeature = new CustomerFeature();
         }
         if (Objects.nonNull(customerFeatureRequest.getBasic())) {
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) && Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion()) &&
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion()) &&
                     (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord()) ||
                             Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()))) {
                 customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord(),
                         customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) && Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion()) &&
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion()) &&
                     (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord()) ||
                             Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag()))) {
                 customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord(),
                         customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
-        }
-        if (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition()) && Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-        }
-        if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity()) && Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-        }
-        if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude()) && Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-        }
-        if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval()) && Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-        }
-        if (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod()) && Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion()) &&
-                (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord()) ||
-                        Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
-            customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
-                    customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod()) &&
+                    Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
         }
         customerFeatureMapper.updateById(customerFeature);
     }
@@ -394,7 +406,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return JsonUtil.readValue(configMapper.selectOne(queryWrapper).getValue(), new TypeReference<List<LeadMemberRequest>>() {
         });
     }
-
 
 
     @Override
