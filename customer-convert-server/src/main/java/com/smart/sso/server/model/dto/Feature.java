@@ -1,13 +1,10 @@
 package com.smart.sso.server.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Feature {
     private String inquired = "no"; // no-need, no, yes
     private OriginChat inquiredOriginChat;
