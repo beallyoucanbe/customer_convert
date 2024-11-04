@@ -534,7 +534,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         if (!CollectionUtils.isEmpty(records)) {
             for (TelephoneRecord record : records) {
                 ChatHistoryVO chatHistoryVO = new ChatHistoryVO();
-                chatHistoryVO.setId(record.getId());
+                chatHistoryVO.setId(record.getCallId());
                 chatHistoryVO.setCommunicationTime(record.getCommunicationTime());
                 chatHistoryVO.setCommunicationDuration(record.getCommunicationDuration());
                 result.add(chatHistoryVO);

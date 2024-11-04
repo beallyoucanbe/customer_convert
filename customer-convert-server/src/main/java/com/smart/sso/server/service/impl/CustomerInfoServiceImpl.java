@@ -283,6 +283,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
         if (Objects.isNull(customerFeature)) {
             customerFeature = new CustomerFeature();
+            customerFeature.setId(customerInfo.getId());
+            customerFeatureMapper.insert(customerFeature);
         }
         if (Objects.nonNull(customerFeatureRequest.getBasic())) {
             if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
