@@ -91,15 +91,19 @@ public class CommonUtils {
             if (element.split(" ").length >= 2 && (element.contains("2024") || element.contains("2025"))) {
                 message.setRole(element.substring(0, element.indexOf(" ")));
                 message.setTime(element.substring(element.indexOf(" ") + 1, element.length()));
-            }
-            if (iterator.hasNext()) {
-                message.setContent(iterator.next());
+                if (iterator.hasNext()) {
+                    message.setContent(iterator.next());
+                    result.add(message);
+                }
             }
         }
         return result;
     }
 
     public static OriginChat getOriginChatFromChatText(String callId, String chatContent) {
+        if (StringUtils.isEmpty(chatContent)) {
+            return null;
+        }
         OriginChat originChat = new OriginChat();
         originChat.setContents(getMessageListFromOriginChat(chatContent));
         originChat.setId(callId);

@@ -32,9 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.ZoneId;
 import java.util.*;
@@ -398,21 +395,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         });
     }
 
-    @Override
-    public String getChatContent(String path) {
-        String filePath = "/opt/customer-convert/callback/files/" + path; // 文件路径
-        StringBuilder content = new StringBuilder();
-        content.append("源文件名：").append(path).append(System.lineSeparator());
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                content.append(line).append(System.lineSeparator());
-            }
-        } catch (IOException e) {
-            log.error("读取文件失败：", e);
-        }
-        return content.toString();
-    }
+
 
     @Override
     public void updateCharacterCostTime(String id) {

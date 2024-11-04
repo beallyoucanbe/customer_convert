@@ -7,6 +7,8 @@ import com.smart.sso.server.config.RedisConfig;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.CustomerInfo;
+import com.smart.sso.server.model.VO.ChatDetail;
+import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -17,6 +19,7 @@ import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +48,8 @@ public class CustomerController {
     private MessageService messageService;
     @Autowired
     private ConfigService configService;
+    @Autowired
+    private TelephoneRecordService recordService;
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
@@ -155,10 +160,10 @@ public class CustomerController {
     @ApiOperation(value = "跳转接口")
     @GetMapping("/customer/redirect")
     public BaseResponse<Void> redirect(@RequestParam(value = "customer_id") String customerId,
-                                       @RequestParam(value = "active_id") String activeId,
+                                       @RequestParam(value = "active_id") String activityId,
                                        String from, String manager,
                                        HttpServletResponse response) throws IOException, URISyntaxException {
-        String targetUrl = customerInfoService.getRedirectUrl(customerId, activeId, from, manager);
+        String targetUrl = customerInfoService.getRedirectUrl(customerId, activityId, from, manager);
         // 使用HttpServletResponse进行重定向
         response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
         response.setStatus(302);
@@ -175,10 +180,19 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
-    @ApiOperation(value = "返回对话的原文")
-    @GetMapping("/customer/content")
-    public BaseResponse<String> getChatContent(@RequestParam(value = "path") String path) {
-        return ResultUtils.success(customerInfoService.getChatContent(path));
+    @ApiOperation(value = "获取通话记录")
+    @GetMapping("/customer/{customer_id}/activity/{activity_id}/chat_history")
+    public BaseResponse<List<ChatHistoryVO>> getChatContent1(@PathVariable(value = "customer_id") String customerId,
+                                                             @PathVariable(value = "activity_id") String activityId) {
+        return ResultUtils.success(recordService.getChatHistory(customerId, activityId));
+    }
+
+    @ApiOperation(value = "获取单次通话")
+    @GetMapping("/customer/{customer_id}/activity/{activity_id}/chat_detail")
+    public BaseResponse<ChatDetail> getChatContent2(@PathVariable(value = "customer_id") String customerId,
+                                                    @PathVariable(value = "activity_id") String activityId,
+                                                    @RequestParam(value = "id") String chatId) {
+        return ResultUtils.success(recordService.getChatDetail(customerId, activityId, chatId));
     }
 
     @ApiOperation(value = "全量初始化")

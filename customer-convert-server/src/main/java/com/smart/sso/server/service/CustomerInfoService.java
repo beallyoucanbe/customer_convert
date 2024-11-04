@@ -16,7 +16,7 @@ public interface CustomerInfoService {
 
     CustomerProfile queryCustomerById(String customerId, String campaignId);
 
-    CustomerFeatureResponse queryCustomerFeatureById(String customerId, String campaignId);
+    CustomerFeatureResponse queryCustomerFeatureById(String customerId, String activityId);
 
     CustomerProcessSummary queryCustomerProcessSummaryById(String id);
 
@@ -34,7 +34,7 @@ public interface CustomerInfoService {
 
     List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite);
 
-    String getChatContent(String path);
+
 
     void updateCharacterCostTime(String id);
 

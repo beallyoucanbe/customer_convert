@@ -5,16 +5,24 @@ import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.CommunicationContent;
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
 import com.smart.sso.server.model.TelephoneRecord;
+import com.smart.sso.server.model.VO.ChatDetail;
+import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.service.TelephoneRecordService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
     @Autowired
@@ -243,7 +251,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //客户怎么决定的买卖这些股票的时机
             if (!CollectionUtils.isEmpty(record.getTradeTimingDecision())) {
                 CommunicationContent communicationContent = record.getTradeTimingDecision().get(0);
-                if (Objects.isNull(customerFeatureFromLLM.getStockPurchaseReason())) {
+                if (Objects.isNull(customerFeatureFromLLM.getTradeTimingDecision())) {
                     customerFeatureFromLLM.setTradeTimingDecision(communicationContent);
                     customerFeatureFromLLM.getTradeTimingDecision().setCallId(record.getCallId());
                 } else {
@@ -290,7 +298,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             if (!CollectionUtils.isEmpty(record.getStockMarketAge())) {
                 CommunicationContent communicationContent = record.getStockMarketAge().get(0);
                 if (Objects.isNull(customerFeatureFromLLM.getStockMarketAge())) {
-                    customerFeatureFromLLM.setTradingStyle(communicationContent);
+                    customerFeatureFromLLM.setStockMarketAge(communicationContent);
                     customerFeatureFromLLM.getStockMarketAge().setCallId(record.getCallId());
                 } else {
                     if (StringUtils.isEmpty(customerFeatureFromLLM.getStockMarketAge().getQuestion()) &&
@@ -450,7 +458,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //业务员有对软件的价值做量化放大
             if (!CollectionUtils.isEmpty(record.getSoftwareValueQuantified())) {
                 CommunicationContent communicationContent = record.getSoftwareValueQuantified().get(0);
-                if (Objects.isNull(customerFeatureFromLLM.getCustomerIssuesQuantified())) {
+                if (Objects.isNull(customerFeatureFromLLM.getSoftwareValueQuantified())) {
                     customerFeatureFromLLM.setSoftwareValueQuantified(communicationContent);
                     customerFeatureFromLLM.getSoftwareValueQuantified().setCallId(record.getCallId());
                 } else {
@@ -470,38 +478,62 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     }
                 }
             }
-
-
-
-            //如果 funds_volume_model json list 中有一个 question 有值，就是 ‘是’;
-//                for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-//                    if (!StringUtils.isEmpty(featureContentByModel.get(i).getQuestion()) &&
-//                            !featureContentByModel.get(i).getQuestion().equals("无") &&
-//                            !featureContentByModel.get(i).getQuestion().equals("null")) {
-//                        featureVO.setInquired("yes");
-//                        CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-//                        originChat.setContent(featureContentByModel.get(i).getQuestion());
-//                        originChat.setId(featureContentByModel.get(i).getCallId());
-//                        featureVO.setInquiredOriginChat(originChat);
-//                        break;
-//                    }
-//                }
-//                //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’；
-//                if (featureVO.getInquired().equals("no")) {
-//                    for (int i = featureContentByModel.size() - 1; i >= 0; i--) {
-//                        if (!StringUtils.isEmpty(featureContentByModel.get(i).getAnswer()) &&
-//                                !featureContentByModel.get(i).getAnswer().equals("无") &&
-//                                !featureContentByModel.get(i).getAnswer().equals("null")) {
-//                            featureVO.setInquired("no-need");
-//                            CustomerFeatureResponse.OriginChat originChat = new CustomerFeatureResponse.OriginChat();
-//                            originChat.setContent(featureContentByModel.get(i).getQuestion());
-//                            originChat.setId(featureContentByModel.get(i).getCallId());
-//                            featureVO.setInquiredOriginChat(originChat);
-//                            break;
-//                        }
-//                    }
-//                }
         }
         return customerFeatureFromLLM;
+    }
+
+    @Override
+    public ChatDetail getChatDetail(String customerId, String activityId, String chatId) {
+        TelephoneRecord record = recordMapper.selectById(chatId);
+        if (Objects.isNull(record)) {
+            return null;
+        }
+        ChatDetail chatDetail = new ChatDetail();
+        chatDetail.setId(record.getId());
+        chatDetail.setCommunicationTime(record.getCommunicationTime());
+        chatDetail.setCommunicationDuration(record.getCommunicationDuration());
+
+        String filePath = "/opt/customer-convert/callback/files/" + record.getCallId(); // 文件路径
+        List<ChatDetail.Message> result = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                ChatDetail.Message message = new ChatDetail.Message();
+                if (line.split(" ").length >= 2 && (line.contains("2024") || line.contains("2025"))) {
+                    message.setRole(line.substring(0, line.indexOf(" ")));
+                    message.setTime(line.substring(line.indexOf(" ") + 1, line.length()));
+                    if ((line = br.readLine()) != null) {
+                        message.setContent(line);
+                        result.add(message);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("读取文件失败：", e);
+        }
+        chatDetail.setMessages(result);
+        return chatDetail;
+    }
+
+    @Override
+    public List<ChatHistoryVO> getChatHistory(String customerId, String activityId) {
+        QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
+        // 按照沟通时间倒序排列
+        queryWrapper.eq("customer_id", customerId);
+        queryWrapper.eq("activity_id", activityId);
+        queryWrapper.orderBy(false, false, "communication_time");
+        List<TelephoneRecord> records = recordMapper.selectList(queryWrapper);
+
+        List<ChatHistoryVO> result = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(records)) {
+            for (TelephoneRecord record : records) {
+                ChatHistoryVO chatHistoryVO = new ChatHistoryVO();
+                chatHistoryVO.setId(record.getId());
+                chatHistoryVO.setCommunicationTime(record.getCommunicationTime());
+                chatHistoryVO.setCommunicationDuration(record.getCommunicationDuration());
+                result.add(chatHistoryVO);
+            }
+        }
+        return result;
     }
 }
