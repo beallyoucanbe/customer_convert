@@ -1,8 +1,11 @@
 package com.smart.sso.server.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Data
 public class Feature {
@@ -16,6 +19,7 @@ public class Feature {
         private Object modelRecord;
         private Object salesManualTag;
         private String salesRecord;
+        private String updateTime ;
         private Object compareValue;
         private OriginChat originChat;
     }

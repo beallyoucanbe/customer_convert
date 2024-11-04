@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class FeatureContentSales {
     private String content;
     private Object tag;
+    private String updateTime;
 }
 
 
