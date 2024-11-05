@@ -38,6 +38,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
+import static com.smart.sso.server.enums.FundsVolumeEnum.FIVE_TO_TEN_MILLION;
+import static com.smart.sso.server.enums.FundsVolumeEnum.GREAT_TEN_MILLION;
+import static com.smart.sso.server.enums.FundsVolumeEnum.LESS_FIVE_MILLION;
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 
 @Service
@@ -148,47 +151,28 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public String getConversionRate(CustomerFeatureResponse customerFeature) {
         // "high", "medium", "low", "incomplete"
-        // -较高：资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“高”
-        // -中等：(资金体量=“匮乏”或“小于10万” and 赚钱欲望=“高”) or (资金体量=“充裕”或“大于等于10万” and 赚钱欲望=“低”)
-        // -较低：资金体量=“匮乏”或“小于10万” and 赚钱欲望=“低”
-        // -未完成判断：资金体量=空 or 赚钱欲望=空
+        // -较高：资金体量=“大于10万”
+        // -中等：资金体量=“5到10万”
+        // -较低：资金体量=“小于5万”
+        // -未完成判断：资金体量=空
         String result = "incomplete";
-        if (Objects.isNull(customerFeature) || Objects.isNull(customerFeature.getBasic())) {
+        if (Objects.isNull(customerFeature) || Objects.isNull(customerFeature.getBasic())
+                || Objects.isNull(customerFeature.getBasic().getFundsVolume())
+                || Objects.isNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion())) {
             return result;
         }
-        CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
-        if ((Objects.isNull(basic.getFundsVolume()) ||
-                Objects.isNull(basic.getFundsVolume().getCustomerConclusion())) &&
-                (Objects.isNull(basic.getEarningDesire()) ||
-                        Objects.isNull(basic.getEarningDesire().getCustomerConclusion()))) {
+        Feature.CustomerConclusion conclusion = customerFeature.getBasic().getFundsVolume().getCustomerConclusion();
+        if (StringUtils.isEmpty(conclusion.getCompareValue())) {
             return result;
         }
-        String fundsVolume = null;
-        String earningDesire = null;
-
-        if (Objects.nonNull(basic.getFundsVolume()) &&
-                Objects.nonNull(basic.getFundsVolume().getCustomerConclusion())) {
-            fundsVolume = Objects.isNull(basic.getFundsVolume().getCustomerConclusion().getCompareValue()) ? null : (String) basic.getFundsVolume().getCustomerConclusion().getCompareValue();
-        }
-        if (Objects.nonNull(basic.getEarningDesire()) &&
-                Objects.nonNull(basic.getEarningDesire().getCustomerConclusion())) {
-            earningDesire = Objects.isNull(basic.getEarningDesire().getCustomerConclusion().getCompareValue()) ? null : (String) basic.getEarningDesire().getCustomerConclusion().getCompareValue();
-        }
-
-        if (StringUtils.isEmpty(fundsVolume) || StringUtils.isEmpty(earningDesire)) {
-            return result;
-        }
-        if (fundsVolume.equals("high") && earningDesire.equals("high")) {
+        if (conclusion.getCompareValue().equals(GREAT_TEN_MILLION.getValue())) {
             return "high";
         }
-        if (fundsVolume.equals("low") && earningDesire.equals("high")) {
+        if (conclusion.getCompareValue().equals(FIVE_TO_TEN_MILLION.getValue())) {
             return "medium";
         }
-        if (fundsVolume.equals("high") && earningDesire.equals("low")) {
-            return "medium";
-        }
-        if (fundsVolume.equals("low") && earningDesire.equals("low")) {
-            return "low";
+        if (conclusion.getCompareValue().equals(LESS_FIVE_MILLION.getValue())) {
+            return "less_five_w";
         }
         return result;
     }
@@ -238,8 +222,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
 
-        if (Objects.nonNull(summaryResponse)) {
-            // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”
+        if (Objects.nonNull(summaryResponse) && Objects.nonNull(summaryResponse.getInfoExplanation())) {
+            // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”、“痛点量化放大”、“价值量化放大”
             CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
             if (Objects.nonNull(infoExplanation.getStock()) &&
                     infoExplanation.getStock().getResult() &&
@@ -807,50 +791,27 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.ProcessSummary processSummary = new CustomerFeatureResponse.ProcessSummary();
         List<String> advantage = new ArrayList<>();
         List<String> questions = new ArrayList<>();
-
-        // 客户客户匹配度判断
         try {
+            // 客户客户匹配度判断
+            // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”
+            // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
             String conversionRate = customerInfo.getConversionRate();
-            // 优点：-提前完成客户匹配度判断：通话次数等于0 and 客户匹配度判断的值不为“未完成判断”
-            // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”（如果有了“提前完成客户匹配度判断”，则本条不用再判断）
-            // - 未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
-            if ((Objects.isNull(customerInfo.getCommunicationRounds()) ||
-                    customerInfo.getCommunicationRounds().equals(0))
-                    && !conversionRate.equals("incomplete")) {
-                advantage.add("提前完成客户匹配度判断");
-            } else {
-                if (!conversionRate.equals("incomplete")) {
-                    advantage.add("完成客户匹配度判断");
-                } else {
-                    if (conversionRate.equals("incomplete") &&
-                            Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                            customerInfo.getCommunicationRounds() >= 2) {
-                        questions.add("尚未完成客户匹配度判断，需继续收集客户信息");
-                    }
-                }
+            if (!conversionRate.equals("incomplete")) {
+                advantage.add("完成客户匹配度判断");
+            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                        customerInfo.getCommunicationRounds() >= 2) {
+                    questions.add("尚未完成客户匹配度判断，需继续收集客户信息");
             }
-
             // 客户交易风格了解
-            // 优点：-提前完成客户交易风格了解：通话次数等于0 and “客户交易风格了解”的值为“完成”
             // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
             // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
             int tradingStyle = stageStatus.getTransactionStyle();
-            if ((Objects.isNull(customerInfo.getCommunicationRounds()) ||
-                    customerInfo.getCommunicationRounds().equals(0))
-                    && tradingStyle == 1) {
-                advantage.add("提前完成客户交易风格了解");
-            } else {
-                if (tradingStyle == 1) {
-                    advantage.add("完成客户交易风格了解");
-                } else {
-                    if (tradingStyle == 0 &&
-                            Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                            customerInfo.getCommunicationRounds() >= 2) {
-                        questions.add("尚未完成客户交易风格了解，需继续收集客户信息");
-                    }
-                }
+            if (tradingStyle == 1) {
+                advantage.add("完成客户交易风格了解");
+            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                        customerInfo.getCommunicationRounds() >= 2) {
+                    questions.add("尚未完成客户交易风格了解，需继续收集客户信息");
             }
-
             // 跟进的客户
             // 优点：-跟进对的客户：销售跟进的是客户匹配度判断的值为“较高”或“中等”的客户
             // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户
@@ -936,7 +897,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) {
                     advantage.add("客户对软件功能理解清晰");
                 } else {
-                    questions.add("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解");
+                    StringBuilder tempStr = new StringBuilder("客户对软件功能尚未理解清晰，");
+                    if (customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess().equals(100)){
+                        tempStr.append("业务员已完成标准讲解，");
+                    } else {
+                        tempStr.append("业务员未完成标准讲解，");
+                    }
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerQuestion().getModelRecord()).append("，需根据客户学习能力更白话讲解");
+                    questions.add(tempStr.toString());
                 }
             } catch (Exception e) {
                 // 有异常，说明有数据为空，不处理
@@ -949,7 +917,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 if (Objects.nonNull(customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue())) {
                     advantage.add("客户认可选股方法");
                 } else {
-                    questions.add("客户对选股方法尚未认可，需加强选股成功的真实案例证明");
+                    StringBuilder tempStr = new StringBuilder("客户对选股方法尚未认可，");
+                    if (customerFeature.getBasic().getStockSelectionMethod().getStandardProcess().equals(100)){
+                        tempStr.append("业务员已完成标准讲解，");
+                    } else {
+                        tempStr.append("业务员未完成标准讲解，");
+                    }
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord()).append("，需加强选股成功的真实案例证明");
+                    questions.add(tempStr.toString());
                 }
             } catch (Exception e) {
                 // 有异常，说明有数据为空，不处理
@@ -962,7 +937,18 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 if ((Boolean) customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) {
                     advantage.add("客户认可自身问题");
                 } else {
-                    questions.add("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明");
+                    StringBuilder tempStr = new StringBuilder("客户对自身问题尚未认可，");
+                    try {
+                        if (customerFeature.getBasic().getQuantified().getCustomerIssuesQuantified().getResult()) {
+                            tempStr.append("业务员已完成痛点量化放大，");
+                        } else {
+                            tempStr.append("业务员未完成痛点量化放大，");
+                        }
+                    } catch (Exception e) {
+                        tempStr.append("业务员未完成痛点量化放大，");
+                    }
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord()).append("，需列举与客户相近的真实反面案例证明");
+                    questions.add(tempStr.toString());
                 }
             } catch (Exception e) {
                 // 有异常，说明有数据为空，不处理
@@ -971,20 +957,40 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 价值认可
             // 优点：-客户认可软件价值：字段（不是阶段）“客户对软件价值的认可度”的值为“是”
             // 缺点：-客户对软件价值尚未认可，需加强使用软件的真实成功案例证明：字段（不是阶段）“客户对软件价值的认可度”的值为“否”
-            if ((Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
-                advantage.add("客户认可软件价值");
-            } else {
-                questions.add("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明");
+            try {
+                if ((Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
+                    advantage.add("客户认可软件价值");
+                } else {
+                    StringBuilder tempStr = new StringBuilder("客户对软件价值尚未认可，");
+                    try {
+                        if (customerFeature.getBasic().getQuantified().getSoftwareValueQuantified().getResult()) {
+                            tempStr.append("业务员已完成价值量化放大，");
+                        } else {
+                            tempStr.append("业务员未完成价值量化放大，");
+                        }
+                    } catch (Exception e) {
+                        tempStr.append("业务员未完成价值量化放大，");
+                    }
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord()).append("，需加强使用软件的真实成功案例证明");
+                    questions.add(tempStr.toString());
+                }
+            } catch (Exception e) {
+                // 有异常，说明有数据为空，不处理
             }
-
 
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
             // 缺点：- 客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解：字段“客户对购买软件的态度”的值为“否”
             // 优点：- 客户完成购买：阶段“客户完成购买”的值为“是”
-            if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
-                advantage.add("客户确认购买");
-            } else {
-                questions.add("客户拒绝购买，需暂停劝说客户购买，明确拒绝原因进行化解");
+            try {
+                if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+                    advantage.add("客户确认购买");
+                } else {
+                    StringBuilder tempStr = new StringBuilder("客户拒绝购买，");
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerQuestion().getModelRecord()).append("，需暂停劝说客户购买，针对拒绝原因进行化解");
+                    questions.add(tempStr.toString());
+                }
+            } catch (Exception e) {
+                // 有异常，说明有数据为空，不处理
             }
             if (stageStatus.getCompletePurchase() == 1) {
                 advantage.add("客户完成购买");
