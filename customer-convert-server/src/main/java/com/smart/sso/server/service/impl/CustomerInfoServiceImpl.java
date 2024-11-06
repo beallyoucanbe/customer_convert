@@ -172,7 +172,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return "medium";
         }
         if (conclusion.getCompareValue().equals(LESS_FIVE_MILLION.getValue())) {
-            return "less_five_w";
+            return "low";
         }
         return result;
     }
@@ -225,19 +225,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.nonNull(summaryResponse) && Objects.nonNull(summaryResponse.getInfoExplanation())) {
             // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”、“痛点量化放大”、“价值量化放大”
             CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-            if (Objects.nonNull(infoExplanation.getStock()) &&
-                    infoExplanation.getStock().getResult() &&
-                    Objects.nonNull(infoExplanation.getStockPickReview()) &&
-                    infoExplanation.getStockPickReview().getResult() &&
-                    Objects.nonNull(infoExplanation.getStockTimingReview()) &&
-                    infoExplanation.getStockTimingReview().getResult() &&
-                    Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
-                    infoExplanation.getCustomerIssuesQuantified().getResult() &&
-                    Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
-                    infoExplanation.getSoftwareValueQuantified().getResult() &&
-                    Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
-                    infoExplanation.getTradeBasedIntro().getResult()) {
-                stageStatus.setFunctionIntroduction(1);
+            try {
+                if (Objects.nonNull(infoExplanation.getStock()) &&
+                        infoExplanation.getStock().getResult() &&
+                        Objects.nonNull(infoExplanation.getStockPickReview()) &&
+                        infoExplanation.getStockPickReview().getResult() &&
+                        Objects.nonNull(infoExplanation.getStockTimingReview()) &&
+                        infoExplanation.getStockTimingReview().getResult() &&
+                        Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
+                        infoExplanation.getCustomerIssuesQuantified().getResult() &&
+                        Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
+                        infoExplanation.getSoftwareValueQuantified().getResult() &&
+                        Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
+                        infoExplanation.getTradeBasedIntro().getResult()) {
+                    stageStatus.setFunctionIntroduction(1);
+                }
+            } catch (Exception e) {
+                // 有异常就不变
             }
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
@@ -618,8 +622,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
-        quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
-        quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getFundsVolume()));
+        quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
+        quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
         basic.setQuantified(quantified);
 
         basic.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
@@ -761,7 +765,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return explanationContent;
         }
         // 多通电话覆盖+规则加工
-        if (!StringUtils.isEmpty(featureFromLLM.getQuestion().trim())) {
+        if (!StringUtils.isEmpty(featureFromLLM.getQuestion().trim()) &&
+                !featureFromLLM.getQuestion().trim().equals("无") && !featureFromLLM.getQuestion().trim().equals("null")) {
             explanationContent.setResult(Boolean.TRUE);
             explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(featureFromLLM.getCallId(), featureFromLLM.getQuestion()));
             return explanationContent;
@@ -875,13 +880,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-完成痛点和价值量化放大：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”都为“是”
             // 缺点：-尚未完成痛点和价值量化放大，需后续完成：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”不都为“是”（前提条件是通话次数大于等于3）
             CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-            if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
-                    infoExplanation.getCustomerIssuesQuantified().getResult() &&
-                    Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
-                    infoExplanation.getSoftwareValueQuantified().getResult()) {
-                advantage.add("完成痛点和价值量化放大");
-            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                    customerInfo.getCommunicationRounds() >= 3) {
+            try {
+                if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
+                        infoExplanation.getCustomerIssuesQuantified().getResult() &&
+                        Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
+                        infoExplanation.getSoftwareValueQuantified().getResult()) {
+                    advantage.add("完成痛点和价值量化放大");
+                } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
+                        customerInfo.getCommunicationRounds() >= 3) {
+                    questions.add("尚未完成痛点和价值量化放大，需后续完成");
+                }
+            } catch (Exception e) {
                 questions.add("尚未完成痛点和价值量化放大，需后续完成");
             }
 
