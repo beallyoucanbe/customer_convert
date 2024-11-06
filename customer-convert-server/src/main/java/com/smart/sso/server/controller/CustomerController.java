@@ -229,4 +229,11 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
+    @ApiOperation(value = "同步customer_info")
+    @PostMapping("/customer/sync_customer_info")
+    public BaseResponse<List<LeadMemberRequest>> syncCustomerInfo() {
+        recordService.syncCustomerInfo();
+        return ResultUtils.success(null);
+    }
+
 }

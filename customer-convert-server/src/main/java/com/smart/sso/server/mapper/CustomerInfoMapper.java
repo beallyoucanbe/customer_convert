@@ -19,5 +19,9 @@ public interface CustomerInfoMapper extends BaseMapper<CustomerInfo> {
     @Select("SELECT activity_name AS activityName, activity_id AS activityId FROM customer_info WHERE customer_id = #{customer_id}")
     List<ActivityInfo> selectActivityInfoByCustomerId(@Param("customer_id") String customer_id);
 
+    @Update("UPDATE customer_info SET communication_rounds = #{communication_rounds} WHERE customer_id = #{customer_id} and activity_id = #{activity_id}")
+    int updateCommunicationRounds(@Param("customer_id") String customer_id,
+                                  @Param("activity_id") String activity_id,
+                                  @Param("communication_rounds") Integer communication_rounds);
 
 }

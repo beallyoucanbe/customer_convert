@@ -16,4 +16,15 @@ public interface TelephoneRecordService {
 
     List<ChatHistoryVO> getChatHistory(String customerId, String activityId);
 
+    /**
+     * 将record 的数据同步到customer info 中（测试用）
+     * @return
+     */
+    Boolean syncCustomerInfo();
+
+    /**
+     * 全量更新当前活动的通话次数
+     * @return
+     */
+    void refreshCommunicationRounds();
 }

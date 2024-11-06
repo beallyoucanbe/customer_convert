@@ -11,6 +11,7 @@ import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import com.smart.sso.server.service.TelephoneRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -46,6 +47,8 @@ public class SchedulTask {
     private MessageService messageService;
     @Autowired
     private ConfigService configService;
+    @Autowired
+    private TelephoneRecordService recordService;
 
 //    @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
@@ -280,4 +283,13 @@ public class SchedulTask {
     public void refreshStaffId() {
         RedisConfig.staffIdList.addAll(configService.getStaffIds());
     }
+
+
+    // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
+//    @Scheduled(cron = "0 30 3 * * ?")
+//    @Scheduled(cron = "0 */9 * * * ?")
+    public void refreshCommunicationRounds() {
+        recordService.refreshCommunicationRounds();
+    }
+
 }

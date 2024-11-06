@@ -1,13 +1,18 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.CommunicationContent;
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
+import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.TelephoneRecord;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
+import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.TelephoneRecordService;
+import com.smart.sso.server.util.CommonUtils;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +22,13 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -27,6 +36,10 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
     @Autowired
     private TelephoneRecordMapper recordMapper;
+    @Autowired
+    private CustomerInfoMapper customerInfoMapper;
+    @Autowired
+    private ConfigService configService;
 
     @Override
     public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String activityId) {
@@ -527,7 +540,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         // 按照沟通时间倒序排列
         queryWrapper.eq("customer_id", customerId);
         queryWrapper.eq("activity_id", activityId);
-        queryWrapper.orderBy(false, false, "communication_time");
+        queryWrapper.orderBy(true, false, "communication_time");
         List<TelephoneRecord> records = recordMapper.selectList(queryWrapper);
 
         List<ChatHistoryVO> result = new ArrayList<>();
@@ -541,5 +554,56 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             }
         }
         return result;
+    }
+
+    @Override
+    public Boolean syncCustomerInfo() {
+        QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
+        // 筛选时间
+        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        queryWrapper.gt("update_time", dateTime);
+        List<TelephoneRecord> telephoneRecordList = recordMapper.selectList(queryWrapper);
+
+        if (CollectionUtils.isEmpty(telephoneRecordList)){
+            return Boolean.TRUE;
+        }
+        String customerId;
+        String activityId;
+        QueryWrapper<CustomerInfo> infoQueryWrapper;
+        for (TelephoneRecord record : telephoneRecordList){
+            customerId = record.getCustomerId();
+            activityId = record.getActivityId();
+            infoQueryWrapper = new QueryWrapper<>();
+            infoQueryWrapper.eq("customer_id", customerId);
+            infoQueryWrapper.eq("activity_id", activityId);
+            CustomerInfo customerInfo = customerInfoMapper.selectOne(infoQueryWrapper);
+            if (Objects.nonNull(customerInfo)) {
+                continue;
+            }
+            customerInfo = new CustomerInfo();
+            customerInfo.setId(CommonUtils.generatePrimaryKey());
+            customerInfo.setCustomerName(record.getCustomerName());
+            customerInfo.setCustomerId(record.getCustomerId());
+            customerInfo.setOwnerName(record.getOwnerName());
+            customerInfo.setOwnerId(record.getOwnerId());
+            customerInfo.setActivityId(record.getActivityId());
+            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
+            customerInfoMapper.insert(customerInfo);
+        }
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public void refreshCommunicationRounds() {
+        String activityId = configService.getCurrentActivityId();
+        List<String> customerIdList = recordMapper.selectCustomerIdByActivity(activityId);
+        if (CollectionUtils.isEmpty(customerIdList)) {
+            return;
+        }
+        Map<String, Long> countMap = customerIdList.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        for (Map.Entry<String, Long> entry : countMap.entrySet()) {
+            customerInfoMapper.updateCommunicationRounds(entry.getKey(), activityId, entry.getValue().intValue());
+        }
     }
 }

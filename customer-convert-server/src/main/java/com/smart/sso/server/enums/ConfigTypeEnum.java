@@ -11,7 +11,8 @@ public enum ConfigTypeEnum {
 
     CURRENT_CAMPAIGN("current_campaign", "当前阶段的活动"),
     LEADER("leader", "组长"),
-    STAFF_ID_NEED_PROCESS("staff_id_need_process", "参加活动的销售名称");
+    STAFF_ID_NEED_PROCESS("staff_id_need_process", "参加活动的销售名称"),
+    CURRENT_ACTIVITY_ID("current_activity_id", "当前正在进行的活动");
 
     private final String value;
     private final String text;

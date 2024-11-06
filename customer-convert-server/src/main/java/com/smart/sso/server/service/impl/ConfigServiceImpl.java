@@ -33,4 +33,17 @@ public class ConfigServiceImpl implements ConfigService {
         return JsonUtil.readValue(config.getValue(), new TypeReference<List<String>>() {
         });
     }
+
+    @Override
+    public String getCurrentActivityId() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.CURRENT_ACTIVITY_ID.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有配置参加活动的销售名单，请先配置");
+            throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
+        }
+        return config.getValue();
+    }
 }
