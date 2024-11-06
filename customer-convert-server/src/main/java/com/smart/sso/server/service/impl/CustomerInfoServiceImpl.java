@@ -681,7 +681,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
         Feature featureVO = new Feature();
-        String resultAnswer = null;
         //“已询问”有三个值：“是”、“否”、“不需要”。
         if (Objects.nonNull(featureContentByModel)) {
             //如果question 有值，就是 ‘是’;
@@ -719,23 +718,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     String enumText = getFieldValue(enumConstant, "text");
                     // 判断文本是否匹配`text`
                     if (featureContentByModel.getAnswerTag().trim().equals(enumText)) {
-                        resultAnswer = value;
+                        customerConclusion.setModelRecord(value);
                         customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getAnswerText()));
                     }
                 }
             }
             // 返回值类型是boolen
             if (type == Boolean.class) {
-                resultAnswer = deletePunctuation(resultAnswer);
-                if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer)) {
+                String resultAnswer = deletePunctuation(customerConclusion.getModelRecord());
+                if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer)) {
                     customerConclusion.setModelRecord(Boolean.TRUE);
                 } else {
-                    if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer)) {
-                        customerConclusion.setModelRecord(Boolean.FALSE);
-                    }
+                    customerConclusion.setModelRecord(Boolean.FALSE);
                 }
-            } else {
-                customerConclusion.setModelRecord(resultAnswer);
             }
         }
         customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getContent());
@@ -843,14 +838,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             stageStatus.getConfirmValue() +
                             stageStatus.getConfirmPurchase() +
                             stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户判断");
+                questionStatus.add("客户匹配度判断");
             }
             if (stageStatus.getTransactionStyle() == 0 &&
                     (stageStatus.getFunctionIntroduction() +
                             stageStatus.getConfirmValue() +
                             stageStatus.getConfirmPurchase() +
                             stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("交易风格了解");
+                questionStatus.add("客户交易风格了解");
             }
             if (stageStatus.getFunctionIntroduction() == 0 &&
                     (stageStatus.getConfirmValue() +
