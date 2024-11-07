@@ -2,8 +2,6 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
@@ -137,6 +135,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
         customerFeature.setTradingMethod(summaryResponse.getTradingMethod());
+        getStandardExplanationCompletion(customerFeature);
         return customerFeature;
     }
 
@@ -376,26 +375,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return String.format(urlFormatter, id);
     }
 
-    @Override
-    public List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite) {
-        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
-        queryWrapper.eq("name", ConfigTypeEnum.LEADER.getValue());
-        Config config = configMapper.selectOne(queryWrapper);
-        if (Objects.isNull(config)) {
-            // 覆盖写入 或者 第一次配置，直接写入
-            Config newConfig = new Config();
-            newConfig.setType(ConfigTypeEnum.COMMON.getValue());
-            newConfig.setName(ConfigTypeEnum.LEADER.getValue());
-            newConfig.setValue(JsonUtil.serialize(members));
-            configMapper.insert(newConfig);
-        } else if (overwrite) {
-            config.setValue(JsonUtil.serialize(members));
-            configMapper.updateById(config);
-        }
-        return JsonUtil.readValue(configMapper.selectOne(queryWrapper).getValue(), new TypeReference<List<LeadMemberRequest>>() {
-        });
-    }
+
 
 
     @Override
@@ -992,4 +972,30 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return processSummary;
     }
 
+    private void getStandardExplanationCompletion(CustomerFeatureResponse customerFeature){
+        int completion = 0;
+        if (determineTradingMethod(customerFeature.getTradingMethod().getCurrentStocks())){
+            completion += 25;
+        }
+        if (determineTradingMethod(customerFeature.getTradingMethod().getStockPurchaseReason())){
+            completion += 25;
+        }
+        if (determineTradingMethod(customerFeature.getTradingMethod().getTradeTimingDecision())){
+            completion += 25;
+        }
+        if (determineTradingMethod(customerFeature.getTradingMethod().getTradingStyle())){
+            completion += 25;
+        }
+        customerFeature.getBasic().getSoftwareFunctionClarity().setStandardProcess(completion);
+        customerFeature.getBasic().getStockSelectionMethod().setStandardProcess(completion);
+    }
+
+    private Boolean determineTradingMethod(TradeMethodFeature tradeMethodFeature){
+        return tradeMethodFeature.getInquired().equals("yes")
+                && Objects.nonNull(tradeMethodFeature.getCustomerConclusion())
+                && !StringUtils.isEmpty(tradeMethodFeature.getCustomerConclusion().getCompareValue())
+                && Objects.nonNull(tradeMethodFeature.getStandardAction())
+                && Objects.nonNull(tradeMethodFeature.getStandardAction().getResult())
+                && tradeMethodFeature.getStandardAction().getResult();
+    }
 }

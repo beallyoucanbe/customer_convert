@@ -114,7 +114,7 @@ public class CustomerController {
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
         String staffId = callBackRequest.getData().getCall().getStaffId();
-        if (CollectionUtils.isEmpty(RedisConfig.staffIdList)){
+        if (CollectionUtils.isEmpty(RedisConfig.staffIdList)) {
             RedisConfig.staffIdList.addAll(configService.getStaffIds());
         }
         if (!RedisConfig.staffIdList.contains(staffId)) {
@@ -139,7 +139,7 @@ public class CustomerController {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains("2024-08-23")){
+                if (line.contains("2024-08-23")) {
                     continue;
                 }
                 String redisKey = SOURCEID_KEY_PREFIX + line.trim();
@@ -216,8 +216,8 @@ public class CustomerController {
     @ApiOperation(value = "更新组长和组员的关系（增量）")
     @PostMapping("/customer/leader_members")
     public BaseResponse<List<LeadMemberRequest>> leaderMembers(@RequestBody List<LeadMemberRequest> members,
-                                                                 @RequestParam(value = "overwrite", defaultValue = "true") boolean overwrite) {
-        List<LeadMemberRequest> newMembers = customerInfoService.addLeaderMember(members, overwrite);
+                                                               @RequestParam(value = "overwrite", defaultValue = "true") boolean overwrite) {
+        List<LeadMemberRequest> newMembers = configService.addLeaderMember(members, overwrite);
         return ResultUtils.success(newMembers);
     }
 

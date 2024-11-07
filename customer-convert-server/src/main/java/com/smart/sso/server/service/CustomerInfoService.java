@@ -32,10 +32,6 @@ public interface CustomerInfoService {
 
     String getRedirectUrl(String customerId, String activeId, String from, String manager);
 
-    List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite);
-
-
-
     void updateCharacterCostTime(String id);
 
     void statistics();
