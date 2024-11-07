@@ -82,18 +82,32 @@ public class CommonUtils {
     public static List<OriginChat.Message> getMessageListFromOriginChat(String chatContent) {
         List<OriginChat.Message> result = new ArrayList<>();
         String[] chats = chatContent.split("\n");
-        // 获取Iterator
-        Iterator<String> iterator = Arrays.asList(chats).iterator();
-        // 使用Iterator遍历
-        while (iterator.hasNext()) {
-            OriginChat.Message message = new OriginChat.Message();
-            String element = iterator.next();
-            if (element.split(" ").length >= 2 && (element.contains("2024") || element.contains("2025"))) {
-                message.setRole(element.substring(0, element.indexOf(" ")));
-                message.setTime(element.substring(element.indexOf(" ") + 1, element.length()));
-                if (iterator.hasNext()) {
-                    message.setContent(iterator.next());
-                    result.add(message);
+        if (chats.length == 1) {
+            // 当只有一行时，尝试按照正则表达式来解析
+            String regex = "^(.+?)\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+(.+)$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(chats[0]);
+            if (matcher.find()) {
+                OriginChat.Message message = new OriginChat.Message();
+                message.setRole(matcher.group(1));
+                message.setTime(matcher.group(2));
+                message.setContent(matcher.group(3));
+                result.add(message);
+            }
+        } else {
+            // 获取Iterator
+            Iterator<String> iterator = Arrays.asList(chats).iterator();
+            // 使用Iterator遍历
+            while (iterator.hasNext()) {
+                OriginChat.Message message = new OriginChat.Message();
+                String element = iterator.next();
+                if (element.split(" ").length >= 2 && (element.contains("2024") || element.contains("2025"))) {
+                    message.setRole(element.substring(0, element.indexOf(" ")));
+                    message.setTime(element.substring(element.indexOf(" ") + 1, element.length()));
+                    if (iterator.hasNext()) {
+                        message.setContent(iterator.next());
+                        result.add(message);
+                    }
                 }
             }
         }
