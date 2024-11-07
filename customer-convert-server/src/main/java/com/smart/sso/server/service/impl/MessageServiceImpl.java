@@ -130,19 +130,6 @@ public class MessageServiceImpl implements MessageService {
         }
         String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete,
                 CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
-
-        // 获取要发送的url
-        QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-        queryWrapper2.eq("name", area);
-        Config config = configMapper.selectOne(queryWrapper2);
-        String notifyUrl;
-        if (Objects.isNull(config)) {
-            log.error("没有配置该销售的报警url，暂不发送");
-            return;
-        } else {
-            notifyUrl = config.getValue();
-        }
         TextMessage textMessage = new TextMessage();
         TextMessage.TextContent textContent = new TextMessage.TextContent();
         textContent.setContent(message);
@@ -188,7 +175,6 @@ public class MessageServiceImpl implements MessageService {
             String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                     "确认购买" : "尚未确认购买";
             String leaderMessageUrl = getLeaderMessageUrl(newCustomerCharacter.getOwnerName());
-            String ownerMessageUrl = getOwnerMessageUrl(newCustomerCharacter.getOwnerName());
             if (Objects.nonNull(leaderMessageUrl)){
                 String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
                         customerInfo.getCustomerId(), customerInfo.getActivityId());
@@ -321,18 +307,6 @@ public class MessageServiceImpl implements MessageService {
                 complete,
                 incomplete,
                 CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
-
-        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-        queryWrapper.eq("name", customerInfo.getOwnerName());
-        Config config = configMapper.selectOne(queryWrapper);
-        String notifyUrl = "";
-        if (Objects.isNull(config)) {
-            log.error("没有配置该销售的报警url，暂不发送");
-            return;
-        } else {
-            notifyUrl = config.getValue();
-        }
         TextMessage textMessage = new TextMessage();
         TextMessage.TextContent textContent = new TextMessage.TextContent();
         textContent.setContent(message);
@@ -553,19 +527,6 @@ public class MessageServiceImpl implements MessageService {
 
             String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete,
                     CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
-
-            // 获取要发送的url
-            QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-            queryWrapper2.eq("name", entry.getKey());
-            Config config = configMapper.selectOne(queryWrapper2);
-            String notifyUrl;
-            if (Objects.isNull(config)) {
-                log.error("没有配置该销售的报警url，暂不发送");
-                return;
-            } else {
-                notifyUrl = config.getValue();
-            }
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
             textContent.setContent(message);
@@ -591,38 +552,7 @@ public class MessageServiceImpl implements MessageService {
         }
         List<LeadMemberRequest> leadMemberList = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
         });
-        for (LeadMemberRequest leadMember : leadMemberList) {
-            if (leadMember.getMembers().contains(ownerName)){
-                // 获取要发送的url
-                QueryWrapper<Config> queryWrapper2 = new QueryWrapper<>();
-                queryWrapper2.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-                queryWrapper2.eq("name", leadMember.getArea());
-                Config urlConfig = configMapper.selectOne(queryWrapper2);
-                if (Objects.isNull(urlConfig)) {
-                    log.error("没有配置该销售的报警url，暂不发送");
-                    return null;
-                } else {
-                    return urlConfig.getValue();
-                }
-            }
-        }
         return null;
     }
 
-    /**
-     * 根据组员名称获取企微消息推送url
-     * @param ownerName
-     * @return
-     */
-    private String getOwnerMessageUrl(String ownerName){
-        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("type", ConfigTypeEnum.NOTIFY_URL.getValue());
-        queryWrapper.eq("name", ownerName);
-        Config config = configMapper.selectOne(queryWrapper);
-        if (Objects.isNull(config)) {
-            log.error("没有配置组员信息，请先配置");
-            return null;
-        }
-        return config.getValue();
-    }
 }
