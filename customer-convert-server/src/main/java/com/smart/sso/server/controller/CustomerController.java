@@ -3,7 +3,6 @@ package com.smart.sso.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
-import com.smart.sso.server.config.RedisConfig;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.ActivityInfo;
@@ -33,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.List;
 

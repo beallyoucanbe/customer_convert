@@ -229,11 +229,17 @@ public class MessageServiceImpl implements MessageService {
         String url = String.format(AppConstant.GET_SECRET_URL, AppConstant.corpId, AppConstant.corpSecret);
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         // 处理响应
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            log.error("Failed to send message: " + response.getStatusCode());
-            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+        try {
+            if (response.getStatusCode() == HttpStatus.OK) {
+                AccessTokenResponse accessTokenResponse = JsonUtil.readValue(response.getBody(), new TypeReference<AccessTokenResponse>() {
+                });
+                return accessTokenResponse.getAccessToken();
+            } else {
+                throw new RuntimeException("Failed to get access token: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            log.error("Failed to get access token: " + response.getStatusCode());
+            throw new RuntimeException("Failed to get access token: " + response.getStatusCode());
         }
     }
 
