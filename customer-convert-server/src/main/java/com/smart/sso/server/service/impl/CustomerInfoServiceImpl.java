@@ -732,8 +732,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 String resultAnswer = deletePunctuation(customerConclusion.getModelRecord());
                 if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer)) {
                     customerConclusion.setModelRecord(Boolean.TRUE);
-                } else {
+                } else if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer) || "不认可".equals(resultAnswer)){
                     customerConclusion.setModelRecord(Boolean.FALSE);
+                } else {
+                    customerConclusion.setModelRecord(null);
                 }
             }
         }
@@ -760,31 +762,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerProcessSummary.ProcessInfoExplanationContent convertSummaryByOverwrite(CommunicationContent featureFromLLM) {
         CustomerProcessSummary.ProcessInfoExplanationContent explanationContent =
                 new CustomerProcessSummary.ProcessInfoExplanationContent();
-        if (Objects.isNull(featureFromLLM)) {
-            explanationContent.setResult(Boolean.FALSE);
-            return explanationContent;
-        }
+        explanationContent.setResult(Boolean.FALSE);
         // 多通电话覆盖+规则加工
-        if (!StringUtils.isEmpty(featureFromLLM.getQuestion().trim()) &&
+        if (Objects.nonNull(featureFromLLM) && !StringUtils.isEmpty(featureFromLLM.getQuestion()) &&
                 !featureFromLLM.getQuestion().trim().equals("无") && !featureFromLLM.getQuestion().trim().equals("null")) {
             explanationContent.setResult(Boolean.TRUE);
             explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(featureFromLLM.getCallId(), featureFromLLM.getQuestion()));
-            return explanationContent;
         }
         return explanationContent;
-    }
-
-    private List<SummaryContent> dataPreprocess(List<SummaryContent> summaryContentList) {
-        if (CollectionUtils.isEmpty(summaryContentList)) {
-            return summaryContentList;
-        }
-        Map<String, SummaryContent> keySummaryContent = new TreeMap<>();
-        for (SummaryContent item : summaryContentList) {
-            if (!keySummaryContent.containsKey(item.getCallId())) {
-                keySummaryContent.put(item.getCallId(), item);
-            }
-        }
-        return new ArrayList<>(keySummaryContent.values());
     }
 
     private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
