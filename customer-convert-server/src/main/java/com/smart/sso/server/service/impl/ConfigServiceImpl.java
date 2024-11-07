@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.mapper.ConfigMapper;
 import com.smart.sso.server.model.Config;
+import com.smart.sso.server.model.QiweiApplicationConfig;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.util.JsonUtil;
@@ -32,6 +33,20 @@ public class ConfigServiceImpl implements ConfigService {
             throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
         }
         return JsonUtil.readValue(config.getValue(), new TypeReference<List<String>>() {
+        });
+    }
+
+    @Override
+    public QiweiApplicationConfig getQiweiApplicationConfig() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.QIWEI_APPLICATION_CONFIG.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有企微自建应用的配置，请先配置");
+            throw new RuntimeException("没有企微自建应用的配置，请先配置");
+        }
+        return JsonUtil.readValue(config.getValue(), new TypeReference<QiweiApplicationConfig>() {
         });
     }
 

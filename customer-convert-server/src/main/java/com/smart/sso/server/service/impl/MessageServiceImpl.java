@@ -16,6 +16,7 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
+import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.util.DateUtil;
@@ -51,6 +52,8 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private CustomerInfoService customerInfoService;
     @Autowired
+    private ConfigService configService;
+    @Autowired
     private CustomerCharacterMapper customerCharacterMapper;
     @Autowired
     private ConfigMapper configMapper;
@@ -62,13 +65,14 @@ public class MessageServiceImpl implements MessageService {
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
     @Override
-    public String sendMessageToChat(String url, TextMessage message) {
+    public String sendMessageToChat(TextMessage message) {
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
-        log.error("发送消息内容：" + JsonUtil.serialize(message) + url);
+        log.error("发送消息内容：" + JsonUtil.serialize(message));
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
+        String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
         // 发送 POST 请求
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
         // 处理响应
@@ -142,9 +146,8 @@ public class MessageServiceImpl implements MessageService {
         TextMessage textMessage = new TextMessage();
         TextMessage.TextContent textContent = new TextMessage.TextContent();
         textContent.setContent(message);
-        textMessage.setMsgtype("markdown");
         textMessage.setMarkdown(textContent);
-        sendMessageToChat(notifyUrl, textMessage);
+        sendMessageToChat(textMessage);
     }
 
     @Override
@@ -220,12 +223,31 @@ public class MessageServiceImpl implements MessageService {
                 textContent.setContent(message);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
-                sendMessageToChat(leaderMessageUrl, textMessage);
+                sendMessageToChat(textMessage);
                 String target = "**";
                 int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
                 textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
-                sendMessageToChat(ownerMessageUrl, textMessage);
+                sendMessageToChat(textMessage);
             }
+        }
+    }
+
+    @Override
+    public String getAccessToken() {
+        if (StringUtils.isEmpty(AppConstant.agentId)){
+            QiweiApplicationConfig applicationConfig = configService.getQiweiApplicationConfig();
+            AppConstant.agentId = applicationConfig.getAgentId();
+            AppConstant.corpId = applicationConfig.getCorpId();
+            AppConstant.corpSecret = applicationConfig.getCorpSecret();
+        }
+        String url = String.format(AppConstant.GET_SECRET_URL, AppConstant.corpId, AppConstant.corpSecret);
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        // 处理响应
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            log.error("Failed to send message: " + response.getStatusCode());
+            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
         }
     }
 
@@ -316,7 +338,7 @@ public class MessageServiceImpl implements MessageService {
         textContent.setContent(message);
         textMessage.setMsgtype("markdown");
         textMessage.setMarkdown(textContent);
-        sendMessageToChat(notifyUrl, textMessage);
+        sendMessageToChat(textMessage);
     }
 
 
@@ -549,7 +571,7 @@ public class MessageServiceImpl implements MessageService {
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToChat(notifyUrl, textMessage);
+            sendMessageToChat(textMessage);
         }
     }
 

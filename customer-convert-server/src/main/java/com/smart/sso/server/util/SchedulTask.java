@@ -281,7 +281,7 @@ public class SchedulTask {
      */
 //    @Scheduled(cron = "0 0 */1 * * ?")
     public void refreshStaffId() {
-        RedisConfig.staffIdList.addAll(configService.getStaffIds());
+        AppConstant.staffIdList.addAll(configService.getStaffIds());
     }
 
 

@@ -7,10 +7,12 @@ import java.time.LocalDateTime;
 
 public interface MessageService {
 
-    String sendMessageToChat(String url, TextMessage message);
+    String sendMessageToChat(TextMessage message);
 
     void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign, LocalDateTime dateTime);
 
     void updateCustomerCharacter(String id, boolean checkPurchaseAttitude);
+
+    String getAccessToken();
 
 }

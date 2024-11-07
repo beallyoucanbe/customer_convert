@@ -1,5 +1,6 @@
 package com.smart.sso.server.service;
 
+import com.smart.sso.server.model.QiweiApplicationConfig;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 
 import java.util.List;
@@ -10,6 +11,12 @@ public interface ConfigService {
      * @return 加这次活动的员工id
      */
     List<String> getStaffIds();
+
+    /**
+     * 获取企微应用的配置
+     * @return 企微
+     */
+    QiweiApplicationConfig getQiweiApplicationConfig();
 
     /**
      * 获取当前正在进行的活动Id

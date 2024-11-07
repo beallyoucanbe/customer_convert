@@ -1,5 +1,8 @@
 package com.smart.sso.server.constant;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 应用常量
  */
@@ -22,6 +25,9 @@ public class AppConstant {
 
     public static final String CUSTOMER_DASHBOARD_URL = "http://172.16.192.61:8086/preview/33/dashboard/27";
 
+    public static final String GET_SECRET_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
+
+    public static final String SEND_APPLICATION_MESSAGE_URL = " https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s";
 
     public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE_BAK = "您刚和客户**%s（客户id：%s）**通完电话，该客户的匹配度：**%s**。\n" +
             "\n" +
@@ -50,4 +56,11 @@ public class AppConstant {
             "客户对购买软件的态度为：**%s**\n" +
             "%s" +
             "详细内容链接：[%s](%s)";
+
+    public static Set<String> staffIdList = new HashSet<>();
+    public static String agentId;
+    public static String corpSecret;
+    public static String corpId;
+    public static String accessToken;
+
 }

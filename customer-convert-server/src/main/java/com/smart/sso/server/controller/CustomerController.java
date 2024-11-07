@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.config.RedisConfig;
+import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.CustomerInfo;
@@ -114,10 +115,10 @@ public class CustomerController {
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
         String staffId = callBackRequest.getData().getCall().getStaffId();
-        if (CollectionUtils.isEmpty(RedisConfig.staffIdList)) {
-            RedisConfig.staffIdList.addAll(configService.getStaffIds());
+        if (CollectionUtils.isEmpty(AppConstant.staffIdList)) {
+            AppConstant.staffIdList.addAll(configService.getStaffIds());
         }
-        if (!RedisConfig.staffIdList.contains(staffId)) {
+        if (!AppConstant.staffIdList.contains(staffId)) {
             log.error("staff id 不参加活动， 跳过不处理: " + staffId);
         }
         String redisKey = SOURCEID_KEY_PREFIX + sourceId;
@@ -162,7 +163,7 @@ public class CustomerController {
     public BaseResponse<Void> redirect(@RequestParam(value = "customer_id") String customerId,
                                        @RequestParam(value = "active_id") String activityId,
                                        String from, String manager,
-                                       HttpServletResponse response) throws IOException, URISyntaxException {
+                                       HttpServletResponse response) throws IOException {
         String targetUrl = customerInfoService.getRedirectUrl(customerId, activityId, from, manager);
         // 使用HttpServletResponse进行重定向
         response.sendRedirect(CommonUtils.encodeParameters(targetUrl));

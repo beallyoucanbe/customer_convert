@@ -12,8 +12,6 @@ import java.util.Set;
 @Configuration
 public class RedisConfig {
 
-    public static Set<String> staffIdList = new HashSet<>();
-
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
