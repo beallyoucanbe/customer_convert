@@ -84,14 +84,14 @@ public class CommonUtils {
         String[] chats = chatContent.split("\n");
         if (chats.length == 1) {
             // 当只有一行时，尝试按照正则表达式来解析
-            String regex = "^(.+?)\\s+(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\s+(.+)$";
+            String regex = "([\\u4e00-\\u9fa5]+)\\s*(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s*(.*?)(?=([\\u4e00-\\u9fa5]+ \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})|$)";
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(chats[0]);
-            if (matcher.find()) {
+            while (matcher.find()) {
                 OriginChat.Message message = new OriginChat.Message();
                 message.setRole(matcher.group(1));
                 message.setTime(matcher.group(2));
-                message.setContent(matcher.group(3));
+                message.setContent(matcher.group(3).trim());
                 result.add(message);
             }
         } else {

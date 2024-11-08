@@ -672,10 +672,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     !featureContentByModel.getQuestion().equals("无") &&
                     !featureContentByModel.getQuestion().equals("null")) {
                 featureVO.setInquired("yes");
-                OriginChat originChat = new OriginChat();
-                originChat.setContents(CommonUtils.getMessageListFromOriginChat(featureContentByModel.getQuestion()));
-                originChat.setId(featureContentByModel.getCallId());
-                featureVO.setInquiredOriginChat(originChat);
+                featureVO.setInquiredOriginChat(CommonUtils.getOriginChatFromChatText(
+                        StringUtils.isEmpty(featureContentByModel.getQuestionCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getQuestionCallId(),
+                        featureContentByModel.getQuestion()));
             }
             //如果都没有 question 或者 question 都没值，但是有 answer 有值，就是‘不需要’，这种情况下是没有原文的；
             if (featureVO.getInquired().equals("no")) {
@@ -693,7 +692,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
             if (Objects.isNull(enumClass)) {
                 customerConclusion.setModelRecord(featureContentByModel.getAnswerTag());
-                customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getAnswerText()));
+                customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                        StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
+                        featureContentByModel.getAnswerText()));
             } else {
                 // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
                 for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
@@ -703,7 +704,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     // 判断文本是否匹配`text`
                     if (featureContentByModel.getAnswerTag().trim().equals(enumText)) {
                         customerConclusion.setModelRecord(value);
-                        customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(featureContentByModel.getCallId(), featureContentByModel.getAnswerText()));
+                        customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                                StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
+                                featureContentByModel.getAnswerText()));
                     }
                 }
             }
@@ -747,7 +750,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.nonNull(featureFromLLM) && !StringUtils.isEmpty(featureFromLLM.getQuestion()) &&
                 !featureFromLLM.getQuestion().trim().equals("无") && !featureFromLLM.getQuestion().trim().equals("null")) {
             explanationContent.setResult(Boolean.TRUE);
-            explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(featureFromLLM.getCallId(), featureFromLLM.getQuestion()));
+            explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                    StringUtils.isEmpty(featureFromLLM.getQuestionCallId()) ? featureFromLLM.getCallId() : featureFromLLM.getQuestionCallId(),
+                    featureFromLLM.getQuestion()));
         }
         return explanationContent;
     }

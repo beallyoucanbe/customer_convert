@@ -15,6 +15,9 @@ public class CommunicationContent {
     private String doubtText;
     private String doubtTag;
     private String callId;
+    private String questionCallId;
+    private String answerCallId;
+
 }
 
 
