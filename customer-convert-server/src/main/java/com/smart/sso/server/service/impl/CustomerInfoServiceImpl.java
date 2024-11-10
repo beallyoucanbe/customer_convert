@@ -713,9 +713,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 返回值类型是boolen
             if (type == Boolean.class) {
                 String resultAnswer = deletePunctuation(customerConclusion.getModelRecord());
-                if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer)) {
+                if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer) || "清晰".equals(resultAnswer)) {
                     customerConclusion.setModelRecord(Boolean.TRUE);
-                } else if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer) || "不认可".equals(resultAnswer)){
+                } else if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer) || "不认可".equals(resultAnswer) || "不清晰".equals(resultAnswer)){
                     customerConclusion.setModelRecord(Boolean.FALSE);
                 } else {
                     customerConclusion.setModelRecord(null);

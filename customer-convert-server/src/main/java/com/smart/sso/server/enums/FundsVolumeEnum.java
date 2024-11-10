@@ -7,7 +7,7 @@ import org.springframework.util.StringUtils;
 public enum FundsVolumeEnum {
 
     GREAT_TEN_MILLION("great_ten_w", "大于10万"),
-    FIVE_TO_TEN_MILLION("five_to_ten_w", "5-10万"),
+    FIVE_TO_TEN_MILLION("five_to_ten_w", "5到10万之间"),
     LESS_FIVE_MILLION("less_five_w", "小于5万"),
     ABUNDANT("abundant", "充裕"),
     DEFICIENT("deficient", "匮乏");
