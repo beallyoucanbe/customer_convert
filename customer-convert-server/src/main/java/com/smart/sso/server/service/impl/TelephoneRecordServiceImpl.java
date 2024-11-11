@@ -50,7 +50,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         // 按照沟通时间倒序排列
         queryWrapper.eq("customer_id", customerId);
         queryWrapper.eq("activity_id", activityId);
-        queryWrapper.orderBy(false, false, "communication_time");
+        queryWrapper.orderBy(true, false, "communication_time");
         List<TelephoneRecord> records = recordMapper.selectList(queryWrapper);
         // 对该客户下的所有的通话记录进行总结
         for (TelephoneRecord record : records) {
