@@ -648,7 +648,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
 
     private BaseFeature convertBaseFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
-        BaseFeature baseFeature = new BaseFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type));
+        BaseFeature baseFeature = new BaseFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type, true));
         // 构建问题
         if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getDoubtTag())) {
             BaseFeature.CustomerQuestion customerQuestion = new BaseFeature.CustomerQuestion();
@@ -660,10 +660,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private TradeMethodFeature convertTradeMethodFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
-        return new TradeMethodFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type));
+        return new TradeMethodFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type, false));
     }
 
-    private Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
+    private Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type, boolean isTag) {
         Feature featureVO = new Feature();
         //“已询问”有三个值：“是”、“否”、“不需要”。
         if (Objects.nonNull(featureContentByModel)) {
@@ -688,38 +688,47 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         // 构建结论
         Feature.CustomerConclusion customerConclusion = new Feature.CustomerConclusion();
-        if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerTag())) {
-            // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
-            if (Objects.isNull(enumClass)) {
-                customerConclusion.setModelRecord(featureContentByModel.getAnswerTag());
-                customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
-                        StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
-                        featureContentByModel.getAnswerText()));
-            } else {
-                // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
-                for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
-                    // 获取枚举对象的 `value` 和 `text` 字段值
-                    String value = getFieldValue(enumConstant, "value");
-                    String enumText = getFieldValue(enumConstant, "text");
-                    // 判断文本是否匹配`text`
-                    if (featureContentByModel.getAnswerTag().trim().equals(enumText)) {
-                        customerConclusion.setModelRecord(value);
-                        customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
-                                StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
-                                featureContentByModel.getAnswerText()));
+        if (isTag){
+            if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerText())) {
+                // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
+                if (Objects.isNull(enumClass)) {
+                    customerConclusion.setModelRecord(featureContentByModel.getAnswerTag());
+                    customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                            StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
+                            featureContentByModel.getAnswerText()));
+                } else {
+                    // 有候选值枚举，需要比较最后一个非空记录值是否跟候选值相同，不同则返回为空
+                    for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
+                        // 获取枚举对象的 `value` 和 `text` 字段值
+                        String value = getFieldValue(enumConstant, "value");
+                        String enumText = getFieldValue(enumConstant, "text");
+                        // 判断文本是否匹配`text`
+                        if (featureContentByModel.getAnswerTag().trim().equals(enumText)) {
+                            customerConclusion.setModelRecord(value);
+                            customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                                    StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
+                                    featureContentByModel.getAnswerText()));
+                        }
+                    }
+                }
+                // 返回值类型是boolen
+                if (type == Boolean.class) {
+                    String resultAnswer = deletePunctuation(customerConclusion.getModelRecord());
+                    if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer) || "清晰".equals(resultAnswer)) {
+                        customerConclusion.setModelRecord(Boolean.TRUE);
+                    } else if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer) || "不认可".equals(resultAnswer) || "不清晰".equals(resultAnswer)){
+                        customerConclusion.setModelRecord(Boolean.FALSE);
+                    } else {
+                        customerConclusion.setModelRecord(null);
                     }
                 }
             }
-            // 返回值类型是boolen
-            if (type == Boolean.class) {
-                String resultAnswer = deletePunctuation(customerConclusion.getModelRecord());
-                if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer) || "清晰".equals(resultAnswer)) {
-                    customerConclusion.setModelRecord(Boolean.TRUE);
-                } else if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer) || "不认可".equals(resultAnswer) || "不清晰".equals(resultAnswer)){
-                    customerConclusion.setModelRecord(Boolean.FALSE);
-                } else {
-                    customerConclusion.setModelRecord(null);
-                }
+        } else {
+            if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerText())) {
+                customerConclusion.setModelRecord(featureContentByModel.getAnswerText());
+                customerConclusion.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                        StringUtils.isEmpty(featureContentByModel.getAnswerCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getAnswerCallId(),
+                        featureContentByModel.getAnswerText()));
             }
         }
         customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getContent());
