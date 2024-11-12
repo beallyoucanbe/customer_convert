@@ -125,7 +125,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfoMapper.updateConversionRateById(customerInfo.getId(), conversionRate);
             customerProfile.setConversionRate(conversionRate);
         }
-        customerProfile.setLastCommunicationDate(new Date(customerInfo.getUpdateTime().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli()));
+        customerProfile.setLastCommunicationDate(featureFromLLM.getCommunicationTime());
         return customerProfile;
     }
 

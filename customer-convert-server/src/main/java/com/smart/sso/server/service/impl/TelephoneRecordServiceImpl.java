@@ -52,6 +52,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         queryWrapper.eq("activity_id", activityId);
         queryWrapper.orderBy(true, false, "communication_time");
         List<TelephoneRecord> records = recordMapper.selectList(queryWrapper);
+        customerFeatureFromLLM.setCommunicationTime(records.get(0).getCommunicationTime());
         // 对该客户下的所有的通话记录进行总结
         for (TelephoneRecord record : records) {
             //客户的资金体量
