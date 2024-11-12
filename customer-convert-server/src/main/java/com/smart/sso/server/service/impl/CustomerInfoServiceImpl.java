@@ -15,6 +15,7 @@ import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.*;
+import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
@@ -50,7 +51,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Autowired
     private CustomerFeatureMapper customerFeatureMapper;
     @Autowired
-    private ConfigMapper configMapper;
+    private ConfigService configService;
     @Autowired
     private CustomerRelationMapper customerRelationMapper;
     @Autowired
@@ -78,6 +79,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         if (!StringUtils.isEmpty(params.getActivityName())) {
             queryWrapper.like("activity_name", params.getActivityName());
+        } else {
+            String activityId = configService.getCurrentActivityId();
+            queryWrapper.like("activity_id", activityId);
         }
 
         String sortOrder = params.getSortBy();
@@ -133,9 +137,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
-        customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
         customerFeature.setTradingMethod(summaryResponse.getTradingMethod());
         getStandardExplanationCompletion(customerFeature);
+        customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
         return customerFeature;
     }
 
@@ -191,10 +195,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             CustomerProcessSummary.TradingMethod tradingMethod = summaryResponse.getTradingMethod();
             try {
                 if (Objects.nonNull(tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue()) &&
+                        !tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue().equals("null") &&
                         Objects.nonNull(tradingMethod.getStockPurchaseReason().getCustomerConclusion().getCompareValue()) &&
+                        !tradingMethod.getStockPurchaseReason().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !tradingMethod.getStockPurchaseReason().getCustomerConclusion().getCompareValue().equals("null") &&
                         Objects.nonNull(tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue()) &&
+                        !tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue().equals("null") &&
                         Objects.nonNull(tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue()) &&
-                        Objects.nonNull(tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue())) {
+                        !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("null") &&
+                        Objects.nonNull(tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue()) &&
+                        !tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue().equals("null")) {
                     stageStatus.setTransactionStyle(1);
                 }
             } catch (Exception e) {
@@ -897,7 +911,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 优点：-客户认可选股方法：“客户对业务员讲的选股方法的认可度”的值为“是”
             // 缺点：-客户对选股方法尚未认可，需加强选股成功的真实案例证明：“客户对业务员讲的选股方法的认可度”的值为“否”
             try {
-                if (Objects.nonNull(customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue())) {
+                if ((Boolean) customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue()) {
                     advantage.add("客户认可选股方法");
                 } else {
                     StringBuilder tempStr = new StringBuilder("客户对选股方法尚未认可，");
@@ -930,7 +944,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     } catch (Exception e) {
                         tempStr.append("业务员未完成痛点量化放大，");
                     }
-                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord()).append("，需列举与客户相近的真实反面案例证明");
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSelfIssueRecognition().getCustomerQuestion().getModelRecord()).append("，需列举与客户相近的真实反面案例证明");
                     questions.add(tempStr.toString());
                 }
             } catch (Exception e) {
@@ -954,7 +968,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     } catch (Exception e) {
                         tempStr.append("业务员未完成价值量化放大，");
                     }
-                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord()).append("，需加强使用软件的真实成功案例证明");
+                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSoftwareValueApproval().getCustomerQuestion().getModelRecord()).append("，需加强使用软件的真实成功案例证明");
                     questions.add(tempStr.toString());
                 }
             } catch (Exception e) {
