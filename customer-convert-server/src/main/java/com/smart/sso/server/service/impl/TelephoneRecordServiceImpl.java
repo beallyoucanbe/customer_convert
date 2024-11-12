@@ -569,6 +569,58 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 chatHistoryVO.setId(record.getCallId());
                 chatHistoryVO.setCommunicationTime(record.getCommunicationTime());
                 chatHistoryVO.setCommunicationDuration(record.getCommunicationDuration());
+                ChatHistoryVO.ChatHistoryInfo basic = new ChatHistoryVO.ChatHistoryInfo();
+                // 软件功能清晰度
+                if (!CollectionUtils.isEmpty(record.getSoftwareFunctionClarity())) {
+                    CommunicationContent communicationContent = record.getSoftwareFunctionClarity().get(0);
+                    String answerTag = communicationContent.getAnswerTag();
+                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                        basic.setSoftwareFunctionClarity(Boolean.TRUE);
+                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                        basic.setSoftwareFunctionClarity(Boolean.FALSE);
+                    }
+                }
+                // 选股方法的认可度
+                if (!CollectionUtils.isEmpty(record.getStockSelectionMethod())) {
+                    CommunicationContent communicationContent = record.getStockSelectionMethod().get(0);
+                    String answerTag = communicationContent.getAnswerTag();
+                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                        basic.setStockSelectionMethod(Boolean.TRUE);
+                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                        basic.setStockSelectionMethod(Boolean.FALSE);
+                    }
+                }
+                // 自身问题及影响的认可度
+                if (!CollectionUtils.isEmpty(record.getSelfIssueRecognition())) {
+                    CommunicationContent communicationContent = record.getSelfIssueRecognition().get(0);
+                    String answerTag = communicationContent.getAnswerTag();
+                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                        basic.setSelfIssueRecognition(Boolean.TRUE);
+                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                        basic.setSelfIssueRecognition(Boolean.FALSE);
+                    }
+                }
+                // 软件价值的认可度
+                if (!CollectionUtils.isEmpty(record.getSoftwareValueApproval())) {
+                    CommunicationContent communicationContent = record.getSoftwareValueApproval().get(0);
+                    String answerTag = communicationContent.getAnswerTag();
+                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                        basic.setSoftwareValueApproval(Boolean.TRUE);
+                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                        basic.setSoftwareValueApproval(Boolean.FALSE);
+                    }
+                }
+                // 客户对软件购买的态度
+                if (!CollectionUtils.isEmpty(record.getSoftwarePurchaseAttitude())) {
+                    CommunicationContent communicationContent = record.getSoftwarePurchaseAttitude().get(0);
+                    String answerTag = communicationContent.getAnswerTag();
+                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                        basic.setSoftwarePurchaseAttitude(Boolean.TRUE);
+                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                        basic.setSoftwarePurchaseAttitude(Boolean.FALSE);
+                    }
+                }
+                chatHistoryVO.setBasic(basic);
                 result.add(chatHistoryVO);
             }
         }

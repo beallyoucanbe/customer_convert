@@ -14,4 +14,14 @@ public class ChatHistoryVO {
     @JsonProperty("time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp communicationTime;
+    private ChatHistoryInfo basic;
+
+    @Data
+    public static class ChatHistoryInfo{
+        private Boolean softwareFunctionClarity;
+        private Boolean stockSelectionMethod;
+        private Boolean selfIssueRecognition;
+        private Boolean softwareValueApproval;
+        private Boolean softwarePurchaseAttitude;
+    }
 }
