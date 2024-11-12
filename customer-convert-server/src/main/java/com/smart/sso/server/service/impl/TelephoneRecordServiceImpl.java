@@ -7,6 +7,7 @@ import com.smart.sso.server.model.CommunicationContent;
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
 import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.TelephoneRecord;
+import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.service.ConfigService;
@@ -25,10 +26,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -668,14 +666,12 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Override
     public void refreshCommunicationRounds() {
         String activityId = configService.getCurrentActivityId();
-        List<String> customerIdList = recordMapper.selectCustomerIdByActivity(activityId);
+        List<TelephoneRecordStatics> customerIdList = recordMapper.selectTelephoneRecordStatics(activityId);
         if (CollectionUtils.isEmpty(customerIdList)) {
             return;
         }
-        Map<String, Long> countMap = customerIdList.stream()
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-        for (Map.Entry<String, Long> entry : countMap.entrySet()) {
-            customerInfoMapper.updateCommunicationRounds(entry.getKey(), activityId, entry.getValue().intValue());
+        for (TelephoneRecordStatics item : customerIdList) {
+            customerInfoMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
         }
     }
 }
