@@ -14,7 +14,6 @@ import com.smart.sso.server.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
@@ -142,10 +141,10 @@ public class MessageServiceImpl implements MessageService {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
-        CustomerProcessSummary customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
+
         CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
-        updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature, customerSummary);
+        updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature);
         if (Objects.isNull(customerCharacter)) {
             // 新建
             customerCharacterMapper.insert(newCustomerCharacter);
@@ -323,13 +322,14 @@ public class MessageServiceImpl implements MessageService {
 
 
     private void updateCharacter(CustomerCharacter latestCustomerCharacter, CustomerInfo customerInfo,
-                                 CustomerProfile customerProfile, CustomerFeatureResponse customerFeature, CustomerProcessSummary customerSummary) {
+                                 CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
         latestCustomerCharacter.setId(customerInfo.getId());
         latestCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
         latestCustomerCharacter.setCustomerName(customerInfo.getCustomerName());
         latestCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
         latestCustomerCharacter.setOwnerName(customerInfo.getOwnerName());
-        latestCustomerCharacter.setCurrentCampaign(customerProfile.getActivityId());
+        latestCustomerCharacter.setActivityName(customerInfo.getActivityName());
+        latestCustomerCharacter.setActivityId(customerInfo.getActivityId());
         latestCustomerCharacter.setConversionRate(conversionRateMap.get(customerProfile.getConversionRate()));
 
         latestCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);
@@ -367,8 +367,6 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryConfirmValue("true");
             } else if (item.contains("执行顺序正确")) {
                 latestCustomerCharacter.setSummaryExecuteOrder("true");
-            } else if (item.contains("邀约听课成功")) {
-                latestCustomerCharacter.setSummaryInvitCourse("true");
             } else if (item.contains("完成痛点和价值量化放大")) {
                 latestCustomerCharacter.setIssuesValueQuantified("true");
             }
@@ -386,12 +384,8 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setSummaryConfirmValue("false");
             } else if (item.contains("执行顺序错误")) {
                 latestCustomerCharacter.setSummaryExecuteOrder("false");
-            } else if (item.contains("邀约听课失败")) {
-                latestCustomerCharacter.setSummaryInvitCourse("false");
             } else if (item.contains("未完成痛点和价值量化放大")) {
                 latestCustomerCharacter.setIssuesValueQuantified("false");
-            } else if (item.contains("质疑应对失败次数多")) {
-                latestCustomerCharacter.setDoubtFrequent("true");
             }
         }
         latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());

@@ -24,7 +24,8 @@ public class CustomerCharacter implements Serializable {
     private String customerName;
     private String ownerId;
     private String ownerName;
-    private String currentCampaign;
+    private String activityName;
+    private String activityId;
     private String conversionRate;
 
     private Boolean matchingJudgmentStage;
@@ -35,17 +36,12 @@ public class CustomerCharacter implements Serializable {
     private Boolean completePurchaseStage;
 
     private String fundsVolume;
-    private String profitLossSituation;
     private String earningDesire;
-
-    private String courseTeacherApproval;
     private String softwareFunctionClarity;
     private String stockSelectionMethod;
     private String selfIssueRecognition;
     private String softwareValueApproval;
     private String softwarePurchaseAttitude;
-    private String continuousLearnApproval;
-    private String learnNewMethodApproval;
 
     private String summaryMatchJudgment;
     private String summaryTransactionStyle;
@@ -53,11 +49,7 @@ public class CustomerCharacter implements Serializable {
     private String summaryFunctionIntroduction;
     private String summaryConfirmValue;
     private String summaryExecuteOrder;
-    private String summaryInvitCourse;
     private String issuesValueQuantified;
-    private String doubtFrequent;
-
-    private Integer questionCount;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
