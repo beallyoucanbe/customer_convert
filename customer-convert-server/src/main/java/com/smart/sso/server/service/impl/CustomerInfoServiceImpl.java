@@ -191,7 +191,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 
         if (Objects.nonNull(customerFeature)) {
-            // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”、“客户的股龄”
+            // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”.这4项的“客户结论”都有值
             CustomerProcessSummary.TradingMethod tradingMethod = summaryResponse.getTradingMethod();
             try {
                 if (Objects.nonNull(tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue()) &&
@@ -205,10 +205,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         !tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue().equals("null") &&
                         Objects.nonNull(tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue()) &&
                         !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("null") &&
-                        Objects.nonNull(tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue()) &&
-                        !tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue().equals("null")) {
+                        !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("null")) {
                     stageStatus.setTransactionStyle(1);
                 }
             } catch (Exception e) {
@@ -236,18 +233,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 
         if (Objects.nonNull(summaryResponse) && Objects.nonNull(summaryResponse.getInfoExplanation())) {
-            // 针对性功能介绍 相关字段的值全部为“是”——“销售有结合客户的股票举例”、“销售有基于客户交易风格做针对性的功能介绍”、“销售有点评客户的选股方法”、“销售有点评客户的选股时机”、“痛点量化放大”、“价值量化放大”
+            // 针对性功能介绍 相关字段的值全部为“是”——“痛点量化放大”、“价值量化放大”
             CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
             try {
-                if (Objects.nonNull(infoExplanation.getStock()) &&
-                        infoExplanation.getStock().getResult() &&
-                        Objects.nonNull(infoExplanation.getStockPickReview()) &&
-                        infoExplanation.getStockPickReview().getResult() &&
-                        Objects.nonNull(infoExplanation.getStockTimingReview()) &&
-                        infoExplanation.getStockTimingReview().getResult() &&
-                        Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
-                        infoExplanation.getCustomerIssuesQuantified().getResult() &&
-                        Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
+                if (Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
                         infoExplanation.getSoftwareValueQuantified().getResult() &&
                         Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
                         infoExplanation.getTradeBasedIntro().getResult()) {
