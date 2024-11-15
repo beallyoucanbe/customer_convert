@@ -18,7 +18,7 @@ public class CustomerFeatureResponse {
         // 优势列表
         private List<String> advantage;
         // 问题列表
-        private List<String> questions;
+        private List<Question> questions;
     }
 
     @Getter
@@ -42,4 +42,21 @@ public class CustomerFeatureResponse {
         private CustomerProcessSummary.ProcessInfoExplanationContent customerIssuesQuantified;
         private CustomerProcessSummary.ProcessInfoExplanationContent softwareValueQuantified;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Question{
+        private String message;
+        private String complete;
+        private String incomplete;
+        private String quantify;
+        private String inquantify;
+        private String question;
+
+        public Question(String message){
+            this.message = message;
+        }
+    }
+
 }

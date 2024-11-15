@@ -278,7 +278,7 @@ public class MessageServiceImpl implements MessageService {
         CustomerInfo customerInfo = customerInfoMapper.selectById(id);
         CustomerFeatureResponse featureResponse = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         List<String> completeStatus = featureResponse.getSummary().getAdvantage();
-        List<String> incompleteStatus = featureResponse.getSummary().getQuestions();
+        List<CustomerFeatureResponse.Question> incompleteStatus = featureResponse.getSummary().getQuestions();
 
         // 优点是空，不发送
         if (CollectionUtils.isEmpty(completeStatus)) {
@@ -294,8 +294,8 @@ public class MessageServiceImpl implements MessageService {
             complete.append("暂无");
         }
         i = 1;
-        for (String item : incompleteStatus) {
-            incomplete.append(i++).append(". ").append(item).append("\n");
+        for (CustomerFeatureResponse.Question item : incompleteStatus) {
+            incomplete.append(i++).append(". ").append(item.getMessage()).append("\n");
         }
         if (incomplete.length() < 1){
             incomplete.append("暂无");
@@ -353,7 +353,7 @@ public class MessageServiceImpl implements MessageService {
                 Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
 
         List<String> advantages = customerFeature.getSummary().getAdvantage();
-        List<String> questions = customerFeature.getSummary().getQuestions();
+        List<CustomerFeatureResponse.Question> questions = customerFeature.getSummary().getQuestions();
         for (String item : advantages) {
             if (item.contains("完成客户匹配度判断")) {
                 latestCustomerCharacter.setSummaryMatchJudgment("true");
@@ -371,7 +371,8 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setIssuesValueQuantified("true");
             }
         }
-        for (String item : questions) {
+        for (CustomerFeatureResponse.Question question : questions) {
+            String item = question.getMessage();
             if (item.contains("未完成客户匹配度判断")) {
                 latestCustomerCharacter.setSummaryMatchJudgment("false");
             } else if (item.contains("未完成客户交易风格了解")) {
