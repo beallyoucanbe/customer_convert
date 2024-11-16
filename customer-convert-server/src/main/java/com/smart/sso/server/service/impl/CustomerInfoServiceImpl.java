@@ -734,8 +734,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         featureContentByModel.getAnswerText()));
             }
         }
-        customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getContent());
-        customerConclusion.setSalesManualTag(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getTag());
+        customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) || StringUtils.isEmpty(featureContentBySales.getContent()) ? null : featureContentBySales.getContent());
+        customerConclusion.setSalesManualTag(Objects.isNull(featureContentBySales) || StringUtils.isEmpty(featureContentBySales.getTag()) ? null : featureContentBySales.getTag());
         customerConclusion.setUpdateTime(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getUpdateTime());
         customerConclusion.setCompareValue(Objects.nonNull(customerConclusion.getSalesManualTag()) ? customerConclusion.getSalesManualTag() :
                 customerConclusion.getModelRecord());
