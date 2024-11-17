@@ -674,4 +674,16 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             customerInfoMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
         }
     }
+
+    @Override
+    public List<TelephoneRecord> getCustomerIdUpdate(LocalDateTime dateTime) {
+        QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.gt("update_time", dateTime);
+        return recordMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public TelephoneRecordStatics getCommunicationRound(String customerId, String activityId) {
+        return recordMapper.selectTelephoneRecordStaticsOne(customerId, activityId);
+    }
 }

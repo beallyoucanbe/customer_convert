@@ -1,12 +1,10 @@
 package com.smart.sso.server.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.ActivityInfo;
-import com.smart.sso.server.model.CustomerInfo;
+import com.smart.sso.server.model.TelephoneRecord;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -49,8 +47,6 @@ public class CustomerController {
     private ConfigService configService;
     @Autowired
     private TelephoneRecordService recordService;
-    @Autowired
-    private CustomerInfoMapper customerInfoMapper;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -171,10 +167,10 @@ public class CustomerController {
 
     @ApiOperation(value = "触发给用户发送通知")
     @GetMapping("/customer/send_message")
-    public BaseResponse<Void> sendMessage(@RequestParam(value = "id") String id) {
-        log.error("触发客户的特征更新，id: " + id);
-        messageService.updateCustomerCharacter(id, true);
-        customerInfoService.updateCharacterCostTime(id);
+    public BaseResponse<Void> sendMessage(@RequestParam(value = "customer_id") String customerId, @RequestParam(value = "activity_id") String activityId) {
+        log.error("触发客户的特征更新，id: " + customerId);
+        messageService.updateCustomerCharacter(customerId, activityId, true);
+        customerInfoService.updateCharacterCostTime(customerId);
 
         return ResultUtils.success(null);
     }
@@ -198,13 +194,14 @@ public class CustomerController {
     @GetMapping("/customer/init_character")
     public BaseResponse<Void> initCharacter() {
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
-        // 筛选时间
-        queryWrapper.gt("update_time", dateTime);
-        List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapper);
-        for (CustomerInfo item : customerFeatureList) {
+
+        List<TelephoneRecord> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        if (CollectionUtils.isEmpty(customerRecordList)) {
+            return ResultUtils.success(null);
+        }
+        for (TelephoneRecord item : customerRecordList) {
             try {
-                messageService.updateCustomerCharacter(item.getId(), false);
+                messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
             } catch (Exception e) {
                 log.error("更新CustomerCharacter失败：ID=" + item.getId());
             }

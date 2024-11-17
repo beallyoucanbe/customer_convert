@@ -2,7 +2,6 @@ package com.smart.sso.server.util;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smart.sso.server.config.RedisConfig;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.mapper.*;
@@ -89,25 +88,18 @@ public class SchedulTask {
         if (Objects.nonNull(tasks)) {
             dateTime = tasks.getCreateTime();
         }
-        // 查询所有符合条件的客户，并执行任务
-        QueryWrapper<CustomerFeature> queryWrapper = new QueryWrapper<>();
-        // 筛选时间
-        queryWrapper.gt("update_time", dateTime);
-        List<CustomerFeature> customerFeatureList = customerFeatureMapper.selectList(queryWrapper);
-        if (CollectionUtils.isEmpty(customerFeatureList)) {
+        List<TelephoneRecord> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        if (CollectionUtils.isEmpty(customerRecordList)) {
             log.error("没有客户匹配度需要更新，直接返回");
             scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
             return;
         }
-        for (CustomerFeature customerFeature : customerFeatureList) {
+        for (TelephoneRecord customerRecord : customerRecordList) {
             try {
-                // 计算当前客户的匹配度
-//                String conversionRate = customerInfoService.getConversionRate(customerFeature);
-                String conversionRate = "";
-                // 将转化概率更新到info 表中
-                customerInfoMapper.updateConversionRateById(customerFeature.getId(), conversionRate);
+                // 更新的匹配度（获取CustomerProfile会更新匹配度）
+                customerInfoService.queryCustomerById(customerRecord.getCustomerId(), customerRecord.getActivityId());
             } catch (Exception e) {
-                log.error("客户{}匹配度更新失败，错误信息：{}", customerFeature.getId(), e.getMessage());
+                log.error("客户{}匹配度更新失败，错误信息：{}", customerRecord.getCustomerId(), e.getMessage());
                 scheduledTasksMapper.updateStatusById(newTasks.getId(), "failed");
             }
         }
@@ -118,7 +110,7 @@ public class SchedulTask {
     /**
      * 每天8点半执行购买状态同步任务
      */
-//    @Scheduled(cron = "0 30 8 * * ?")
+    @Scheduled(cron = "0 30 8 * * ?")
     public void purchaseTask() {
         log.error("开始执行客户购买状态同步任务");
         QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
@@ -195,14 +187,13 @@ public class SchedulTask {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
         LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
-//        LocalDateTime dateTime = LocalDateTime.of(2024, 9, 1, 12, 0, 0);
-        QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
-        // 筛选时间
-        queryWrapperInfo.gt("update_time", dateTime);
-        List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
-        for (CustomerInfo item : customerFeatureList) {
+        List<TelephoneRecord> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        if (CollectionUtils.isEmpty(customerRecordList)) {
+            return;
+        }
+        for (TelephoneRecord item : customerRecordList) {
             try {
-                messageService.updateCustomerCharacter(item.getId(), false);
+                messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
             } catch (Exception e) {
                log.error("更新CustomerCharacter失败，ID={}", item.getId(), e);
             }
@@ -279,15 +270,14 @@ public class SchedulTask {
     /**
      * 这次参加活动的员工id
      */
-//    @Scheduled(cron = "0 0 */1 * * ?")
+    @Scheduled(cron = "0 */13 * * * ?")
     public void refreshStaffId() {
         AppConstant.staffIdList.addAll(configService.getStaffIds());
     }
 
 
     // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
-//    @Scheduled(cron = "0 30 3 * * ?")
-//    @Scheduled(cron = "0 */9 * * * ?")
+    @Scheduled(cron = "0 30 3 * * ?")
     public void refreshCommunicationRounds() {
         recordService.refreshCommunicationRounds();
     }

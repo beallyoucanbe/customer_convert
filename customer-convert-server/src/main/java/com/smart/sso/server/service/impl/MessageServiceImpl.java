@@ -137,12 +137,12 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void updateCustomerCharacter(String id,  boolean checkPurchaseAttitude) {
-        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
+    public void updateCustomerCharacter(String customerId, String activityId,  boolean checkPurchaseAttitude) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
 
-        CustomerCharacter customerCharacter = customerCharacterMapper.selectById(id);
+        CustomerCharacter customerCharacter = customerCharacterMapper.selectByCustomerIdAndActivityId(customerId, activityId);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
         updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature);
         if (Objects.isNull(customerCharacter)) {
@@ -255,7 +255,7 @@ public class MessageServiceImpl implements MessageService {
 
         for (Field field : fields) {
             // 跳过 createTime 和 updateTime 字段
-            if ("createTime".equals(field.getName()) || "update_time_telephone".equals(field.getName())) {
+            if ("createTime".equals(field.getName()) || "updateTimeTelephone".equals(field.getName())) {
                 continue;
             }
             field.setAccessible(true);

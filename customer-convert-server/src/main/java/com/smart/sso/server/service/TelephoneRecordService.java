@@ -1,9 +1,12 @@
 package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
+import com.smart.sso.server.model.TelephoneRecord;
+import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TelephoneRecordService {
@@ -27,4 +30,8 @@ public interface TelephoneRecordService {
      * @return
      */
     void refreshCommunicationRounds();
+
+    List<TelephoneRecord> getCustomerIdUpdate(LocalDateTime dateTime);
+
+    TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
 }

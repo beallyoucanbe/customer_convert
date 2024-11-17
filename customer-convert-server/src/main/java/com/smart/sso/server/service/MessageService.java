@@ -11,7 +11,7 @@ public interface MessageService {
 
     void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign, LocalDateTime dateTime);
 
-    void updateCustomerCharacter(String id, boolean checkPurchaseAttitude);
+    void updateCustomerCharacter(String customerId, String activityId, boolean checkPurchaseAttitude);
 
     String getAccessToken();
 

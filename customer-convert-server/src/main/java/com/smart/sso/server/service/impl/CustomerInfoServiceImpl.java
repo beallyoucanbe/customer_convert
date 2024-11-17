@@ -119,6 +119,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
+        // 这里重新判断下打电话的次数
+        TelephoneRecordStatics round = recordService.getCommunicationRound(customerId, activityId);
+        if (customerProfile.getCommunicationRounds() != round.getTotalCalls()) {
+            customerInfoMapper.updateCommunicationRounds(customerId, activityId, round.getTotalCalls(), round.getLatestCommunicationTime());
+            customerProfile.setCommunicationRounds(round.getTotalCalls());
+        }
         // 重新判断一下匹配度，防止更新不及时的情况
         String conversionRate = getConversionRate(customerFeature);
         if (!customerInfo.getConversionRate().equals(conversionRate)) {
