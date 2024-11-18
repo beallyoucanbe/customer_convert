@@ -468,7 +468,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setCustomerIssuesQuantified(communicationContent);
                     customerFeatureFromLLM.getCustomerIssuesQuantified().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion()) || customerFeatureFromLLM.getStockPickTimingReview().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion()) || customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {

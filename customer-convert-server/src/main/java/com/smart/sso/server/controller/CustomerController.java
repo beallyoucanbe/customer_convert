@@ -203,7 +203,7 @@ public class CustomerController {
             try {
                 messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
             } catch (Exception e) {
-                log.error("更新CustomerCharacter失败：ID=" + item.getCustomerId());
+                log.error("更新CustomerCharacter失败：ID=" + item.getCustomerId(), e);
             }
         }
         return ResultUtils.success(null);
