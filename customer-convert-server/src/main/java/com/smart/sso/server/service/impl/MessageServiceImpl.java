@@ -193,7 +193,7 @@ public class MessageServiceImpl implements MessageService {
                     }
                 }
                 if (possibleReasonStringBuilder.length() > 1){
-                    possibleReasonStringBuilder.insert(0, "客户的顾虑点可能是：\n<font color=\"info\">");
+                    possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n<font color=\"info\">");
                     possibleReasonStringBuilder.append("</font>");
                 }
                 String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
