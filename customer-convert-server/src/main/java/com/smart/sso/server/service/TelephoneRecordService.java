@@ -31,7 +31,7 @@ public interface TelephoneRecordService {
      */
     void refreshCommunicationRounds();
 
-    List<TelephoneRecord> getCustomerIdUpdate(LocalDateTime dateTime);
+    List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime);
 
     TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
 }

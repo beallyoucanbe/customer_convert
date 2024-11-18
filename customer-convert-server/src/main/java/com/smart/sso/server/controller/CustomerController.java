@@ -4,7 +4,7 @@ import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.model.ActivityInfo;
-import com.smart.sso.server.model.TelephoneRecord;
+import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -195,15 +195,15 @@ public class CustomerController {
     public BaseResponse<Void> initCharacter() {
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
-        List<TelephoneRecord> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        List<TelephoneRecordStatics> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
         if (CollectionUtils.isEmpty(customerRecordList)) {
             return ResultUtils.success(null);
         }
-        for (TelephoneRecord item : customerRecordList) {
+        for (TelephoneRecordStatics item : customerRecordList) {
             try {
                 messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
             } catch (Exception e) {
-                log.error("更新CustomerCharacter失败：ID=" + item.getId());
+                log.error("更新CustomerCharacter失败：ID=" + item.getCustomerId());
             }
         }
         return ResultUtils.success(null);

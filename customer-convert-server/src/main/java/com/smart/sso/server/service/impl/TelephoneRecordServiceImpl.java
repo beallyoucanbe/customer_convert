@@ -676,10 +676,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public List<TelephoneRecord> getCustomerIdUpdate(LocalDateTime dateTime) {
-        QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.gt("update_time", dateTime);
-        return recordMapper.selectList(queryWrapper);
+    public List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime) {
+        return recordMapper.selectTelephoneRecordStaticsRecent(dateTime);
     }
 
     @Override

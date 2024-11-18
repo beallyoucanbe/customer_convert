@@ -88,13 +88,13 @@ public class SchedulTask {
         if (Objects.nonNull(tasks)) {
             dateTime = tasks.getCreateTime();
         }
-        List<TelephoneRecord> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        List<TelephoneRecordStatics> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
         if (CollectionUtils.isEmpty(customerRecordList)) {
             log.error("没有客户匹配度需要更新，直接返回");
             scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
             return;
         }
-        for (TelephoneRecord customerRecord : customerRecordList) {
+        for (TelephoneRecordStatics customerRecord : customerRecordList) {
             try {
                 // 更新的匹配度（获取CustomerProfile会更新匹配度）
                 customerInfoService.queryCustomerById(customerRecord.getCustomerId(), customerRecord.getActivityId());
@@ -187,15 +187,15 @@ public class SchedulTask {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
         LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
-        List<TelephoneRecord> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        List<TelephoneRecordStatics> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
         if (CollectionUtils.isEmpty(customerRecordList)) {
             return;
         }
-        for (TelephoneRecord item : customerRecordList) {
+        for (TelephoneRecordStatics item : customerRecordList) {
             try {
                 messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
             } catch (Exception e) {
-               log.error("更新CustomerCharacter失败，ID={}", item.getId(), e);
+               log.error("更新CustomerCharacter失败，CustomerId={}, activityId={}", item.getCustomerId(), item.getActivityId(), e);
             }
         }
         //获取需要发送的组长
@@ -272,6 +272,7 @@ public class SchedulTask {
      */
     @Scheduled(cron = "0 */13 * * * ?")
     public void refreshStaffId() {
+        log.error("开始执行业务员id同步任务");
         AppConstant.staffIdList.addAll(configService.getStaffIds());
     }
 
@@ -279,6 +280,7 @@ public class SchedulTask {
     // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
     @Scheduled(cron = "0 30 3 * * ?")
     public void refreshCommunicationRounds() {
+        log.error("开始全量刷新通话次数任务");
         recordService.refreshCommunicationRounds();
     }
 
