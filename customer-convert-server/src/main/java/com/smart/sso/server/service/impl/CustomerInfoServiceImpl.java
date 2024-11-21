@@ -378,6 +378,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return String.format(urlFormatter, customerId, activeId);
     }
 
+    @Override
+    public String getRedirectUrlOld(String customerId, String activeId) {
+        QueryWrapper<CustomerInfoOld> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("customer_id", customerId);
+        queryWrapper.eq("current_campaign", activeId);
+
+        CustomerInfoOld customerInfo = customerInfoOldMapper.selectOne(queryWrapper);
+        String id = "";
+        if (Objects.isNull(customerInfo)) {
+            log.error("获取客户失败");
+        } else {
+            id = customerInfo.getId();
+        }
+        String urlFormatter = "https://newcmp.emoney.cn/chat/old-frontend/customer?id=%s";
+        return String.format(urlFormatter, id);
+    }
+
 
     @Override
     public void updateCharacterCostTime(String id) {

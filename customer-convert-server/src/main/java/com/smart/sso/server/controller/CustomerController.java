@@ -181,6 +181,18 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
+    @ApiOperation(value = "跳转接口")
+    @GetMapping("/customer/redirect_old")
+    public BaseResponse<Void> redirectOld(@RequestParam(value = "customer_id") String customerId,
+                                       @RequestParam(value = "active_id") String activityId,
+                                       HttpServletResponse response) throws IOException {
+        String targetUrl = customerInfoService.getRedirectUrlOld(customerId, activityId);
+        // 使用HttpServletResponse进行重定向
+        response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
+        response.setStatus(302);
+        return ResultUtils.success(null);
+    }
+
     @ApiOperation(value = "触发给用户发送通知")
     @GetMapping("/customer/send_message")
     public BaseResponse<Void> sendMessage(@RequestParam(value = "customer_id") String customerId, @RequestParam(value = "activity_id") String activityId) {
