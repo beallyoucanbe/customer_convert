@@ -14,6 +14,7 @@ import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.*;
+import com.smart.sso.server.secondary.mapper.CustomerInfoOldMapper;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.TelephoneRecordService;
@@ -46,6 +47,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
+    @Autowired
+    private CustomerInfoOldMapper customerInfoOldMapper;
     @Autowired
     private CustomerFeatureMapper customerFeatureMapper;
     @Autowired
@@ -268,7 +271,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public List<ActivityInfo> getActivityInfoByCustomerId(String customerId) {
-        return customerInfoMapper.selectActivityInfoByCustomerId(customerId);
+        List<ActivityInfo> newActivity = customerInfoMapper.selectActivityInfoByCustomerId(customerId);
+        String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
+        if (!StringUtils.isEmpty(activity)){
+            newActivity.add(new ActivityInfo(activity, activity, Boolean.TRUE));
+        }
+        return newActivity;
     }
 
     @Override
@@ -360,29 +368,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public String getRedirectUrl(String customerId, String activeId, String from, String manager) {
-        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("customer_id", customerId);
-        queryWrapper.eq("current_campaign", activeId);
-
-        CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper);
-        String id = "";
-        if (Objects.isNull(customerInfo)) {
-            log.error("获取客户失败");
-        } else {
-            id = customerInfo.getId();
-        }
-//        String urlFormatter = "http://101.42.51.62:3100/customer?id=%s";
-        String urlFormatter = "https://newcmp.emoney.cn/chat/customer?id=%s&embed=true";
+        String urlFormatter = "https://newcmp.emoney.cn/chat/customer?customer_id=%s&activity_id=%s&embed=true";
         if (!StringUtils.isEmpty(from)) {
             urlFormatter = urlFormatter + "&from=" + from;
         }
         if (!StringUtils.isEmpty(manager)) {
             urlFormatter = urlFormatter + "&manager=" + manager;
         }
-        return String.format(urlFormatter, id);
+        return String.format(urlFormatter, customerId, activeId);
     }
-
-
 
 
     @Override
