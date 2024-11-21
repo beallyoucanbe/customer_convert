@@ -22,14 +22,18 @@ import com.smart.sso.server.util.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -49,6 +53,10 @@ public class CustomerController {
     private TelephoneRecordService recordService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    @Qualifier("primaryDataSource")
+    private DataSource dataSource;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -149,6 +157,14 @@ public class CustomerController {
     @ApiOperation(value = "存活检查接口")
     @GetMapping("/customer/check")
     public BaseResponse<Void> checkAlive() {
+
+        try (Connection connection = dataSource.getConnection()) {
+            System.out.println("DataSource is working: " + connection.getCatalog());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
         return ResultUtils.success(null);
     }
 

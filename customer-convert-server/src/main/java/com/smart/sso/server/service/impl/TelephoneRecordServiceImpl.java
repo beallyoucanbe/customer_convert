@@ -1,8 +1,8 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.smart.sso.server.mapper.CustomerInfoMapper;
-import com.smart.sso.server.mapper.TelephoneRecordMapper;
+import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
+import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.CommunicationContent;
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
 import com.smart.sso.server.model.CustomerInfo;

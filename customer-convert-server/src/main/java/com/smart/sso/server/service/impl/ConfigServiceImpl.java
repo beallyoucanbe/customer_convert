@@ -3,7 +3,7 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.enums.ConfigTypeEnum;
-import com.smart.sso.server.mapper.ConfigMapper;
+import com.smart.sso.server.primary.mapper.ConfigMapper;
 import com.smart.sso.server.model.Config;
 import com.smart.sso.server.model.QiweiApplicationConfig;
 import com.smart.sso.server.model.dto.LeadMemberRequest;

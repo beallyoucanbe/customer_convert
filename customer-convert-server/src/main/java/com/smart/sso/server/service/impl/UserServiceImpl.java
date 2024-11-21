@@ -3,9 +3,9 @@ package com.smart.sso.server.service.impl;
 import java.util.Objects;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.smart.sso.server.mapper.RoleMapper;
-import com.smart.sso.server.mapper.UserMapper;
-import com.smart.sso.server.mapper.UserRoleMapper;
+import com.smart.sso.server.primary.mapper.RoleMapper;
+import com.smart.sso.server.primary.mapper.UserMapper;
+import com.smart.sso.server.primary.mapper.UserRoleMapper;
 import com.smart.sso.server.session.Role;
 import com.smart.sso.server.session.User;
 import com.smart.sso.server.session.UserRole;

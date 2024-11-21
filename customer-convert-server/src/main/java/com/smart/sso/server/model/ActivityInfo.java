@@ -6,4 +6,5 @@ import lombok.Data;
 public class ActivityInfo {
     private String activityName;
     private String activityId;
+    private Boolean old;
 }

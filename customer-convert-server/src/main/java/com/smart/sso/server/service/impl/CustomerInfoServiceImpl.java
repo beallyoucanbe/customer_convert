@@ -5,12 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
-import com.smart.sso.server.mapper.CharacterCostTimeMapper;
-import com.smart.sso.server.mapper.ConfigMapper;
-import com.smart.sso.server.mapper.CustomerFeatureMapper;
-import com.smart.sso.server.mapper.CustomerInfoMapper;
-import com.smart.sso.server.mapper.CustomerRelationMapper;
-import com.smart.sso.server.mapper.TelephoneRecordMapper;
+import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
+import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
+import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
+import com.smart.sso.server.primary.mapper.CustomerRelationMapper;
+import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -32,7 +31,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 

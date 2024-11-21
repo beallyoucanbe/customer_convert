@@ -1,4 +1,4 @@
-package com.smart.sso.server.mapper;
+package com.smart.sso.server.primary.mapper;
 
 import com.smart.sso.server.model.ActivityInfo;
 import org.apache.ibatis.annotations.Param;
