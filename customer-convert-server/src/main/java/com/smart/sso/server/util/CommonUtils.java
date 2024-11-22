@@ -2,6 +2,7 @@ package com.smart.sso.server.util;
 
 import com.smart.sso.server.model.dto.OriginChat;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedWriter;
@@ -122,5 +123,16 @@ public class CommonUtils {
         originChat.setContents(getMessageListFromOriginChat(chatContent));
         originChat.setId(callId);
         return originChat;
+    }
+
+    public static String convertStringFromList(List<String> stringList){
+        if (CollectionUtils.isEmpty(stringList)){
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String string : stringList){
+            sb.append(string).append("\n");
+        }
+        return sb.toString();
     }
 }

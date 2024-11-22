@@ -132,7 +132,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfoMapper.updateConversionRateById(customerInfo.getId(), conversionRate);
             customerProfile.setConversionRate(conversionRate);
         }
-        customerProfile.setLastCommunicationDate(featureFromLLM.getCommunicationTime());
+        customerProfile.setLastCommunicationDate(Objects.isNull(featureFromLLM) ? null : featureFromLLM.getCommunicationTime());
         return customerProfile;
     }
 
@@ -144,9 +144,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
-        customerFeature.setTradingMethod(summaryResponse.getTradingMethod());
-        getStandardExplanationCompletion(customerFeature);
-        customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
+        if (Objects.nonNull(customerFeature)) {
+            customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
+            getStandardExplanationCompletion(customerFeature);
+            customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
+        }
         return customerFeature;
     }
 

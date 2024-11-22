@@ -6,6 +6,8 @@ public interface MessageService {
 
     String sendMessageToChat(TextMessage message);
 
+    String sendMessageToChat(String url, TextMessage message);
+
     /**
      * 发送购买态度总结任务
      */

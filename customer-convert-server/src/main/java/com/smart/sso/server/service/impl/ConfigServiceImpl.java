@@ -45,6 +45,28 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
+    public String getStaffLeader(String memberId) {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER_MEMBERS.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有配置参加活动的销售名单，请先配置");
+            throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
+        }
+        List<LeadMember> leadMembers = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMember>>() {
+        });
+        for (LeadMember item : leadMembers) {
+            for (LeadMember.Team team : item.getTeams()) {
+                if (team.getMembers().keySet().contains(memberId)){
+                    return team.getLeader();
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public QiweiApplicationConfig getQiweiApplicationConfig() {
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());

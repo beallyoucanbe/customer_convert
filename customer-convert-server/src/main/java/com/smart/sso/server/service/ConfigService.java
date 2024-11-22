@@ -11,6 +11,8 @@ public interface ConfigService {
      */
     List<String> getStaffIds();
 
+    String getStaffLeader(String memberId);
+
     /**
      * 获取企微应用的配置
      * @return 企微

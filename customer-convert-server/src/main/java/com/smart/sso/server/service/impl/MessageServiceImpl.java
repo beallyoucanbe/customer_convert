@@ -15,6 +15,7 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -79,14 +80,82 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    public String sendMessageToChat(String url, TextMessage message) {
+        // 创建请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        log.error("发送消息内容：" + JsonUtil.serialize(message) + url);
+        // 创建请求实体
+        HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
+        // 发送 POST 请求
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        // 处理响应
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            log.error("Failed to send message: " + response.getStatusCode());
+            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+        }
+    }
+
+
+    @Override
     public void sendPurchaseAttitudeSummary(String activityId) {
-//        QueryWrapper<CustomerCharacter> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("activity_id", activityId);
-//        queryWrapper.in("current_campaign", currentCampaign);
-//        queryWrapper.gt("update_time_telephone", dateTime);
-//        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
-//        Map<String, List<SummaryMessage>> ownerSummaryMessages = new HashMap<>();
-//        customerCharacterMapper.insert(newCustomerCharacter);
+        QueryWrapper<CustomerCharacter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("activity_id", activityId);
+        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
+        Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
+        for (CustomerCharacter character : characterList) {
+            // 完成购买，跳过不统计
+            if (character.getCompletePurchaseStage()){
+                continue;
+            }
+            String ownerId = character.getOwnerId();
+            PotentialCustomer potentialCustomer;
+            if (!potentialCustomerMap.containsKey(ownerId)){
+                potentialCustomer = new PotentialCustomer();
+            } else {
+                potentialCustomer = potentialCustomerMap.get(ownerId);
+            }
+            // 判断 认可度次数
+            int approvalCount = 0;
+            if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())){
+                approvalCount++;
+            }
+            if (Boolean.parseBoolean(character.getStockSelectionMethod())){
+                approvalCount++;
+            }
+            if (Boolean.parseBoolean(character.getSelfIssueRecognition())){
+                approvalCount++;
+            }
+            if (Boolean.parseBoolean(character.getSoftwareValueApproval())){
+                approvalCount++;
+            }
+            // 认可数>=3旦态度为认可
+            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())){
+                potentialCustomer.getHigh().add(character.getCustomerName() + "，" + character.getCustomerId());
+            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
+                potentialCustomer.getMiddle().add(character.getCustomerName() + "，" + character.getCustomerId());
+            } else if (approvalCount <= 2 && (character.getConversionRate().equals("较高") || character.getConversionRate().equals("中等"))) {
+                potentialCustomer.getLow().add(character.getCustomerName() + "，" + character.getCustomerId());
+            }
+            potentialCustomerMap.put(ownerId, potentialCustomer);
+        }
+        // 给每个业务员发送统计消息
+        for (Map.Entry<String, PotentialCustomer> entry : potentialCustomerMap.entrySet()) {
+            String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_TEMPLATE,
+                    CommonUtils.convertStringFromList(entry.getValue().getHigh()),
+                    CommonUtils.convertStringFromList(entry.getValue().getMiddle()),
+                    CommonUtils.convertStringFromList(entry.getValue().getLow()),
+                    "", "");
+            TextMessage textMessage = new TextMessage();
+            TextMessage.TextContent textContent = new TextMessage.TextContent();
+            textMessage.setTouser(entry.getKey());
+            textContent.setContent(message);
+            textMessage.setMsgtype("markdown");
+            textMessage.setMarkdown(textContent);
+            sendMessageToChat(textMessage);
+        }
     }
 
     @Override
@@ -126,47 +195,50 @@ public class MessageServiceImpl implements MessageService {
             }
             String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                     "确认购买" : "尚未确认购买";
-            String leaderMessageUrl = "";
-            if (Objects.nonNull(leaderMessageUrl)){
-                String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
-                        customerInfo.getCustomerId(), customerInfo.getActivityId());
-                StringBuilder possibleReasonStringBuilder = new StringBuilder();
-                if (messageDescribe.equals("尚未确认购买")) {
-                    if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareFunctionClarity()) && newCustomerCharacter.getSoftwareFunctionClarity().equals("false")){
-                        possibleReasonStringBuilder.append("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解。\n");
-                    }
-                    if (!StringUtils.isEmpty(newCustomerCharacter.getStockSelectionMethod()) && newCustomerCharacter.getStockSelectionMethod().equals("false")){
-                        possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
-                    }
-                    if (!StringUtils.isEmpty(newCustomerCharacter.getSelfIssueRecognition()) && newCustomerCharacter.getSelfIssueRecognition().equals("false")){
-                        possibleReasonStringBuilder.append("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明。\n");
-                    }
-                    if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareValueApproval()) && newCustomerCharacter.getSoftwareValueApproval().equals("false")){
-                        possibleReasonStringBuilder.append("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明。\n");
-                    }
+            String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
+                    customerInfo.getCustomerId(), customerInfo.getActivityId());
+            StringBuilder possibleReasonStringBuilder = new StringBuilder();
+            if (messageDescribe.equals("尚未确认购买")) {
+                if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareFunctionClarity()) && newCustomerCharacter.getSoftwareFunctionClarity().equals("false")){
+                    possibleReasonStringBuilder.append("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解。\n");
                 }
-                if (possibleReasonStringBuilder.length() > 1){
-                    possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n<font color=\"info\">");
-                    possibleReasonStringBuilder.append("</font>");
+                if (!StringUtils.isEmpty(newCustomerCharacter.getStockSelectionMethod()) && newCustomerCharacter.getStockSelectionMethod().equals("false")){
+                    possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
                 }
-                String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
-                        newCustomerCharacter.getOwnerName(),
-                        customerInfo.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                        newCustomerCharacter.getCustomerName(),
-                        messageDescribe,
-                        possibleReasonStringBuilder,
-                        url, url);
-                TextMessage textMessage = new TextMessage();
-                TextMessage.TextContent textContent = new TextMessage.TextContent();
-                textContent.setContent(message);
-                textMessage.setMsgtype("markdown");
-                textMessage.setMarkdown(textContent);
-                sendMessageToChat(textMessage);
-                String target = "**";
-                int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
-                textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
-                sendMessageToChat(textMessage);
+                if (!StringUtils.isEmpty(newCustomerCharacter.getSelfIssueRecognition()) && newCustomerCharacter.getSelfIssueRecognition().equals("false")){
+                    possibleReasonStringBuilder.append("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明。\n");
+                }
+                if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareValueApproval()) && newCustomerCharacter.getSoftwareValueApproval().equals("false")){
+                    possibleReasonStringBuilder.append("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明。\n");
+                }
             }
+            if (possibleReasonStringBuilder.length() > 1){
+                possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n<font color=\"info\">");
+                possibleReasonStringBuilder.append("</font>");
+            }
+
+            // 发送消息给领导，发送到微信群
+            String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
+                    newCustomerCharacter.getOwnerName(),
+                    customerInfo.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                    newCustomerCharacter.getCustomerName(),
+                    messageDescribe,
+                    possibleReasonStringBuilder,
+                    url, url);
+            TextMessage textMessage = new TextMessage();
+            TextMessage.TextContent textContent = new TextMessage.TextContent();
+
+            textContent.setContent(message);
+            textMessage.setMsgtype("markdown");
+            textMessage.setMarkdown(textContent);
+            sendMessageToChat(textMessage);
+
+            // 发送消息给业务员，发送给个人企微
+            String target = "**";
+            int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
+            textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
+            textMessage.setTouser(customerInfo.getOwnerId());
+            sendMessageToChat(textMessage);
         }
     }
 
@@ -304,6 +376,8 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setSoftwarePurchaseAttitude(
                 Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
+
+        latestCustomerCharacter.setStandardExplanationCompletion(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess() : 0);
 
         List<String> advantages = customerFeature.getSummary().getAdvantage();
         List<CustomerFeatureResponse.Question> questions = customerFeature.getSummary().getQuestions();
