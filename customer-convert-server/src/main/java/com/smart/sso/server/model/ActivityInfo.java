@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class ActivityInfo {
     private String activityName;
     private String activityId;
-    private Boolean old = Boolean.FALSE;
 }

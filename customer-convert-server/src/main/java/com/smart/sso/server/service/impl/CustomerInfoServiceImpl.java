@@ -272,13 +272,21 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public List<ActivityInfo> getActivityInfoByCustomerId(String customerId) {
+    public List<ActivityInfoWithVersion> getActivityInfoByCustomerId(String customerId) {
+        List<ActivityInfoWithVersion> result = new ArrayList<>();
         List<ActivityInfo> newActivity = customerInfoMapper.selectActivityInfoByCustomerId(customerId);
+        for (ActivityInfo activityInfo : newActivity) {
+            ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(activityInfo);
+            result.add(activityInfoWithVersion);
+        }
         String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
         if (!StringUtils.isEmpty(activity)) {
-            newActivity.add(new ActivityInfo(activity, activity, Boolean.TRUE));
+            ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(Boolean.TRUE);
+            activityInfoWithVersion.setActivityName(activity);
+            activityInfoWithVersion.setActivityId(activity);
+            result.add(activityInfoWithVersion);
         }
-        return newActivity;
+        return result;
     }
 
     @Override

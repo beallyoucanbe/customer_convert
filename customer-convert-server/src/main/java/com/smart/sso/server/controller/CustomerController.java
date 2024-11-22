@@ -4,6 +4,7 @@ import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.model.ActivityInfo;
+import com.smart.sso.server.model.ActivityInfoWithVersion;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -89,8 +90,8 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户参加的活动列表")
     @GetMapping("/customer/{customer_id}/activities")
-    public BaseResponse<List<ActivityInfo>> getCustomerActivityInfo(@PathVariable(value = "customer_id") String customerId) {
-        List<ActivityInfo> activityInfoList = customerInfoService.getActivityInfoByCustomerId(customerId);
+    public BaseResponse<List<ActivityInfoWithVersion>> getCustomerActivityInfo(@PathVariable(value = "customer_id") String customerId) {
+        List<ActivityInfoWithVersion> activityInfoList = customerInfoService.getActivityInfoByCustomerId(customerId);
         return ResultUtils.success(activityInfoList);
     }
 
