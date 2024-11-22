@@ -1,19 +1,19 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.CommunicationContent;
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
-import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.TelephoneRecord;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.TelephoneRecordService;
-import com.smart.sso.server.util.CommonUtils;
 
+import com.smart.sso.server.util.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,10 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
+    private TelephoneRecordMapper telephoneRecordMapper;
+    @Autowired
     private ConfigService configService;
+
 
     @Override
     public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String activityId) {
@@ -628,37 +631,14 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
     @Override
     public Boolean syncCustomerInfo() {
-        QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
         // 筛选时间
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-        queryWrapper.gt("update_time", dateTime);
-        List<TelephoneRecord> telephoneRecordList = recordMapper.selectList(queryWrapper);
-
-        if (CollectionUtils.isEmpty(telephoneRecordList)){
+        List<TelephoneRecordStatics> customerRecordList = getCustomerIdUpdate(dateTime);
+        if (CollectionUtils.isEmpty(customerRecordList)) {
             return Boolean.TRUE;
         }
-        String customerId;
-        String activityId;
-        QueryWrapper<CustomerInfo> infoQueryWrapper;
-        for (TelephoneRecord record : telephoneRecordList){
-            customerId = record.getCustomerId();
-            activityId = record.getActivityId();
-            infoQueryWrapper = new QueryWrapper<>();
-            infoQueryWrapper.eq("customer_id", customerId);
-            infoQueryWrapper.eq("activity_id", activityId);
-            CustomerInfo customerInfo = customerInfoMapper.selectOne(infoQueryWrapper);
-            if (Objects.nonNull(customerInfo)) {
-                continue;
-            }
-            customerInfo = new CustomerInfo();
-            customerInfo.setId(CommonUtils.generatePrimaryKey());
-            customerInfo.setCustomerName(record.getCustomerName());
-            customerInfo.setCustomerId(record.getCustomerId());
-            customerInfo.setOwnerName(record.getOwnerName());
-            customerInfo.setOwnerId(record.getOwnerId());
-            customerInfo.setActivityId(record.getActivityId());
-            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
-            customerInfoMapper.insert(customerInfo);
+        for (TelephoneRecordStatics record : customerRecordList){
+            syncCustomerInfoFromRecord(record);
         }
         return Boolean.TRUE;
     }
@@ -683,5 +663,24 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Override
     public TelephoneRecordStatics getCommunicationRound(String customerId, String activityId) {
         return recordMapper.selectTelephoneRecordStaticsOne(customerId, activityId);
+    }
+
+    @Override
+    public void syncCustomerInfoFromRecord(TelephoneRecordStatics telephoneRecordStatics) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(telephoneRecordStatics.getCustomerId(), telephoneRecordStatics.getActivityId());
+        if (Objects.nonNull(customerInfo)) {
+            return;
+        }
+        TelephoneRecord telephoneRecord = telephoneRecordMapper.selectOneTelephoneRecord(telephoneRecordStatics.getCustomerId(), telephoneRecordStatics.getActivityId());
+        customerInfo = new CustomerInfo();
+        customerInfo.setId(CommonUtils.generatePrimaryKey());
+        customerInfo.setCustomerName(telephoneRecord.getCustomerName());
+        customerInfo.setCustomerId(telephoneRecord.getCustomerId());
+        customerInfo.setOwnerName(telephoneRecord.getOwnerName());
+        customerInfo.setOwnerId(telephoneRecord.getOwnerId());
+        customerInfo.setActivityId(telephoneRecord.getActivityId());
+        customerInfo.setActivityName(telephoneRecord.getActivityId());
+        customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
+        customerInfoMapper.insert(customerInfo);
     }
 }

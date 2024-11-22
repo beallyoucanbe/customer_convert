@@ -1,7 +1,6 @@
 package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
-import com.smart.sso.server.model.TelephoneRecord;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -34,4 +33,6 @@ public interface TelephoneRecordService {
     List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime);
 
     TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
+
+    void syncCustomerInfoFromRecord(TelephoneRecordStatics telephoneRecord);
 }

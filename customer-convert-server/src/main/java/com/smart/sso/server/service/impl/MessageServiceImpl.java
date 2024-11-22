@@ -84,56 +84,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void sendNoticeForLeader(LeadMemberRequest leadMember, String currentCampaign, LocalDateTime dateTime) {
-        String area = leadMember.getArea();
-        List<String> leaders = leadMember.getLeaders();
-        List<String> members = leadMember.getMembers();
-        // 获取销售的所有客户进行总结
-        // 获取当前活动内的所有客户
-        QueryWrapper<CustomerCharacter> queryWrapper1 = new QueryWrapper<>();
-        queryWrapper1.in("owner_name", members);
-        queryWrapper1.in("current_campaign", currentCampaign);
-        queryWrapper1.gt("update_time_telephone", dateTime);
-        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper1);
-        Map<String, List<SummaryMessage>> ownerSummaryMessages = new HashMap<>();
-        // 对获取的所有客户进行总结
-        execute(characterList, ownerSummaryMessages);
-        SummaryMessage summaryMessage = new SummaryMessage();
-        for (List<SummaryMessage> entry : ownerSummaryMessages.values()) {
-            for (SummaryMessage item : entry) {
-                for (String key : summaryMessage.getAdvantages().keySet()) {
-                    summaryMessage.getAdvantages().put(key,
-                            summaryMessage.getAdvantages().get(key) + item.getAdvantages().get(key));
-                }
-                for (String key : summaryMessage.getQuestions().keySet()) {
-                    summaryMessage.getQuestions().put(key,
-                            summaryMessage.getQuestions().get(key) + item.getQuestions().get(key));
-                }
-            }
-        }
-        StringBuilder complete = new StringBuilder();
-        StringBuilder incomplete = new StringBuilder();
-        int i = 1;
-        for (Map.Entry<String, Integer> item : summaryMessage.getAdvantages().entrySet()) {
-            if (item.getValue() == 0) {
-                continue;
-            }
-            complete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
-        }
-        i = 1;
-        for (Map.Entry<String, Integer> item : summaryMessage.getQuestions().entrySet()) {
-            if (item.getValue() == 0) {
-                continue;
-            }
-            incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
-        }
-        String message = String.format(AppConstant.LEADER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete,
-                CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
-        TextMessage textMessage = new TextMessage();
-        TextMessage.TextContent textContent = new TextMessage.TextContent();
-        textContent.setContent(message);
-        textMessage.setMarkdown(textContent);
-        sendMessageToChat(textMessage);
+    public void sendPurchaseAttitudeSummary(String activityId) {
+//        QueryWrapper<CustomerCharacter> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("activity_id", activityId);
+//        queryWrapper.in("current_campaign", currentCampaign);
+//        queryWrapper.gt("update_time_telephone", dateTime);
+//        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
+//        Map<String, List<SummaryMessage>> ownerSummaryMessages = new HashMap<>();
+//        customerCharacterMapper.insert(newCustomerCharacter);
     }
 
     @Override

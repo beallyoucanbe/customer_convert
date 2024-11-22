@@ -3,14 +3,11 @@ package com.smart.sso.server.util;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.enums.ConfigTypeEnum;
-import com.smart.sso.server.primary.mapper.ConfigMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.primary.mapper.CustomerRelationMapper;
 import com.smart.sso.server.primary.mapper.ScheduledTasksMapper;
 import com.smart.sso.server.model.*;
-import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
@@ -42,8 +39,6 @@ public class SchedulTask {
     private ScheduledTasksMapper scheduledTasksMapper;
     @Autowired
     private CustomerInfoService customerInfoService;
-    @Autowired
-    private ConfigMapper configMapper;
     @Autowired
     private CustomerRelationMapper customerRelationMapper;
     @Autowired
@@ -100,6 +95,8 @@ public class SchedulTask {
         }
         for (TelephoneRecordStatics customerRecord : customerRecordList) {
             try {
+                // 检查customer_Info 是否存在，如果不存在，则更新。这里是为了从 record 向info 表同步
+                recordService.syncCustomerInfoFromRecord(customerRecord);
                 // 更新的匹配度（获取CustomerProfile会更新匹配度）
                 customerInfoService.queryCustomerById(customerRecord.getCustomerId(), customerRecord.getActivityId());
             } catch (Exception e) {
@@ -184,9 +181,9 @@ public class SchedulTask {
     }
 
     /**
-     * 每天9点，12点和18点执行团队总结任务
+     * 每天8点半发送一次总结
      */
-//    @Scheduled(cron = "0 0 9,12,18 * * ?")
+//    @Scheduled(cron = "0 30 8 * * ?")
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
@@ -202,23 +199,10 @@ public class SchedulTask {
                log.error("更新CustomerCharacter失败，CustomerId={}, activityId={}", item.getCustomerId(), item.getActivityId(), e);
             }
         }
-        //获取需要发送的组长
-        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
-        queryWrapper.eq("name", ConfigTypeEnum.LEADER.getValue());
-        Config config = configMapper.selectOne(queryWrapper);
-        if (Objects.isNull(config)) {
-            log.error("没有配置组长信息，请先配置");
-            return;
-        }
-        List<LeadMemberRequest> leadMemberList = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
-        });
+
         //获取需要当前的活动
-        QueryWrapper<Config> queryWrapper1 = new QueryWrapper<>();
-        queryWrapper1.eq("type", ConfigTypeEnum.COMMON.getValue());
-        queryWrapper1.eq("name", ConfigTypeEnum.CURRENT_CAMPAIGN.getValue());
-        config = configMapper.selectOne(queryWrapper1);
-        if (Objects.isNull(config)) {
+        String activityId = configService.getCurrentActivityId();
+        if (Objects.isNull(activityId)) {
             log.error("没有当前的活动，请先配置");
             return;
         }
@@ -249,24 +233,7 @@ public class SchedulTask {
         newTasks.setTaskName(AppConstant.SEND_MESSAGE_STATE);
         newTasks.setStatus("in_progress");
         scheduledTasksMapper.insert(newTasks);
-
-        // 获取最后一次执行成功的开始时间， 来决定该次任务的筛选条件
-        dateTime = LocalDateTime.now().minusDays(1);
-        taskQueryWrapper = new QueryWrapper<>();
-        taskQueryWrapper.eq("task_name", AppConstant.SEND_MESSAGE_STATE);
-        taskQueryWrapper.eq("status", "success");
-        taskQueryWrapper.orderByDesc("create_time");
-        taskQueryWrapper.last("limit 1");
-        tasks = scheduledTasksMapper.selectOne(taskQueryWrapper);
-        if (Objects.nonNull(tasks)) {
-            dateTime = tasks.getCreateTime();
-        }
-
-        String currentCampaign = config.getValue();
-
-        for (LeadMemberRequest leadMember : leadMemberList) {
-            messageService.sendNoticeForLeader(leadMember, currentCampaign, dateTime);
-        }
+        messageService.sendPurchaseAttitudeSummary(activityId);
         // 更新成功，更新任务状态
         scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
     }

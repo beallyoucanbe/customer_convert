@@ -273,7 +273,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public List<ActivityInfo> getActivityInfoByCustomerId(String customerId) {
         List<ActivityInfo> newActivity = customerInfoMapper.selectActivityInfoByCustomerId(customerId);
         String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
-        if (!StringUtils.isEmpty(activity)){
+        if (!StringUtils.isEmpty(activity)) {
             newActivity.add(new ActivityInfo(activity, activity, Boolean.TRUE));
         }
         return newActivity;
@@ -494,6 +494,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
+
+
     @Override
     public void statistics() {
         QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
@@ -706,7 +708,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         // 构建结论
         Feature.CustomerConclusion customerConclusion = new Feature.CustomerConclusion();
-        if (isTag){
+        if (isTag) {
             if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerText())) {
                 // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
                 if (Objects.isNull(enumClass)) {
@@ -732,9 +734,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 // 返回值类型是boolen
                 if (type == Boolean.class) {
                     String resultAnswer = deletePunctuation(customerConclusion.getModelRecord());
-                    if ("是".equals(resultAnswer) || "有购买意向".equals(resultAnswer) || "认可".equals(resultAnswer) || "清晰".equals(resultAnswer)) {
+                    if ("是".equals(resultAnswer) ||
+                            "有购买意向".equals(resultAnswer) ||
+                            "认可".equals(resultAnswer) ||
+                            "清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.TRUE);
-                    } else if ("否".equals(resultAnswer) || "无购买意向".equals(resultAnswer) || "不认可".equals(resultAnswer) || "不清晰".equals(resultAnswer)){
+                    } else if ("否".equals(resultAnswer) ||
+                            "无购买意向".equals(resultAnswer) ||
+                            "不认可".equals(resultAnswer) ||
+                            "不清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.FALSE);
                     } else {
                         customerConclusion.setModelRecord(null);
@@ -749,8 +757,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         featureContentByModel.getAnswerText()));
             }
         }
-        customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) || StringUtils.isEmpty(featureContentBySales.getContent()) ? null : featureContentBySales.getContent());
-        customerConclusion.setSalesManualTag(Objects.isNull(featureContentBySales) || StringUtils.isEmpty(featureContentBySales.getTag()) ? null : featureContentBySales.getTag());
+        customerConclusion.setSalesRecord(Objects.isNull(featureContentBySales) ||
+                StringUtils.isEmpty(featureContentBySales.getContent()) ? null : featureContentBySales.getContent());
+        customerConclusion.setSalesManualTag(Objects.isNull(featureContentBySales) ||
+                StringUtils.isEmpty(featureContentBySales.getTag()) ? null : featureContentBySales.getTag());
         customerConclusion.setUpdateTime(Objects.isNull(featureContentBySales) ? null : featureContentBySales.getUpdateTime());
         customerConclusion.setCompareValue(Objects.nonNull(customerConclusion.getSalesManualTag()) ? customerConclusion.getSalesManualTag() :
                 customerConclusion.getModelRecord());
@@ -774,8 +784,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 new CustomerProcessSummary.ProcessInfoExplanationContent();
         explanationContent.setResult(Boolean.FALSE);
         // 多通电话覆盖+规则加工
-        if (Objects.nonNull(featureFromLLM) && !StringUtils.isEmpty(featureFromLLM.getQuestion()) &&
-                !featureFromLLM.getQuestion().trim().equals("无") && !featureFromLLM.getQuestion().trim().equals("null")) {
+        if (Objects.nonNull(featureFromLLM) &&
+                !StringUtils.isEmpty(featureFromLLM.getQuestion()) &&
+                !featureFromLLM.getQuestion().trim().equals("无") &&
+                !featureFromLLM.getQuestion().trim().equals("null")) {
             explanationContent.setResult(Boolean.TRUE);
             explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(
                     StringUtils.isEmpty(featureFromLLM.getQuestionCallId()) ? featureFromLLM.getCallId() : featureFromLLM.getQuestionCallId(),
@@ -796,8 +808,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (!conversionRate.equals("incomplete")) {
                 advantage.add("完成客户匹配度判断");
             } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                        customerInfo.getCommunicationRounds() >= 2) {
-                    questions.add(new CustomerFeatureResponse.Question("尚未完成客户匹配度判断，需继续收集客户信息"));
+                    customerInfo.getCommunicationRounds() >= 2) {
+                questions.add(new CustomerFeatureResponse.Question("尚未完成客户匹配度判断，需继续收集客户信息"));
             }
             // 客户交易风格了解
             // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
@@ -806,8 +818,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (tradingStyle == 1) {
                 advantage.add("完成客户交易风格了解");
             } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                        customerInfo.getCommunicationRounds() >= 2) {
-                    questions.add(new CustomerFeatureResponse.Question("尚未完成客户交易风格了解，需继续收集客户信息"));
+                    customerInfo.getCommunicationRounds() >= 2) {
+                questions.add(new CustomerFeatureResponse.Question("尚未完成客户交易风格了解，需继续收集客户信息"));
             }
             // 跟进的客户
             // 优点：-跟进对的客户：销售跟进的是客户匹配度判断的值为“较高”或“中等”的客户
@@ -900,7 +912,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     StringBuilder tempStr = new StringBuilder("客户对软件功能尚未理解清晰，");
                     CustomerFeatureResponse.Question question = new CustomerFeatureResponse.Question();
-                    if (customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess().equals(100)){
+                    if (customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess().equals(100)) {
                         tempStr.append("业务员已完成标准讲解，");
                         question.setComplete("业务员已完成标准讲解");
                     } else {
@@ -925,7 +937,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     StringBuilder tempStr = new StringBuilder("客户对选股方法尚未认可，");
                     CustomerFeatureResponse.Question question = new CustomerFeatureResponse.Question();
-                    if (customerFeature.getBasic().getStockSelectionMethod().getStandardProcess().equals(100)){
+                    if (customerFeature.getBasic().getStockSelectionMethod().getStandardProcess().equals(100)) {
                         tempStr.append("业务员已完成标准讲解，");
                         question.setComplete("业务员已完成标准讲解");
                     } else {
@@ -1029,25 +1041,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return processSummary;
     }
 
-    private void getStandardExplanationCompletion(CustomerFeatureResponse customerFeature){
+    private void getStandardExplanationCompletion(CustomerFeatureResponse customerFeature) {
         int completion = 0;
-        if (determineTradingMethod(customerFeature.getTradingMethod().getCurrentStocks())){
+        if (determineTradingMethod(customerFeature.getTradingMethod().getCurrentStocks())) {
             completion += 25;
         }
-        if (determineTradingMethod(customerFeature.getTradingMethod().getStockPurchaseReason())){
+        if (determineTradingMethod(customerFeature.getTradingMethod().getStockPurchaseReason())) {
             completion += 25;
         }
-        if (determineTradingMethod(customerFeature.getTradingMethod().getTradeTimingDecision())){
+        if (determineTradingMethod(customerFeature.getTradingMethod().getTradeTimingDecision())) {
             completion += 25;
         }
-        if (determineTradingMethod(customerFeature.getTradingMethod().getTradingStyle())){
+        if (determineTradingMethod(customerFeature.getTradingMethod().getTradingStyle())) {
             completion += 25;
         }
         customerFeature.getBasic().getSoftwareFunctionClarity().setStandardProcess(completion);
         customerFeature.getBasic().getStockSelectionMethod().setStandardProcess(completion);
     }
 
-    private Boolean determineTradingMethod(TradeMethodFeature tradeMethodFeature){
+    private Boolean determineTradingMethod(TradeMethodFeature tradeMethodFeature) {
         return tradeMethodFeature.getInquired().equals("yes")
                 && Objects.nonNull(tradeMethodFeature.getCustomerConclusion())
                 && !StringUtils.isEmpty(tradeMethodFeature.getCustomerConclusion().getCompareValue())
