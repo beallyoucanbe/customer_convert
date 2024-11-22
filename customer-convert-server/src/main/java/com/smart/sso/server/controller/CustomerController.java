@@ -13,7 +13,6 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummary;
-import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
@@ -22,18 +21,14 @@ import com.smart.sso.server.util.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,10 +48,6 @@ public class CustomerController {
     private TelephoneRecordService recordService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
-    @Autowired
-    @Qualifier("primaryDataSource")
-    private DataSource dataSource;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -157,14 +148,6 @@ public class CustomerController {
     @ApiOperation(value = "存活检查接口")
     @GetMapping("/customer/check")
     public BaseResponse<Void> checkAlive() {
-
-        try (Connection connection = dataSource.getConnection()) {
-            System.out.println("DataSource is working: " + connection.getCatalog());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-
         return ResultUtils.success(null);
     }
 
@@ -237,25 +220,16 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
-    @ApiOperation(value = "更新组长和组员的关系（增量）")
-    @PostMapping("/customer/leader_members")
-    public BaseResponse<List<LeadMemberRequest>> leaderMembers(@RequestBody List<LeadMemberRequest> members,
-                                                               @RequestParam(value = "overwrite", defaultValue = "true") boolean overwrite) {
-        List<LeadMemberRequest> newMembers = configService.addLeaderMember(members, overwrite);
-        return ResultUtils.success(newMembers);
-    }
-
-
     @ApiOperation(value = "统计数据")
     @PostMapping("/customer/statistics")
-    public BaseResponse<List<LeadMemberRequest>> statistics() {
+    public BaseResponse<Void> statistics() {
         customerInfoService.statistics();
         return ResultUtils.success(null);
     }
 
     @ApiOperation(value = "同步customer_info")
     @PostMapping("/customer/sync_customer_info")
-    public BaseResponse<List<LeadMemberRequest>> syncCustomerInfo() {
+    public BaseResponse<Void> syncCustomerInfo() {
         recordService.syncCustomerInfo();
         return ResultUtils.success(null);
     }

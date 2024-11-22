@@ -1,7 +1,6 @@
 package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.QiweiApplicationConfig;
-import com.smart.sso.server.model.dto.LeadMemberRequest;
 
 import java.util.List;
 
@@ -24,5 +23,4 @@ public interface ConfigService {
      */
     String getCurrentActivityId();
 
-    List<LeadMemberRequest> addLeaderMember(List<LeadMemberRequest> members, boolean overwrite);
 }

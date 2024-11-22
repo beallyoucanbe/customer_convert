@@ -4,17 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.enums.ConfigTypeEnum;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.primary.mapper.ConfigMapper;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
-import com.smart.sso.server.model.dto.LeadMemberRequest;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
@@ -54,8 +51,6 @@ public class MessageServiceImpl implements MessageService {
     private ConfigService configService;
     @Autowired
     private CustomerCharacterMapper customerCharacterMapper;
-    @Autowired
-    private ConfigMapper configMapper;
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
@@ -131,7 +126,7 @@ public class MessageServiceImpl implements MessageService {
             }
             String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                     "确认购买" : "尚未确认购买";
-            String leaderMessageUrl = getLeaderMessageUrl(newCustomerCharacter.getOwnerName());
+            String leaderMessageUrl = "";
             if (Objects.nonNull(leaderMessageUrl)){
                 String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
                         customerInfo.getCustomerId(), customerInfo.getActivityId());
@@ -494,24 +489,4 @@ public class MessageServiceImpl implements MessageService {
             sendMessageToChat(textMessage);
         }
     }
-
-    /**
-     * 根据组员名称获取组长的企微消息推送url
-     * @param ownerName
-     * @return
-     */
-    private String getLeaderMessageUrl(String ownerName){
-        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
-        queryWrapper.eq("name", ConfigTypeEnum.LEADER.getValue());
-        Config config = configMapper.selectOne(queryWrapper);
-        if (Objects.isNull(config)) {
-            log.error("没有配置组长信息，请先配置");
-            return null;
-        }
-        List<LeadMemberRequest> leadMemberList = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMemberRequest>>() {
-        });
-        return null;
-    }
-
 }
