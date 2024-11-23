@@ -3,6 +3,7 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.enums.ConfigTypeEnum;
+import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.dto.LeadMember;
 import com.smart.sso.server.primary.mapper.ConfigMapper;
 import com.smart.sso.server.model.Config;
@@ -13,9 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -91,6 +90,25 @@ public class ConfigServiceImpl implements ConfigService {
             throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
         }
         return config.getValue();
+    }
+
+    @Override
+    public Map<String, String> getActivityIdNames() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.ACTIVITY_ID_NAMES.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有配置参加活动的销售名单，请先配置");
+            throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
+        }
+        try {
+            return JsonUtil.readValue(config.getValue(), new TypeReference<Map<String, String>>() {
+            });
+        } catch (Exception e) {
+            log.error("获取活动id和活动name的对应关系失败，返回空", e);
+            return new HashMap<>();
+        }
     }
 
 }

@@ -279,11 +279,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(activityInfo);
             result.add(activityInfoWithVersion);
         }
+        // 是否有旧活动
         String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
         if (!StringUtils.isEmpty(activity)) {
+            Map<String, String> activityIdNames = configService.getActivityIdNames();
             ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(Boolean.TRUE);
-            activityInfoWithVersion.setActivityName(activity);
             activityInfoWithVersion.setActivityId(activity);
+            activityInfoWithVersion.setActivityName(activityIdNames.containsKey(activity) ? activityIdNames.get(activity) : activity);
             result.add(activityInfoWithVersion);
         }
         return result;

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -674,6 +675,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         if (Objects.nonNull(customerInfo)) {
             return;
         }
+        Map<String, String> activityIdNames = configService.getActivityIdNames();
         TelephoneRecord telephoneRecord = telephoneRecordMapper.selectOneTelephoneRecord(telephoneRecordStatics.getCustomerId(), telephoneRecordStatics.getActivityId());
         customerInfo = new CustomerInfo();
         customerInfo.setId(CommonUtils.generatePrimaryKey());
@@ -682,7 +684,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         customerInfo.setOwnerName(telephoneRecord.getOwnerName());
         customerInfo.setOwnerId(telephoneRecord.getOwnerId());
         customerInfo.setActivityId(telephoneRecord.getActivityId());
-        customerInfo.setActivityName(telephoneRecord.getActivityId());
+        customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
         customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
         customerInfoMapper.insert(customerInfo);
     }

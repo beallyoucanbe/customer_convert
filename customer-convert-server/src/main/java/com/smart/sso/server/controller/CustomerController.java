@@ -3,7 +3,6 @@ package com.smart.sso.server.controller;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.ActivityInfoWithVersion;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
