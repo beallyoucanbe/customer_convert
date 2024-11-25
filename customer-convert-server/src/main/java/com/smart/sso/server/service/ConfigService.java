@@ -1,6 +1,5 @@
 package com.smart.sso.server.service;
 
-import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.QiweiApplicationConfig;
 
 import java.util.List;
@@ -13,7 +12,7 @@ public interface ConfigService {
      */
     List<String> getStaffIds();
 
-    String getStaffLeader(String memberId);
+    String getStaffAreaRobotUrl(String memberId);
 
     /**
      * 获取企微应用的配置
@@ -32,5 +31,7 @@ public interface ConfigService {
      * @return 当前正在进行的活动Id
      */
     Map<String, String> getActivityIdNames();
+
+    Map<String, String> getRobotMessageUrl();
 
 }

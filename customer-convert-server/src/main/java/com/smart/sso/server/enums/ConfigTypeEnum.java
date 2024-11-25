@@ -9,7 +9,7 @@ public enum ConfigTypeEnum {
     LEADER_MEMBERS("leader_members", "组长组员"),
     CURRENT_ACTIVITY_ID("current_activity_id", "当前正在进行的活动"),
     ACTIVITY_ID_NAMES("activity_id_names", "活动id和name的对应关系"),
-
+    ROBOT_MESSAGE_URL("robot_message_url", "企微机器人消息url"),
     QIWEI_APPLICATION_CONFIG("qiwei_application_config", "企微应用的配置");
 
     private final String value;

@@ -13,6 +13,7 @@ import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -44,7 +45,7 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public String getStaffLeader(String memberId) {
+    public String getStaffAreaRobotUrl(String memberId) {
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
         queryWrapper.eq("name", ConfigTypeEnum.LEADER_MEMBERS.getValue());
@@ -55,12 +56,18 @@ public class ConfigServiceImpl implements ConfigService {
         }
         List<LeadMember> leadMembers = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMember>>() {
         });
+        String area = null;
         for (LeadMember item : leadMembers) {
             for (LeadMember.Team team : item.getTeams()) {
                 if (team.getMembers().keySet().contains(memberId)){
-                    return team.getLeader();
+                    area = item.getArea();
+                    break;
                 }
             }
+        }
+        Map<String, String> messageUrl = getRobotMessageUrl();
+        if (!StringUtils.isEmpty(area)){
+            return messageUrl.get(area);
         }
         return null;
     }
@@ -107,6 +114,25 @@ public class ConfigServiceImpl implements ConfigService {
             });
         } catch (Exception e) {
             log.error("获取活动id和活动name的对应关系失败，返回空", e);
+            return new HashMap<>();
+        }
+    }
+
+    @Override
+    public Map<String, String> getRobotMessageUrl() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.ROBOT_MESSAGE_URL.getValue());
+        Config config = configMapper.selectOne(queryWrapper);
+        if (Objects.isNull(config)) {
+            log.error("没有配置机器人的发送地址，请先配置");
+            throw new RuntimeException("没有配置机器人的发送地址，请先配置");
+        }
+        try {
+            return JsonUtil.readValue(config.getValue(), new TypeReference<Map<String, String>>() {
+            });
+        } catch (Exception e) {
+            log.error("获取配置机器人的发送地址，返回空", e);
             return new HashMap<>();
         }
     }

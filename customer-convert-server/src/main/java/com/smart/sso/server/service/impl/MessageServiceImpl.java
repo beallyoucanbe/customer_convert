@@ -240,11 +240,10 @@ public class MessageServiceImpl implements MessageService {
                     url, url);
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
-
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToChat(textMessage);
+            sendMessageToChat(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
 
             // 发送消息给业务员，发送给个人企微
             String target = "**";
