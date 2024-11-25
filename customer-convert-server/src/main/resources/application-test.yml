@@ -10,19 +10,23 @@ logging:
 
 spring:
   application:
-    name: wuyou
+    name: ChatStrategy
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss  #时间戳统一转换为指定格式
     time-zone:  GMT+8  # 时区修改为东8区
     property-naming-strategy: SNAKE_CASE
   # 数据库配置
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/customer_test?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: my-secret-pw
-    hikari:
-      max-lifetime: 120000
+    primary:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/customer_test?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      username: root
+      password: my-secret-pw
+    secondary:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/customer_test?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      username: root
+      password: my-secret-pw
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
