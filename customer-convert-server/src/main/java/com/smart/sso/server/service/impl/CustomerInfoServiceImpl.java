@@ -360,10 +360,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public void callback(String sourceId) {
         try {
             // 将sourceId 写入文件
-            String filePath = "/opt/customer-convert/callback/sourceid.txt";
+            String filePath = "/opt/customer-convert/callback/v1/sourceid.txt";
             CommonUtils.appendTextToFile(filePath, sourceId);
             String[] params = {sourceId};
-            Process process = ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight-main/process_text.py", params.length, params);
+            Process process = ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight_v1/process_text.py", params.length, params);
             // 等待脚本执行完成
             int exitCode = process.waitFor();
             String redisKey = SOURCEID_KEY_PREFIX + sourceId;
