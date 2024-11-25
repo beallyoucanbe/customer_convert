@@ -27,7 +27,7 @@ public class AppConstant {
 
     public static final String GET_SECRET_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
 
-    public static final String SEND_APPLICATION_MESSAGE_URL = " https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s";
+    public static final String SEND_APPLICATION_MESSAGE_URL = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s";
 
     public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE_BAK = "您刚和客户**%s（客户id：%s）**通完电话，该客户的匹配度：**%s**。\n" +
             "\n" +

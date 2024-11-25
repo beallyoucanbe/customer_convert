@@ -17,4 +17,6 @@ public interface MessageService {
 
     String getAccessToken();
 
+    void sendTestMessageToSales(String userId);
+
 }

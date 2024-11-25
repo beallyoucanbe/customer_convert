@@ -113,6 +113,7 @@ public class CustomerController {
         }
         if (!AppConstant.staffIdList.contains(staffId)) {
             log.error("staff id 不参加活动， 跳过不处理: " + staffId);
+            return ResultUtils.success(null);
         }
         String redisKey = SOURCEID_KEY_PREFIX + sourceId;
         // 检查key是否存在于Redis中
@@ -231,6 +232,13 @@ public class CustomerController {
     @PostMapping("/customer/sync_customer_info")
     public BaseResponse<Void> syncCustomerInfo() {
         recordService.syncCustomerInfo();
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "给业务员发送测试的信息（企微）")
+    @GetMapping("/customer/test_send_message")
+    public BaseResponse<Void> testSendMessage(String userId) {
+        messageService.sendTestMessageToSales(userId);
         return ResultUtils.success(null);
     }
 

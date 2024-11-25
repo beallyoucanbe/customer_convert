@@ -7,6 +7,7 @@ public class TextMessage {
 
     private String touser;
     private String msgtype = "markdown";
+    private String agentid;
     private TextContent markdown;
 
     @Data

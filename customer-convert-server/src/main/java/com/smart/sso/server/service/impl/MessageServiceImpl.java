@@ -63,15 +63,28 @@ public class MessageServiceImpl implements MessageService {
     public String sendMessageToChat(TextMessage message) {
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
+
         headers.set("Content-Type", "application/json");
         log.error("发送消息内容：" + JsonUtil.serialize(message));
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
+        if (StringUtils.isEmpty(AppConstant.accessToken)){
+            AppConstant.accessToken = getAccessToken();
+        }
         String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
+        log.error("发送消息url：" + url);
         // 发送 POST 请求
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
         // 处理响应
         if (response.getStatusCode() == HttpStatus.OK) {
+            log.error("发送消息结果：" + response.getBody());
+            Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+            });
+            if (!StringMap.get("errcode").toString().equals("0")){
+                AppConstant.accessToken = getAccessToken();
+                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
+                restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+            }
             return response.getBody();
         } else {
             log.error("Failed to send message: " + response.getStatusCode());
@@ -255,6 +268,7 @@ public class MessageServiceImpl implements MessageService {
         // 处理响应
         try {
             if (response.getStatusCode() == HttpStatus.OK) {
+                log.error("获取access token 结果" + response.getBody());
                 AccessTokenResponse accessTokenResponse = JsonUtil.readValue(response.getBody(), new TypeReference<AccessTokenResponse>() {
                 });
                 return accessTokenResponse.getAccessToken();
@@ -264,6 +278,30 @@ public class MessageServiceImpl implements MessageService {
         } catch (Exception e) {
             log.error("Failed to get access token: " + response.getStatusCode());
             throw new RuntimeException("Failed to get access token: " + response.getStatusCode());
+        }
+    }
+
+    @Override
+    public void sendTestMessageToSales(String userId) {
+        List<String> staffIds;
+        if (StringUtils.isEmpty(userId)){
+            staffIds = configService.getStaffIds();
+        } else {
+            staffIds = Arrays.asList(userId);
+        }
+        AppConstant.accessToken = getAccessToken();
+        QiweiApplicationConfig applicationConfig = configService.getQiweiApplicationConfig();
+        AppConstant.agentId = applicationConfig.getAgentId();
+        for (String item : staffIds){
+            String message = "这是一条测试的信息";
+            TextMessage textMessage = new TextMessage();
+            TextMessage.TextContent textContent = new TextMessage.TextContent();
+            textContent.setContent(message);
+            textMessage.setAgentid(AppConstant.agentId);
+            textMessage.setTouser(item);
+            textMessage.setMsgtype("markdown");
+            textMessage.setMarkdown(textContent);
+            sendMessageToChat(textMessage);
         }
     }
 
