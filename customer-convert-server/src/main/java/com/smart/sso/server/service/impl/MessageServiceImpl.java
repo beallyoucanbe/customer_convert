@@ -74,22 +74,23 @@ public class MessageServiceImpl implements MessageService {
         String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
         log.error("发送消息url：" + url);
         // 发送 POST 请求
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-        // 处理响应
-        if (response.getStatusCode() == HttpStatus.OK) {
-            log.error("发送消息结果：" + response.getBody());
-            Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
-            });
-            if (!StringMap.get("errcode").toString().equals("0")){
-                AppConstant.accessToken = getAccessToken();
-                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
-                restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-            }
-            return response.getBody();
-        } else {
-            log.error("Failed to send message: " + response.getStatusCode());
-            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
-        }
+//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+//        // 处理响应
+//        if (response.getStatusCode() == HttpStatus.OK) {
+//            log.error("发送消息结果：" + response.getBody());
+//            Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+//            });
+//            if (!StringMap.get("errcode").toString().equals("0")){
+//                AppConstant.accessToken = getAccessToken();
+//                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
+//                restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+//            }
+//            return response.getBody();
+//        } else {
+//            log.error("Failed to send message: " + response.getStatusCode());
+//            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+//        }
+        return null;
     }
 
     @Override
@@ -101,14 +102,15 @@ public class MessageServiceImpl implements MessageService {
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         // 发送 POST 请求
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-        // 处理响应
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            log.error("Failed to send message: " + response.getStatusCode());
-            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
-        }
+//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+//        // 处理响应
+//        if (response.getStatusCode() == HttpStatus.OK) {
+//            return response.getBody();
+//        } else {
+//            log.error("Failed to send message: " + response.getStatusCode());
+//            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+//        }
+        return null;
     }
 
 
