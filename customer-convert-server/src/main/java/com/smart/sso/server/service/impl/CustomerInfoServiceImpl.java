@@ -110,6 +110,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerProfile queryCustomerById(String customerId, String activityId) {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        if (Objects.isNull(customerInfo)) {
+            customerInfo = recordService.syncCustomerInfoFromRecord(customerId, customerId);
+            if (Objects.isNull(customerInfo)) {
+                return null;
+            }
+        }
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
 
@@ -139,6 +145,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String activityId) {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        if (Objects.isNull(customerInfo)) {
+            customerInfo = recordService.syncCustomerInfoFromRecord(customerId, customerId);
+            if (Objects.isNull(customerInfo)) {
+                return null;
+            }
+        }
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);

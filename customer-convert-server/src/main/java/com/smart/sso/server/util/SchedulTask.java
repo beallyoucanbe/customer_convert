@@ -96,7 +96,7 @@ public class SchedulTask {
         for (TelephoneRecordStatics customerRecord : customerRecordList) {
             try {
                 // 检查customer_Info 是否存在，如果不存在，则更新。这里是为了从 record 向info 表同步
-                recordService.syncCustomerInfoFromRecord(customerRecord);
+                recordService.syncCustomerInfoFromRecord(customerRecord.getCustomerId(), customerRecord.getActivityId());
                 // 更新的匹配度（获取CustomerProfile会更新匹配度）
                 customerInfoService.queryCustomerById(customerRecord.getCustomerId(), customerRecord.getActivityId());
             } catch (Exception e) {

@@ -642,7 +642,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return Boolean.TRUE;
         }
         for (TelephoneRecordStatics record : customerRecordList){
-            syncCustomerInfoFromRecord(record);
+            syncCustomerInfoFromRecord(record.getCustomerId(), record.getActivityId());
         }
         return Boolean.TRUE;
     }
@@ -670,13 +670,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public void syncCustomerInfoFromRecord(TelephoneRecordStatics telephoneRecordStatics) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(telephoneRecordStatics.getCustomerId(), telephoneRecordStatics.getActivityId());
+    public CustomerInfo syncCustomerInfoFromRecord(String customerId, String activityId) {
+        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         if (Objects.nonNull(customerInfo)) {
-            return;
+            return customerInfo;
         }
         Map<String, String> activityIdNames = configService.getActivityIdNames();
-        TelephoneRecord telephoneRecord = telephoneRecordMapper.selectOneTelephoneRecord(telephoneRecordStatics.getCustomerId(), telephoneRecordStatics.getActivityId());
+        TelephoneRecord telephoneRecord = telephoneRecordMapper.selectOneTelephoneRecord(customerId, activityId);
+        // record 也没有，不同步
+        if (Objects.isNull(telephoneRecord)) {
+            return null;
+        }
         customerInfo = new CustomerInfo();
         customerInfo.setId(CommonUtils.generatePrimaryKey());
         customerInfo.setCustomerName(telephoneRecord.getCustomerName());
@@ -687,5 +691,6 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
         customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
         customerInfoMapper.insert(customerInfo);
+        return customerInfo;
     }
 }
