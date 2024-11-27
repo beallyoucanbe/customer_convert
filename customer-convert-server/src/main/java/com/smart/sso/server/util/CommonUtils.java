@@ -86,10 +86,12 @@ public class CommonUtils {
         if (chatContent == null || chatContent.trim().isEmpty()) {
             return result;
         }
-        // 正则表达式匹配角色、时间和内容
-        String regex = "([\\u4e00-\\u9fa5]+)\\s+(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+(.*?)(?=\\s*([\\u4e00-\\u9fa5]+ \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})|$)";
+        // 修改后的正则表达式，使用 [\\s\\S]*? 来匹配包括换行符在内的所有字符
+        String regex = "([\\u4e00-\\u9fa5]+)\\s+"
+                + "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+"
+                + "([\\s\\S]*?)(?=\\s*"
+                + "([\\u4e00-\\u9fa5]+ \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})|$)";
         Pattern pattern = Pattern.compile(regex);
-        // 按照正则匹配处理
         Matcher matcher = pattern.matcher(chatContent);
         while (matcher.find()) {
             OriginChat.Message message = new OriginChat.Message();
