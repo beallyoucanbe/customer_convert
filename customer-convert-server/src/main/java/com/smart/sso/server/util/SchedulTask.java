@@ -183,7 +183,7 @@ public class SchedulTask {
     /**
      * 每天8点半发送一次总结
      */
-//    @Scheduled(cron = "0 30 8 * * ?")
+    @Scheduled(cron = "0 30 8 * * ?")
     public void performTask() {
         log.error("开始执行客户情况特征同步到bi");
         // 执行之前先全量更新数据到BI
