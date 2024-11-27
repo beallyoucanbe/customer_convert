@@ -111,7 +111,7 @@ public class SchedulTask {
     /**
      * 每天8点半执行购买状态同步任务
      */
-    @Scheduled(cron = "0 30 8 * * ?")
+    @Scheduled(cron = "0 40 8 * * ?")
     public void purchaseTask() {
         log.error("开始执行客户购买状态同步任务");
         QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
@@ -245,6 +245,7 @@ public class SchedulTask {
     public void refreshStaffId() {
         log.error("开始执行业务员id同步任务");
         AppConstant.staffIdList.addAll(configService.getStaffIds());
+        log.error("执行业务员id同步任务执行完成");
     }
 
 
@@ -253,6 +254,7 @@ public class SchedulTask {
     public void refreshCommunicationRounds() {
         log.error("开始全量刷新通话次数任务");
         recordService.refreshCommunicationRounds();
+        log.error("全量刷新通话次数任务执行完成");
     }
 
 }
