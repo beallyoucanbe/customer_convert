@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -153,6 +154,33 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
+        // 没有通话记录，直接返回
+        if (Objects.isNull(featureFromLLM)) {
+            CustomerFeatureResponse customerFeature = new CustomerFeatureResponse();
+            CustomerFeatureResponse.ProcessSummary processSummary = new CustomerFeatureResponse.ProcessSummary();
+            processSummary.setAdvantage(new ArrayList<>());
+            processSummary.setQuestions(new ArrayList<>());
+            CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
+            basic.setFundsVolume(new BaseFeature());
+            basic.setEarningDesire(new BaseFeature());
+            basic.setSoftwareFunctionClarity(new BaseFeature());
+            basic.setStockSelectionMethod(new BaseFeature());
+            basic.setSelfIssueRecognition(new BaseFeature());
+            basic.setSoftwareValueApproval(new BaseFeature());
+            basic.setSoftwarePurchaseAttitude(new BaseFeature());
+            basic.setQuantified(new CustomerFeatureResponse.Quantified());
+            CustomerProcessSummary.TradingMethod tradingMethod = new CustomerProcessSummary.TradingMethod();
+            tradingMethod.setCurrentStocks(new TradeMethodFeature(new Feature()));
+            tradingMethod.setStockPurchaseReason(new TradeMethodFeature(new Feature()));
+            tradingMethod.setTradeTimingDecision(new TradeMethodFeature(new Feature()));
+            tradingMethod.setTradingStyle(new TradeMethodFeature(new Feature()));
+            tradingMethod.setStockMarketAge(new TradeMethodFeature(new Feature()));
+            tradingMethod.setLearningAbility(new TradeMethodFeature(new Feature()));
+            customerFeature.setSummary(processSummary);
+            customerFeature.setBasic(basic);
+            customerFeature.setTradingMethod(tradingMethod);
+            return customerFeature;
+        }
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
@@ -569,6 +597,30 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         System.out.println("customerNum=" + customerNum + ", featureNum = " + featureNum);
         System.out.println(JsonUtil.serialize(result));
+    }
+
+    @Override
+    public void syncCustomerInfoFromRelation() {
+        QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
+        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        queryWrapper.gt("update_time", dateTime);
+        List<CustomerRelation> characterList = customerRelationMapper.selectList(queryWrapper);
+        Map<String, String> activityIdNames = configService.getActivityIdNames();
+        String currentActivityId = configService.getCurrentActivityId();
+        for (CustomerRelation relation : characterList) {
+            CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), currentActivityId);
+            if (Objects.nonNull(customerInfo)) {
+                continue;
+            }
+            customerInfo = new CustomerInfo();
+            customerInfo.setId(CommonUtils.generatePrimaryKey());
+            customerInfo.setCustomerId(Long.toString(relation.getCustomerId()));
+            customerInfo.setOwnerId(relation.getOwnerId());
+            customerInfo.setActivityId(currentActivityId);
+            customerInfo.setActivityName(activityIdNames.get(currentActivityId));
+            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
+            customerInfoMapper.insert(customerInfo);
+        }
     }
 
     private boolean equal(Feature feature) {

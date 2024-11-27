@@ -242,4 +242,11 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
+    @ApiOperation(value = "同步customer_info from 客户关系表")
+    @PostMapping("/customer/sync_customer_info_from_relation")
+    public BaseResponse<Void> syncCustomerInfoFromRelation() {
+        customerInfoService.syncCustomerInfoFromRelation();
+        return ResultUtils.success(null);
+    }
+
 }

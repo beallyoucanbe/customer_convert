@@ -672,7 +672,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Override
     public CustomerInfo syncCustomerInfoFromRecord(String customerId, String activityId) {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
-        if (Objects.nonNull(customerInfo)) {
+        // info 表存在记录，并且客户名称不为空，说明已经同步过信息，跳过
+        if (Objects.nonNull(customerInfo) && !StringUtils.isEmpty(customerInfo.getCustomerName())) {
             return customerInfo;
         }
         Map<String, String> activityIdNames = configService.getActivityIdNames();
@@ -681,16 +682,27 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         if (Objects.isNull(telephoneRecord)) {
             return null;
         }
-        customerInfo = new CustomerInfo();
-        customerInfo.setId(CommonUtils.generatePrimaryKey());
-        customerInfo.setCustomerName(telephoneRecord.getCustomerName());
-        customerInfo.setCustomerId(telephoneRecord.getCustomerId());
-        customerInfo.setOwnerName(telephoneRecord.getOwnerName());
-        customerInfo.setOwnerId(telephoneRecord.getOwnerId());
-        customerInfo.setActivityId(telephoneRecord.getActivityId());
-        customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
-        customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
-        customerInfoMapper.insert(customerInfo);
+        // info 表不存在记录，新建一条
+        if (Objects.isNull(customerInfo)){
+            customerInfo = new CustomerInfo();
+            customerInfo.setId(CommonUtils.generatePrimaryKey());
+            customerInfo.setCustomerName(telephoneRecord.getCustomerName());
+            customerInfo.setCustomerId(telephoneRecord.getCustomerId());
+            customerInfo.setOwnerName(telephoneRecord.getOwnerName());
+            customerInfo.setOwnerId(telephoneRecord.getOwnerId());
+            customerInfo.setActivityId(telephoneRecord.getActivityId());
+            customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
+            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
+            customerInfoMapper.insert(customerInfo);
+        } else {
+            // info 表存在记录，需要同步名称等关键信息
+            customerInfo.setCustomerName(telephoneRecord.getCustomerName());
+            customerInfo.setOwnerName(telephoneRecord.getOwnerName());
+            customerInfo.setOwnerId(telephoneRecord.getOwnerId());
+            customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
+            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
+            customerInfoMapper.updateById(customerInfo);
+        }
         return customerInfo;
     }
 }

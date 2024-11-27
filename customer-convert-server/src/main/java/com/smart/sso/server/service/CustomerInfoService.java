@@ -37,4 +37,6 @@ public interface CustomerInfoService {
 
     void statistics();
 
+    void syncCustomerInfoFromRelation();
+
 }
