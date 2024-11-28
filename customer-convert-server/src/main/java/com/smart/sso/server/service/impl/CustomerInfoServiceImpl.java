@@ -320,13 +320,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             result.add(activityInfoWithVersion);
         }
         // 是否有旧活动
-        String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
-        if (!StringUtils.isEmpty(activity)) {
-            Map<String, String> activityIdNames = configService.getActivityIdNames();
-            ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(Boolean.TRUE);
-            activityInfoWithVersion.setActivityId(activity);
-            activityInfoWithVersion.setActivityName(activityIdNames.containsKey(activity) ? activityIdNames.get(activity) : activity);
-            result.add(activityInfoWithVersion);
+        try {
+            String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
+            if (!StringUtils.isEmpty(activity)) {
+                Map<String, String> activityIdNames = configService.getActivityIdNames();
+                ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(Boolean.TRUE);
+                activityInfoWithVersion.setActivityId(activity);
+                activityInfoWithVersion.setActivityName(activityIdNames.containsKey(activity) ? activityIdNames.get(activity) : activity);
+                result.add(activityInfoWithVersion);
+            }
+        } catch (Exception e) {
+            log.error("获取旧活动失败，跳过");
         }
         return result;
     }
