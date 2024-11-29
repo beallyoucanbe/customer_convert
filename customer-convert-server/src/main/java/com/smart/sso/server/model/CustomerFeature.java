@@ -44,8 +44,6 @@ public class CustomerFeature implements Serializable {
     private FeatureContentSales softwareValueApprovalSales;
     @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
     private FeatureContentSales softwarePurchaseAttitudeSales;
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTime;
 }

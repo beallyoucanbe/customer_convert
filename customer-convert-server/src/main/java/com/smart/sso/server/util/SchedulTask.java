@@ -156,7 +156,7 @@ public class SchedulTask {
                     continue;
                 }
                 CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
-                if (Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
+                if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
                     Map<String, Object> tag =
                             JsonUtil.readValue(JsonUtil.serialize(customerFeature.getSoftwarePurchaseAttitudeSales()),
                                     new TypeReference<Map<String, Object>>() {});
@@ -166,11 +166,17 @@ public class SchedulTask {
                     tag.put("tag", true);
                     customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(),
                             JsonUtil.serialize(tag));
-                } else {
+                } else if (Objects.nonNull(customerFeature)) {
                     Map<String, Object> tag = new HashMap<>();
                     tag.put("tag", true);
                     customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(),
                             JsonUtil.serialize(tag));
+                } else {
+                    CustomerFeature feature= new CustomerFeature();
+                    FeatureContentSales featureContent = new FeatureContentSales();
+                    featureContent.setTag(true);
+                    feature.setSoftwarePurchaseAttitudeSales(featureContent);
+                    customerFeatureMapper.insert(feature);
                 }
             } catch (Exception e) {
                 log.error("执行购买状态任务失败：" + item.getCustomerId());
