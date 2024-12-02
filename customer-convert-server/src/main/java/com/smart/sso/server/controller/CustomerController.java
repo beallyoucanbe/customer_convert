@@ -182,7 +182,7 @@ public class CustomerController {
     public BaseResponse<Void> sendMessage(@RequestParam(value = "customer_id") String customerId, @RequestParam(value = "activity_id") String activityId) {
         log.error("触发客户的特征更新，id: " + customerId);
         messageService.updateCustomerCharacter(customerId, activityId, true);
-        customerInfoService.updateCharacterCostTime(customerId);
+//        customerInfoService.updateCharacterCostTime(customerId);
 
         return ResultUtils.success(null);
     }
