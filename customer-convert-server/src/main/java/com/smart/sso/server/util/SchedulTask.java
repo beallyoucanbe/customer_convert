@@ -139,8 +139,15 @@ public class SchedulTask {
         scheduledTasksMapper.insert(newTasks);
 
         // 开始执行实际的任务
+        //获取需要当前的活动
+        String activityId = configService.getCurrentActivityId();
+        if (Objects.isNull(activityId)) {
+            log.error("没有当前的活动，请先配置");
+            return;
+        }
         QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("customer_signed", 1);
+        queryWrapper.eq("activity_id", activityId);
         List<CustomerRelation> customerRelationList= customerRelationMapper.selectList(queryWrapper);
         // 对每一个支付定金的客户，检查销售记录值是否正确
         if (CollectionUtils.isEmpty(customerRelationList)) {
@@ -164,18 +171,19 @@ public class SchedulTask {
                         continue;
                     }
                     tag.put("tag", true);
-                    customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(),
-                            JsonUtil.serialize(tag));
+                    tag.put("updateTime", DateUtil.getCurrentDateTime());
+                    customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(), JsonUtil.serialize(tag));
                 } else if (Objects.nonNull(customerFeature)) {
                     Map<String, Object> tag = new HashMap<>();
                     tag.put("tag", true);
-                    customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(),
-                            JsonUtil.serialize(tag));
+                    tag.put("updateTime", DateUtil.getCurrentDateTime());
+                    customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(), JsonUtil.serialize(tag));
                 } else {
                     CustomerFeature feature= new CustomerFeature();
                     FeatureContentSales featureContent = new FeatureContentSales();
                     featureContent.setTag(true);
                     feature.setSoftwarePurchaseAttitudeSales(featureContent);
+                    featureContent.setUpdateTime(DateUtil.getCurrentDateTime());
                     customerFeatureMapper.insert(feature);
                 }
             } catch (Exception e) {

@@ -86,18 +86,18 @@ public class CommonUtils {
         if (chatContent == null || chatContent.trim().isEmpty()) {
             return result;
         }
-        // 修改后的正则表达式，使用 [\\s\\S]*? 来匹配包括换行符在内的所有字符
-        String regex = "([\\u4e00-\\u9fa5]+)\\s+"
-                + "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+"
-                + "([\\s\\S]*?)(?=\\s*"
-                + "([\\u4e00-\\u9fa5]+ \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})|$)";
+        // 正则表达式优化
+        String regex = "([\\u4e00-\\u9fa5\\w]+)\\s+" // 匹配角色名，包含中文、字母和数字
+                + "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+" // 时间
+                + "([\\s\\S]*?)(?=\\s*" // 内容
+                + "([\\u4e00-\\u9fa5\\w]+ \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})|$)"; // 预测下一个消息起点
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(chatContent);
         while (matcher.find()) {
             OriginChat.Message message = new OriginChat.Message();
-            message.setRole(matcher.group(1));  // 捕获组 1: 中文名字
-            message.setTime(matcher.group(2));  // 捕获组 2: 时间
-            message.setContent(matcher.group(3).trim());  // 捕获组 3: 内容
+            message.setRole(matcher.group(1)); // 捕获组 1: 中文名字
+            message.setTime(matcher.group(2)); // 捕获组 2: 时间
+            message.setContent(matcher.group(3).trim()); // 捕获组 3: 内容，去除多余空白
             result.add(message);
         }
         return result;

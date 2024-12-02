@@ -605,14 +605,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public void syncCustomerInfoFromRelation() {
+        String activityId = configService.getCurrentActivityId();
+        if (Objects.isNull(activityId)) {
+            log.error("没有当前的活动，请先配置");
+            return;
+        }
         QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
         queryWrapper.gt("update_time", dateTime);
+        queryWrapper.eq("activity_id", activityId);
         List<CustomerRelation> characterList = customerRelationMapper.selectList(queryWrapper);
         Map<String, String> activityIdNames = configService.getActivityIdNames();
-        String currentActivityId = configService.getCurrentActivityId();
         for (CustomerRelation relation : characterList) {
-            CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), currentActivityId);
+            CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), activityId);
             if (Objects.nonNull(customerInfo)) {
                 continue;
             }
@@ -620,8 +625,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfo.setId(CommonUtils.generatePrimaryKey());
             customerInfo.setCustomerId(Long.toString(relation.getCustomerId()));
             customerInfo.setOwnerId(relation.getOwnerId());
-            customerInfo.setActivityId(currentActivityId);
-            customerInfo.setActivityName(activityIdNames.get(currentActivityId));
+            customerInfo.setCustomerName(relation.getCustomerName());
+            customerInfo.setOwnerName(relation.getOwnerName());
+            customerInfo.setActivityId(activityId);
+            customerInfo.setActivityName(activityIdNames.get(activityId));
             customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
             customerInfoMapper.insert(customerInfo);
         }
