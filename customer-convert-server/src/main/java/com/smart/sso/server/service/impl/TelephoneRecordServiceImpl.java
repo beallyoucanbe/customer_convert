@@ -23,7 +23,9 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -657,6 +659,23 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         for (TelephoneRecordStatics item : customerIdList) {
             customerInfoMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
         }
+    }
+
+    @Override
+    public int getCommunicationTimeCurrentDay(String customerId) {
+        QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
+        LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+        queryWrapperInfo.eq("customer_id", customerId);
+        queryWrapperInfo.gt("communication_time", startOfDay);
+        // 查看该客户当天的通话时间长度
+        List<TelephoneRecord> telephoneRecordList = telephoneRecordMapper.selectList(queryWrapperInfo);
+        int communicationDurationSum = 0;
+        if (!CollectionUtils.isEmpty(telephoneRecordList)){
+            for (TelephoneRecord item : telephoneRecordList) {
+                communicationDurationSum += item.getCommunicationDuration();
+            }
+        }
+        return communicationDurationSum;
     }
 
     @Override

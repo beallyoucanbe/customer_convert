@@ -8,20 +8,19 @@ import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
-import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -31,9 +30,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -55,7 +51,7 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
-    private TelephoneRecordMapper telephoneRecordMapper;
+    private TelephoneRecordService recordService;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -195,16 +191,7 @@ public class MessageServiceImpl implements MessageService {
         if (checkPurchaseAttitude && Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude()) &&
                 !newCustomerCharacter.getCompletePurchaseStage()){
             // 给该客户当天的通话时间大于30分钟
-            QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
-            LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
-            queryWrapperInfo.eq("customer_id", customerInfo.getCustomerId());
-            queryWrapperInfo.gt("communication_time", startOfDay);
-            // 查看该客户的所有通话记录，并且按照顺序排列
-            List<TelephoneRecord> telephoneRecordList = telephoneRecordMapper.selectList(queryWrapperInfo);
-            int communicationDurationSum = 0;
-            for (TelephoneRecord item : telephoneRecordList) {
-                communicationDurationSum += item.getCommunicationDuration();
-            }
+            int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId) ;
             if (communicationDurationSum < 30) {
                 return;
             }
@@ -213,23 +200,66 @@ public class MessageServiceImpl implements MessageService {
             String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
                     customerInfo.getCustomerId(), customerInfo.getActivityId());
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
+            int id = 1;
             if (messageDescribe.equals("尚未确认购买")) {
-                if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareFunctionClarity()) && newCustomerCharacter.getSoftwareFunctionClarity().equals("false")){
-                    possibleReasonStringBuilder.append("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解。\n");
-                }
-                if (!StringUtils.isEmpty(newCustomerCharacter.getStockSelectionMethod()) && newCustomerCharacter.getStockSelectionMethod().equals("false")){
-                    possibleReasonStringBuilder.append("客户对选股方法尚未认可，需加强选股成功的真实案例证明。\n");
-                }
-                if (!StringUtils.isEmpty(newCustomerCharacter.getSelfIssueRecognition()) && newCustomerCharacter.getSelfIssueRecognition().equals("false")){
-                    possibleReasonStringBuilder.append("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明。\n");
-                }
-                if (!StringUtils.isEmpty(newCustomerCharacter.getSoftwareValueApproval()) && newCustomerCharacter.getSoftwareValueApproval().equals("false")){
-                    possibleReasonStringBuilder.append("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明。\n");
+                for (CustomerFeatureResponse.Question question : customerFeature.getSummary().getQuestions()){
+                    if (question.getMessage().contains("客户对软件功能尚未理解清晰")){
+                        possibleReasonStringBuilder.append(id++).append(".客户对软件功能尚未理解清晰，");
+                        if (!StringUtils.isEmpty(question.getQuantify())){
+                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
+                        }
+                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
+                        } else if (!StringUtils.isEmpty(question.getComplete())) {
+                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
+                        }
+                        possibleReasonStringBuilder.append("客户问题是：")
+                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
+                                .append("需根据客户学习能力更白话讲解。\n");
+                    } else if (question.getMessage().contains("客户对选股方法尚未认可")){
+                        possibleReasonStringBuilder.append(id++).append(".客户对选股方法尚未认可，");
+                        if (!StringUtils.isEmpty(question.getQuantify())){
+                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
+                        }
+                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
+                        } else if (!StringUtils.isEmpty(question.getComplete())) {
+                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
+                        }
+                        possibleReasonStringBuilder.append("客户问题是：")
+                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
+                                .append("需加强选股成功的真实案例证明。\n");
+                    } else if (question.getMessage().contains("客户对自身问题尚未认可")){
+                        possibleReasonStringBuilder.append(id++).append(".客户对自身问题尚未认可，");
+                        if (!StringUtils.isEmpty(question.getQuantify())){
+                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
+                        }
+                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
+                        } else if (!StringUtils.isEmpty(question.getComplete())) {
+                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
+                        }
+                        possibleReasonStringBuilder.append("客户问题是：")
+                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
+                                .append("需列举与客户相近的真实反面案例证明。\n");
+                    } else if (question.getMessage().contains("客户对软件价值尚未认可")){
+                        possibleReasonStringBuilder.append(id++).append(".客户对软件价值尚未认可，");
+                        if (!StringUtils.isEmpty(question.getQuantify())){
+                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
+                        }
+                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
+                        } else if (!StringUtils.isEmpty(question.getComplete())) {
+                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
+                        }
+                        possibleReasonStringBuilder.append("客户问题是：")
+                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
+                                .append("需加强使用软件的真实成功案例证明。\n");
+                    }
                 }
             }
             if (possibleReasonStringBuilder.length() > 1){
-                possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n<font color=\"info\">");
-                possibleReasonStringBuilder.append("</font>");
+                possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n");
             }
 
             // 发送消息给领导，发送到微信群
