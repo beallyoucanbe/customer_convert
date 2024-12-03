@@ -20,6 +20,8 @@ public class CustomerRelation implements Serializable {
     private String activityId;
     private Integer classeAttendTimes;
     private Integer classeAttendDuration;
+    private Integer custTypeId;
+    private Integer isSend188;
     private Boolean customerSigned;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;

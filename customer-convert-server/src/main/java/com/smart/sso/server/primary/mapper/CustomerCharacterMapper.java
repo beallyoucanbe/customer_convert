@@ -42,6 +42,7 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "summary_confirm_value=#{summaryConfirmValue}, ",
             "summary_execute_order=#{summaryExecuteOrder}, ",
             "issues_value_quantified=#{issuesValueQuantified}, ",
+            "is_send188=#{isSend188}, ",
             "update_time=#{updateTime} ",
             "WHERE id=#{id}"
     })

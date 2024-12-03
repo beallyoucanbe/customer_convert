@@ -455,6 +455,7 @@ public class MessageServiceImpl implements MessageService {
                 latestCustomerCharacter.setIssuesValueQuantified("false");
             }
         }
+        latestCustomerCharacter.setIsSend188(customerProfile.getIsSend188());
         latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());
     }
 

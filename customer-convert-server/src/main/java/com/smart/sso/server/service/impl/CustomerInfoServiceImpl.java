@@ -8,7 +8,6 @@ import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
-import com.smart.sso.server.primary.mapper.CustomerRelationMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
@@ -17,6 +16,7 @@ import com.smart.sso.server.model.dto.*;
 import com.smart.sso.server.secondary.mapper.CustomerInfoOldMapper;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.service.CustomerRelationService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
@@ -55,7 +55,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Autowired
     private ConfigService configService;
     @Autowired
-    private CustomerRelationMapper customerRelationMapper;
+    private CustomerRelationService customerRelationService;
     @Autowired
     private TelephoneRecordMapper telephoneRecordMapper;
     @Autowired
@@ -124,6 +124,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM));
+        customerProfile.setIsSend188(customerInfo.getIsSend188());
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
@@ -297,17 +298,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
         try {
-            QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("owner_id", customerInfo.getOwnerId());
-            queryWrapper.eq("customer_id", Long.parseLong(customerInfo.getCustomerId()));
-            queryWrapper.eq("activity_id", customerInfo.getActivityId());
-            CustomerRelation customerRelation = customerRelationMapper.selectOne(queryWrapper);
+            CustomerRelation customerRelation = customerRelationService.getByActivityAndCustomer(customerInfo.getCustomerId(),
+                    customerInfo.getOwnerId(), customerInfo.getActivityId());
             if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
                     && customerRelation.getCustomerSigned()) {
                 stageStatus.setCompletePurchase(1);
             }
+            customerInfo.setIsSend188(customerRelation.getIsSend188());
         } catch (Exception e) {
-            log.error("判断确认购买状态失败", e);
+            log.error("判断确认购买状态失败, ID={}", customerInfo.getCustomerId(), e);
         }
         return stageStatus;
     }
@@ -611,11 +610,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             log.error("没有当前的活动，请先配置");
             return;
         }
-        QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
-        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-        queryWrapper.gt("update_time", dateTime);
-        queryWrapper.eq("activity_id", activityId);
-        List<CustomerRelation> characterList = customerRelationMapper.selectList(queryWrapper);
+        List<CustomerRelation> characterList = customerRelationService.getByActivityAndUpdateTime(activityId,
+                LocalDateTime.of(2024, 1, 1, 12, 0, 0));
         Map<String, String> activityIdNames = configService.getActivityIdNames();
         for (CustomerRelation relation : characterList) {
             CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), activityId);

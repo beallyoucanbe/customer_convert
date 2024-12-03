@@ -52,6 +52,7 @@ public class CustomerCharacter implements Serializable {
     private String issuesValueQuantified;
 
     private int standardExplanationCompletion;
+    private Integer isSend188;
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

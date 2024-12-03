@@ -5,11 +5,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
-import com.smart.sso.server.primary.mapper.CustomerRelationMapper;
 import com.smart.sso.server.primary.mapper.ScheduledTasksMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.service.CustomerRelationService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class SchedulTask {
     @Autowired
     private CustomerInfoService customerInfoService;
     @Autowired
-    private CustomerRelationMapper customerRelationMapper;
+    private CustomerRelationService customerRelationService;
     @Autowired
     private MessageService messageService;
     @Autowired
@@ -145,10 +145,7 @@ public class SchedulTask {
             log.error("没有当前的活动，请先配置");
             return;
         }
-        QueryWrapper<CustomerRelation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("customer_signed", 1);
-        queryWrapper.eq("activity_id", activityId);
-        List<CustomerRelation> customerRelationList= customerRelationMapper.selectList(queryWrapper);
+        List<CustomerRelation> customerRelationList= customerRelationService.getByActivityAndSigned(activityId);
         // 对每一个支付定金的客户，检查销售记录值是否正确
         if (CollectionUtils.isEmpty(customerRelationList)) {
             return;
