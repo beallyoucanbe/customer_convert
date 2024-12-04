@@ -306,7 +306,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
             customerInfo.setIsSend188(customerRelation.getIsSend188());
         } catch (Exception e) {
-            log.error("判断确认购买状态失败, ID={}", customerInfo.getCustomerId(), e);
+            log.error("判断确认购买状态失败, ID={}", customerInfo.getCustomerId());
         }
         return stageStatus;
     }
