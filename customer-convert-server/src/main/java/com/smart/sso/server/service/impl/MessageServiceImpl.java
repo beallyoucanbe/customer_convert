@@ -21,6 +21,7 @@ import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -70,23 +71,22 @@ public class MessageServiceImpl implements MessageService {
         String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
         log.error("发送消息url：" + url);
         // 发送 POST 请求
-//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-//        // 处理响应
-//        if (response.getStatusCode() == HttpStatus.OK) {
-//            log.error("发送消息结果：" + response.getBody());
-//            Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
-//            });
-//            if (!StringMap.get("errcode").toString().equals("0")){
-//                AppConstant.accessToken = getAccessToken();
-//                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
-//                restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-//            }
-//            return response.getBody();
-//        } else {
-//            log.error("Failed to send message: " + response.getStatusCode());
-//            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
-//        }
-        return null;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        // 处理响应
+        if (response.getStatusCode() == HttpStatus.OK) {
+            log.error("发送消息结果：" + response.getBody());
+            Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+            });
+            if (!StringMap.get("errcode").toString().equals("0")){
+                AppConstant.accessToken = getAccessToken();
+                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
+                restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+            }
+            return response.getBody();
+        } else {
+            log.error("Failed to send message: " + response.getStatusCode());
+            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+        }
     }
 
     @Override
@@ -98,15 +98,14 @@ public class MessageServiceImpl implements MessageService {
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         // 发送 POST 请求
-//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-//        // 处理响应
-//        if (response.getStatusCode() == HttpStatus.OK) {
-//            return response.getBody();
-//        } else {
-//            log.error("Failed to send message: " + response.getStatusCode());
-//            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
-//        }
-        return null;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        // 处理响应
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            log.error("Failed to send message: " + response.getStatusCode());
+            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+        }
     }
 
 
@@ -188,20 +187,24 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
-        if (checkPurchaseAttitude && Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude()) &&
-                !newCustomerCharacter.getCompletePurchaseStage()){
+        if (checkPurchaseAttitude && !newCustomerCharacter.getCompletePurchaseStage()) {
             // 给该客户当天的通话时间大于30分钟
             int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId) ;
-            if (communicationDurationSum < 30) {
+            if (communicationDurationSum < 10) {
                 return;
             }
-            String messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
-                    "确认购买" : "尚未确认购买";
+            String messageDescribe;
+            if (Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude())) {
+                messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
+                        "确认购买" : "尚未确认购买";
+            } else {
+                messageDescribe = "未提及";
+            }
             String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
                     customerInfo.getCustomerId(), customerInfo.getActivityId());
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
             int id = 1;
-            if (messageDescribe.equals("尚未确认购买")) {
+            if (!messageDescribe.equals("确认购买")) {
                 for (CustomerFeatureResponse.Question question : customerFeature.getSummary().getQuestions()){
                     if (question.getMessage().contains("客户对软件功能尚未理解清晰")){
                         possibleReasonStringBuilder.append(id++).append(".客户对软件功能尚未理解清晰，");
