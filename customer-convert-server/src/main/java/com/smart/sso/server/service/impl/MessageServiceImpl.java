@@ -300,6 +300,11 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public String getAgentId(String userId) {
+        for (Map.Entry<String, Set<String>> entry : AppConstant.staffIdMap.entrySet()) {
+            if (entry.getValue().contains(userId)) {
+                return AppConstant.qiweiApplicationConfigMap.get(entry.getKey()).getAgentId();
+            }
+        }
         return null;
     }
 
