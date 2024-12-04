@@ -72,5 +72,6 @@ public class AppConstant {
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
     public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();
     public static Map<String, String> accessTokenMap = new HashMap<>();
+    public static Map<String, String> robotUrl = new HashMap<>();
 
 }

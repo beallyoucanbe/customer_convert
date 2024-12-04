@@ -33,6 +33,7 @@ import org.springframework.http.HttpHeaders;
 import java.lang.reflect.Field;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.smart.sso.server.constant.AppConstant.CUSTOMER_DASHBOARD_URL;
 
@@ -58,6 +59,10 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public String sendMessageToChat(TextMessage message) {
+        // 是否是通过企微机器人发送
+        if (AppConstant.robotUrl.containsKey(message.getTouser())){
+            return sendMessageToChat(AppConstant.robotUrl.get(message.getTouser()), message);
+        }
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
 
@@ -66,7 +71,6 @@ public class MessageServiceImpl implements MessageService {
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, getAccessToken(message.getTouser()));
-        log.error("发送消息url：" + url);
         // 发送 POST 请求
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
         // 处理响应
@@ -98,6 +102,7 @@ public class MessageServiceImpl implements MessageService {
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
         // 处理响应
         if (response.getStatusCode() == HttpStatus.OK) {
+            log.error("发送消息结果：" + response.getBody());
             return response.getBody();
         } else {
             log.error("Failed to send message: " + response.getStatusCode());
@@ -309,13 +314,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void sendTestMessageToSales(String userId) {
-        List<String> staffIds = Arrays.asList(userId);
+    public void sendTestMessageToSales(Map<String, String> message) {
+        String userId = message.get("userId");
+        String content = message.get("content");
+        List<String> staffIds = Arrays.stream(userId.split(",")).map(item -> item.trim()).collect(Collectors.toList());
         for (String item : staffIds) {
-            String message = "这是一条测试的信息";
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
-            textContent.setContent(message);
+            textContent.setContent(content);
             textMessage.setAgentid(getAgentId(item));
             textMessage.setTouser(item);
             textMessage.setMsgtype("markdown");

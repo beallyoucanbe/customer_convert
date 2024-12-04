@@ -78,9 +78,8 @@ public class ConfigServiceImpl implements ConfigService {
                 }
             }
         }
-        Map<String, String> messageUrl = getRobotMessageUrl();
         if (!StringUtils.isEmpty(area)) {
-            return messageUrl.get(area);
+            return AppConstant.robotUrl.get(area);
         }
         return null;
     }
@@ -166,6 +165,9 @@ public class ConfigServiceImpl implements ConfigService {
 
         // 更新应用信息
         AppConstant.qiweiApplicationConfigMap = getQiweiApplicationConfig();
+
+        // 更新企微机器人发送url
+        AppConstant.robotUrl = getRobotMessageUrl();
 
         // 更新token信息
         Map<String, String> tokenMap = new HashMap<>();

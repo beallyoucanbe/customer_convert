@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
@@ -238,9 +239,9 @@ public class CustomerController {
     }
 
     @ApiOperation(value = "给业务员发送测试的信息（企微）")
-    @GetMapping("/customer/test_send_message")
-    public BaseResponse<Void> testSendMessage(String userId) {
-        messageService.sendTestMessageToSales(userId);
+    @PostMapping("/customer/test_send_message")
+    public BaseResponse<Void> testSendMessage(@RequestBody Map<String, String> message) {
+        messageService.sendTestMessageToSales(message);
         return ResultUtils.success(null);
     }
 

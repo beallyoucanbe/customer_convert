@@ -2,6 +2,8 @@ package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.TextMessage;
 
+import java.util.Map;
+
 public interface MessageService {
 
     String sendMessageToChat(TextMessage message);
@@ -19,7 +21,6 @@ public interface MessageService {
 
     String getAgentId(String userId);
 
-
-    void sendTestMessageToSales(String userId);
+    void sendTestMessageToSales(Map<String, String> message);
 
 }
