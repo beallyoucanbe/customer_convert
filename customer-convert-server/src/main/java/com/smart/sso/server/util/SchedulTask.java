@@ -254,9 +254,9 @@ public class SchedulTask {
      */
     @Scheduled(cron = "0 */13 * * * ?")
     public void refreshStaffId() {
-        log.error("开始执行业务员id同步任务");
-        AppConstant.staffIdList.addAll(configService.getStaffIds());
-        log.error("执行业务员id同步任务执行完成");
+        log.error("开始客户配置同步任务");
+        configService.refreshCustomerConfig();
+        log.error("客户配置同步任务执行完成");
     }
 
 

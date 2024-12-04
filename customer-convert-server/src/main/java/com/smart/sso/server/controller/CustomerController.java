@@ -13,7 +13,6 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummary;
-import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
@@ -31,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
 
@@ -42,8 +42,6 @@ public class CustomerController {
     private CustomerInfoService customerInfoService;
     @Autowired
     private MessageService messageService;
-    @Autowired
-    private ConfigService configService;
     @Autowired
     private TelephoneRecordService recordService;
     @Autowired
@@ -108,10 +106,14 @@ public class CustomerController {
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
         String staffId = callBackRequest.getData().getCall().getStaffId();
-        if (CollectionUtils.isEmpty(AppConstant.staffIdList)) {
-            AppConstant.staffIdList.addAll(configService.getStaffIds());
+        boolean needProcess = false;
+        for (Set<String> item : AppConstant.staffIdMap.values()){
+            if (item.contains(staffId)){
+                needProcess = true;
+                break;
+            }
         }
-        if (!AppConstant.staffIdList.contains(staffId)) {
+        if (!needProcess) {
             log.error("staff id 不参加活动， 跳过不处理: " + staffId);
             return ResultUtils.success(null);
         }

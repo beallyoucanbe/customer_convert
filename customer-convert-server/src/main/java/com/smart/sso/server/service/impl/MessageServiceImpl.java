@@ -65,10 +65,7 @@ public class MessageServiceImpl implements MessageService {
         log.error("发送消息内容：" + JsonUtil.serialize(message));
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
-        if (StringUtils.isEmpty(AppConstant.accessToken)){
-            AppConstant.accessToken = getAccessToken();
-        }
-        String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
+        String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, getAccessToken(message.getTouser()));
         log.error("发送消息url：" + url);
         // 发送 POST 请求
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
@@ -77,9 +74,9 @@ public class MessageServiceImpl implements MessageService {
             log.error("发送消息结果：" + response.getBody());
             Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
             });
-            if (!StringMap.get("errcode").toString().equals("0")){
-                AppConstant.accessToken = getAccessToken();
-                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, AppConstant.accessToken);
+            if (!StringMap.get("errcode").toString().equals("0")) {
+                configService.refreshCustomerConfig();
+                url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, getAccessToken(message.getTouser()));
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
             }
             return response.getBody();
@@ -117,36 +114,37 @@ public class MessageServiceImpl implements MessageService {
         Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
         for (CustomerCharacter character : characterList) {
             // 完成购买，跳过不统计
-            if (character.getCompletePurchaseStage()){
+            if (character.getCompletePurchaseStage()) {
                 continue;
             }
             String ownerId = character.getOwnerId();
             PotentialCustomer potentialCustomer;
-            if (!potentialCustomerMap.containsKey(ownerId)){
+            if (!potentialCustomerMap.containsKey(ownerId)) {
                 potentialCustomer = new PotentialCustomer();
             } else {
                 potentialCustomer = potentialCustomerMap.get(ownerId);
             }
             // 判断 认可度次数
             int approvalCount = 0;
-            if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())){
+            if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
                 approvalCount++;
             }
-            if (Boolean.parseBoolean(character.getStockSelectionMethod())){
+            if (Boolean.parseBoolean(character.getStockSelectionMethod())) {
                 approvalCount++;
             }
-            if (Boolean.parseBoolean(character.getSelfIssueRecognition())){
+            if (Boolean.parseBoolean(character.getSelfIssueRecognition())) {
                 approvalCount++;
             }
-            if (Boolean.parseBoolean(character.getSoftwareValueApproval())){
+            if (Boolean.parseBoolean(character.getSoftwareValueApproval())) {
                 approvalCount++;
             }
             // 认可数>=3旦态度为认可
-            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())){
+            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
                 potentialCustomer.getHigh().add(character.getCustomerName() + "，" + character.getCustomerId());
             } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
                 potentialCustomer.getMiddle().add(character.getCustomerName() + "，" + character.getCustomerId());
-            } else if (approvalCount <= 2 && (character.getConversionRate().equals("较高") || character.getConversionRate().equals("中等"))) {
+            } else if (approvalCount <= 2 &&
+                    (character.getConversionRate().equals("较高") || character.getConversionRate().equals("中等"))) {
                 potentialCustomer.getLow().add(character.getCustomerName() + "，" + character.getCustomerId());
             }
             potentialCustomerMap.put(ownerId, potentialCustomer);
@@ -169,7 +167,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void updateCustomerCharacter(String customerId, String activityId,  boolean checkPurchaseAttitude) {
+    public void updateCustomerCharacter(String customerId, String activityId, boolean checkPurchaseAttitude) {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
@@ -182,14 +180,14 @@ public class MessageServiceImpl implements MessageService {
             customerCharacterMapper.insert(newCustomerCharacter);
         } else {
             // 更新
-            if (!areEqual(customerCharacter, newCustomerCharacter)){
+            if (!areEqual(customerCharacter, newCustomerCharacter)) {
                 customerCharacterMapper.updateAllFields(newCustomerCharacter);
             }
         }
         // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
         if (checkPurchaseAttitude && !newCustomerCharacter.getCompletePurchaseStage()) {
             // 给该客户当天的通话时间大于30分钟
-            int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId) ;
+            int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId);
             if (communicationDurationSum < 10) {
                 return;
             }
@@ -205,13 +203,13 @@ public class MessageServiceImpl implements MessageService {
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
             int id = 1;
             if (!messageDescribe.equals("确认购买")) {
-                for (CustomerFeatureResponse.Question question : customerFeature.getSummary().getQuestions()){
-                    if (question.getMessage().contains("客户对软件功能尚未理解清晰")){
+                for (CustomerFeatureResponse.Question question : customerFeature.getSummary().getQuestions()) {
+                    if (question.getMessage().contains("客户对软件功能尚未理解清晰")) {
                         possibleReasonStringBuilder.append(id++).append(".客户对软件功能尚未理解清晰，");
-                        if (!StringUtils.isEmpty(question.getQuantify())){
+                        if (!StringUtils.isEmpty(question.getQuantify())) {
                             possibleReasonStringBuilder.append(question.getQuantify()).append("，");
                         }
-                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                        if (!StringUtils.isEmpty(question.getIncomplete())) {
                             possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
                         } else if (!StringUtils.isEmpty(question.getComplete())) {
                             possibleReasonStringBuilder.append(question.getComplete()).append("，");
@@ -219,12 +217,12 @@ public class MessageServiceImpl implements MessageService {
                         possibleReasonStringBuilder.append("客户问题是：")
                                 .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
                                 .append("需根据客户学习能力更白话讲解。\n");
-                    } else if (question.getMessage().contains("客户对选股方法尚未认可")){
+                    } else if (question.getMessage().contains("客户对选股方法尚未认可")) {
                         possibleReasonStringBuilder.append(id++).append(".客户对选股方法尚未认可，");
-                        if (!StringUtils.isEmpty(question.getQuantify())){
+                        if (!StringUtils.isEmpty(question.getQuantify())) {
                             possibleReasonStringBuilder.append(question.getQuantify()).append("，");
                         }
-                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                        if (!StringUtils.isEmpty(question.getIncomplete())) {
                             possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
                         } else if (!StringUtils.isEmpty(question.getComplete())) {
                             possibleReasonStringBuilder.append(question.getComplete()).append("，");
@@ -232,12 +230,12 @@ public class MessageServiceImpl implements MessageService {
                         possibleReasonStringBuilder.append("客户问题是：")
                                 .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
                                 .append("需加强选股成功的真实案例证明。\n");
-                    } else if (question.getMessage().contains("客户对自身问题尚未认可")){
+                    } else if (question.getMessage().contains("客户对自身问题尚未认可")) {
                         possibleReasonStringBuilder.append(id++).append(".客户对自身问题尚未认可，");
-                        if (!StringUtils.isEmpty(question.getQuantify())){
+                        if (!StringUtils.isEmpty(question.getQuantify())) {
                             possibleReasonStringBuilder.append(question.getQuantify()).append("，");
                         }
-                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                        if (!StringUtils.isEmpty(question.getIncomplete())) {
                             possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
                         } else if (!StringUtils.isEmpty(question.getComplete())) {
                             possibleReasonStringBuilder.append(question.getComplete()).append("，");
@@ -245,12 +243,12 @@ public class MessageServiceImpl implements MessageService {
                         possibleReasonStringBuilder.append("客户问题是：")
                                 .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
                                 .append("需列举与客户相近的真实反面案例证明。\n");
-                    } else if (question.getMessage().contains("客户对软件价值尚未认可")){
+                    } else if (question.getMessage().contains("客户对软件价值尚未认可")) {
                         possibleReasonStringBuilder.append(id++).append(".客户对软件价值尚未认可，");
-                        if (!StringUtils.isEmpty(question.getQuantify())){
+                        if (!StringUtils.isEmpty(question.getQuantify())) {
                             possibleReasonStringBuilder.append(question.getQuantify()).append("，");
                         }
-                        if (!StringUtils.isEmpty(question.getIncomplete())){
+                        if (!StringUtils.isEmpty(question.getIncomplete())) {
                             possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
                         } else if (!StringUtils.isEmpty(question.getComplete())) {
                             possibleReasonStringBuilder.append(question.getComplete()).append("，");
@@ -261,7 +259,7 @@ public class MessageServiceImpl implements MessageService {
                     }
                 }
             }
-            if (possibleReasonStringBuilder.length() > 1){
+            if (possibleReasonStringBuilder.length() > 1) {
                 possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n");
             }
 
@@ -285,53 +283,35 @@ public class MessageServiceImpl implements MessageService {
             int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
             textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
             textMessage.setTouser(customerInfo.getOwnerId());
+            textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
             sendMessageToChat(textMessage);
         }
     }
 
     @Override
-    public String getAccessToken() {
-        if (StringUtils.isEmpty(AppConstant.agentId)){
-            QiweiApplicationConfig applicationConfig = configService.getQiweiApplicationConfig();
-            AppConstant.agentId = applicationConfig.getAgentId();
-            AppConstant.corpId = applicationConfig.getCorpId();
-            AppConstant.corpSecret = applicationConfig.getCorpSecret();
-        }
-        String url = String.format(AppConstant.GET_SECRET_URL, AppConstant.corpId, AppConstant.corpSecret);
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        // 处理响应
-        try {
-            if (response.getStatusCode() == HttpStatus.OK) {
-                log.error("获取access token 结果" + response.getBody());
-                AccessTokenResponse accessTokenResponse = JsonUtil.readValue(response.getBody(), new TypeReference<AccessTokenResponse>() {
-                });
-                return accessTokenResponse.getAccessToken();
-            } else {
-                throw new RuntimeException("Failed to get access token: " + response.getStatusCode());
+    public String getAccessToken(String userId) {
+        for (Map.Entry<String, Set<String>> entry : AppConstant.staffIdMap.entrySet()) {
+            if (entry.getValue().contains(userId)) {
+                return AppConstant.accessTokenMap.get(entry.getKey());
             }
-        } catch (Exception e) {
-            log.error("Failed to get access token: " + response.getStatusCode());
-            throw new RuntimeException("Failed to get access token: " + response.getStatusCode());
         }
+        return null;
+    }
+
+    @Override
+    public String getAgentId(String userId) {
+        return null;
     }
 
     @Override
     public void sendTestMessageToSales(String userId) {
-        List<String> staffIds;
-        if (StringUtils.isEmpty(userId)){
-            staffIds = configService.getStaffIds();
-        } else {
-            staffIds = Arrays.asList(userId);
-        }
-        AppConstant.accessToken = getAccessToken();
-        QiweiApplicationConfig applicationConfig = configService.getQiweiApplicationConfig();
-        AppConstant.agentId = applicationConfig.getAgentId();
-        for (String item : staffIds){
+        List<String> staffIds = Arrays.asList(userId);
+        for (String item : staffIds) {
             String message = "这是一条测试的信息";
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
             textContent.setContent(message);
-            textMessage.setAgentid(AppConstant.agentId);
+            textMessage.setAgentid(getAgentId(item));
             textMessage.setTouser(item);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
@@ -387,18 +367,18 @@ public class MessageServiceImpl implements MessageService {
         for (String item : completeStatus) {
             complete.append(i++).append(". ").append(item).append("\n");
         }
-        if (complete.length() < 1){
+        if (complete.length() < 1) {
             complete.append("暂无");
         }
         i = 1;
         for (CustomerFeatureResponse.Question item : incompleteStatus) {
             incomplete.append(i++).append(". ").append(item.getMessage()).append("\n");
         }
-        if (incomplete.length() < 1){
+        if (incomplete.length() < 1) {
             incomplete.append("暂无");
         }
         String rateDesc;
-        if (customerInfo.getConversionRate().equals("low")){
+        if (customerInfo.getConversionRate().equals("low")) {
             rateDesc = conversionRateMap.get(customerInfo.getConversionRate()) + "（不应重点跟进）";
         } else {
             rateDesc = conversionRateMap.get(customerInfo.getConversionRate());
@@ -525,7 +505,7 @@ public class MessageServiceImpl implements MessageService {
             } else {
                 summaryMessage.getQuestions().merge("尚未完成客户资金体量收集，需继续收集客户信息", 1, Integer::sum);
             }
-            if (!StringUtils.isEmpty(character.getConversionRate())){
+            if (!StringUtils.isEmpty(character.getConversionRate())) {
                 if (character.getConversionRate().equals("high") || character.getConversionRate().equals("medium")) {
                     summaryMessage.getAdvantages().merge("跟进对的客户", 1, Integer::sum);
                 } else if (character.getConversionRate().equals("low")) {
@@ -587,7 +567,7 @@ public class MessageServiceImpl implements MessageService {
                 summaryMessage.getQuestions().merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
             }
 
-            if (ownerSummaryMessages.containsKey(character.getOwnerName())){
+            if (ownerSummaryMessages.containsKey(character.getOwnerName())) {
                 ownerSummaryMessages.get(character.getOwnerName()).add(summaryMessage);
             } else {
                 List<SummaryMessage> messageList = new ArrayList<>();
@@ -599,11 +579,11 @@ public class MessageServiceImpl implements MessageService {
         for (Map.Entry<String, List<SummaryMessage>> entry : ownerSummaryMessages.entrySet()) {
             SummaryMessage messages = new SummaryMessage();
             for (SummaryMessage item : entry.getValue()) {
-                for (String key : messages.getAdvantages().keySet()){
+                for (String key : messages.getAdvantages().keySet()) {
                     messages.getAdvantages().put(key,
                             messages.getAdvantages().get(key) + item.getAdvantages().get(key));
                 }
-                for (String key : messages.getQuestions().keySet()){
+                for (String key : messages.getQuestions().keySet()) {
                     messages.getQuestions().put(key,
                             messages.getQuestions().get(key) + item.getQuestions().get(key));
                 }

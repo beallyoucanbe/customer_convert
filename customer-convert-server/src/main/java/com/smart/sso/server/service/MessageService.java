@@ -15,7 +15,10 @@ public interface MessageService {
 
     void updateCustomerCharacter(String customerId, String activityId, boolean checkPurchaseAttitude);
 
-    String getAccessToken();
+    String getAccessToken(String userId);
+
+    String getAgentId(String userId);
+
 
     void sendTestMessageToSales(String userId);
 

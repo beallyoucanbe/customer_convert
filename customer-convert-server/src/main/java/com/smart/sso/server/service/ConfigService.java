@@ -10,7 +10,7 @@ public interface ConfigService {
      * 获取参加这次活动的员工id
      * @return 加这次活动的员工id
      */
-    List<String> getStaffIds();
+    Map<String, List<String>> getStaffIds();
 
     String getStaffAreaRobotUrl(String memberId);
 
@@ -18,7 +18,7 @@ public interface ConfigService {
      * 获取企微应用的配置
      * @return 企微
      */
-    QiweiApplicationConfig getQiweiApplicationConfig();
+    Map<String, QiweiApplicationConfig> getQiweiApplicationConfig();
 
     /**
      * 获取当前正在进行的活动Id
@@ -33,5 +33,7 @@ public interface ConfigService {
     Map<String, String> getActivityIdNames();
 
     Map<String, String> getRobotMessageUrl();
+
+    void refreshCustomerConfig();
 
 }

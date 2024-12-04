@@ -1,6 +1,9 @@
 package com.smart.sso.server.constant;
 
-import java.util.HashSet;
+import com.smart.sso.server.model.QiweiApplicationConfig;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -66,10 +69,8 @@ public class AppConstant {
             "%s" +
             "详细内容链接：[%s](%s)";
 
-    public static Set<String> staffIdList = new HashSet<>();
-    public static String agentId;
-    public static String corpSecret;
-    public static String corpId;
-    public static String accessToken;
+    public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
+    public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();
+    public static Map<String, String> accessTokenMap = new HashMap<>();
 
 }
