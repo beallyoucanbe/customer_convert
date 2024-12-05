@@ -63,10 +63,13 @@ public class AppConstant {
     public static final String PURCHASE_ATTITUDE_SUMMARY_TEMPLATE = "以下是按成交潜力划分的客户列表，供您用于跟进优先级参考:\n" +
             "1）**临门一脚**（认可数>=3且购买态度为确认购买）\n" +
             "%s" +
+            "\n" +
             "2）**还有少量卡点**（认可数>=3且购买态度为尚未确认购买）\n" +
             "%s" +
-            "3）**有潜力待挖掘**（客户匹配度为中高且认可数<=2）\n" +
+            "\n" +
+            "3）**有潜力待挖掘**（客户资金体量大于5万且认可数<=2）\n" +
             "%s" +
+            "\n" +
             "详细内容链接：[%s](%s)";
 
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();

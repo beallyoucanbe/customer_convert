@@ -117,6 +117,7 @@ public class MessageServiceImpl implements MessageService {
         queryWrapper.eq("activity_id", activityId);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
         Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
+        String url = "http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2";
         for (CustomerCharacter character : characterList) {
             // 完成购买，跳过不统计
             if (character.getCompletePurchaseStage()) {
@@ -160,10 +161,11 @@ public class MessageServiceImpl implements MessageService {
                     CommonUtils.convertStringFromList(entry.getValue().getHigh()),
                     CommonUtils.convertStringFromList(entry.getValue().getMiddle()),
                     CommonUtils.convertStringFromList(entry.getValue().getLow()),
-                    "", "");
+                    url, url);
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
             textMessage.setTouser(entry.getKey());
+            textMessage.setAgentid(getAgentId(entry.getKey()));
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
@@ -174,6 +176,11 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void updateCustomerCharacter(String customerId, String activityId, boolean checkPurchaseAttitude) {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        // info 表不存在，先触发同步
+        if (Objects.isNull(customerInfo)) {
+            customerInfoService.queryCustomerById(customerId, activityId);
+            customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        }
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getActivityId());
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
 
