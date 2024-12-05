@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -487,7 +488,8 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         latestCustomerCharacter.setIsSend188(customerProfile.getIsSend188());
-        latestCustomerCharacter.setUpdateTime(customerInfo.getUpdateTime());
+        latestCustomerCharacter.setUpdateTime(
+                customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
     }
 
 
