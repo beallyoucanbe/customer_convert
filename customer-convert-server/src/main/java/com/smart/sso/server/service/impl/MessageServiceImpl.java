@@ -204,18 +204,19 @@ public class MessageServiceImpl implements MessageService {
             if (communicationDurationSum < 10) {
                 return;
             }
-            String messageDescribe;
+            String purchaseMessageDescribe;
             if (Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude())) {
-                messageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
+                purchaseMessageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
                         "确认购买" : "尚未确认购买";
             } else {
-                messageDescribe = "未提及";
+                purchaseMessageDescribe = "未提及";
             }
+            String fundsMessageDescribe = Objects.nonNull(newCustomerCharacter.getFundsVolume()) ? newCustomerCharacter.getFundsVolume() : "未提及";
             String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
                     customerInfo.getCustomerId(), customerInfo.getActivityId());
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
             int id = 1;
-            if (!messageDescribe.equals("确认购买")) {
+            if (!purchaseMessageDescribe.equals("确认购买")) {
                 for (CustomerFeatureResponse.Question question : customerFeature.getSummary().getQuestions()) {
                     if (question.getMessage().contains("客户对软件功能尚未理解清晰")) {
                         possibleReasonStringBuilder.append(id++).append(".客户对软件功能尚未理解清晰，");
@@ -281,7 +282,8 @@ public class MessageServiceImpl implements MessageService {
                     newCustomerCharacter.getOwnerName(),
                     customerInfo.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                     newCustomerCharacter.getCustomerName(),
-                    messageDescribe,
+                    fundsMessageDescribe,
+                    purchaseMessageDescribe,
                     possibleReasonStringBuilder,
                     url, url);
             TextMessage textMessage = new TextMessage();

@@ -148,7 +148,7 @@ public class CommonUtils {
         }
         StringBuilder sb = new StringBuilder();
         for (String string : stringList) {
-            sb.append(string).append("\n");
+            sb.append(string).append(" \n ");
         }
         return sb.toString();
     }
