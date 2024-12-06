@@ -86,18 +86,47 @@ public class CommonUtils {
         if (chatContent == null || chatContent.trim().isEmpty()) {
             return result;
         }
-        // 正则表达式优化
-        String regex = "([\\u4e00-\\u9fa5\\w]+)\\s+" // 匹配角色名，包含中文、字母和数字
-                + "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})\\s+" // 时间
-                + "([\\s\\S]*?)(?=\\s*" // 内容
-                + "([\\u4e00-\\u9fa5\\w]+ \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})|$)"; // 预测下一个消息起点
+        // 正则表达式：匹配时间部分
+        String regex = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(chatContent);
-        while (matcher.find()) {
+
+        if (matcher.find()) {
+            String timeCurrent = matcher.group();
+            int timeCurrentStartIndex = matcher.start();
+            int timeCurrentEndIndex = matcher.end();
+            String timeNext;
+            int timeNextStartIndex;
+            int timeNextEndIndex;
+            int roleStartIndex = 0;
+            while (matcher.find()) {
+                // 还有下一个时间，循环获取
+                timeNext = matcher.group();
+                timeNextStartIndex = matcher.start();
+                timeNextEndIndex = matcher.end();
+                OriginChat.Message message = new OriginChat.Message();
+                message.setRole(chatContent.substring(roleStartIndex, timeCurrentStartIndex).trim());
+                message.setTime(timeCurrent);
+                boolean isFindNoEmpty = false;
+                for (int i = timeNextStartIndex - 1; i >= 0; i--) {
+                    // 是否找到一个非空白字符
+                    if (isFindNoEmpty && !StringUtils.hasText(String.valueOf(chatContent.charAt(i)))) {
+                        roleStartIndex = i + 1;
+                        message.setContent(chatContent.substring(timeCurrentEndIndex, roleStartIndex).trim());
+                        result.add(message);
+                        break;
+                    } else if (StringUtils.hasText(String.valueOf(chatContent.charAt(i)))) {
+                        isFindNoEmpty = true;
+                    }
+                }
+                timeCurrent = timeNext;
+                timeCurrentStartIndex = timeNextStartIndex;
+                timeCurrentEndIndex = timeNextEndIndex;
+            }
             OriginChat.Message message = new OriginChat.Message();
-            message.setRole(matcher.group(1)); // 捕获组 1: 中文名字
-            message.setTime(matcher.group(2)); // 捕获组 2: 时间
-            message.setContent(matcher.group(3).trim()); // 捕获组 3: 内容，去除多余空白
+            message.setRole(chatContent.substring(roleStartIndex, timeCurrentStartIndex).trim());
+            message.setTime(timeCurrent);
+            message.setContent(chatContent.substring(timeCurrentEndIndex).trim());
             result.add(message);
         }
         return result;
@@ -113,12 +142,12 @@ public class CommonUtils {
         return originChat;
     }
 
-    public static String convertStringFromList(List<String> stringList){
-        if (CollectionUtils.isEmpty(stringList)){
+    public static String convertStringFromList(List<String> stringList) {
+        if (CollectionUtils.isEmpty(stringList)) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
-        for (String string : stringList){
+        for (String string : stringList) {
             sb.append(string).append("\n");
         }
         return sb.toString();
