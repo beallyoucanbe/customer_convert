@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -200,7 +201,7 @@ public class MessageServiceImpl implements MessageService {
         // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
         if (checkPurchaseAttitude && !newCustomerCharacter.getCompletePurchaseStage()) {
             // 给该客户当天的通话时间大于30分钟
-            int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId);
+            int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId, newCustomerCharacter.getUpdateTime());
             if (communicationDurationSum < 10) {
                 return;
             }
@@ -280,7 +281,7 @@ public class MessageServiceImpl implements MessageService {
             // 发送消息给领导，发送到微信群
             String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
                     newCustomerCharacter.getOwnerName(),
-                    customerInfo.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(customerProfile.getLastCommunicationDate()),
                     newCustomerCharacter.getCustomerName(),
                     fundsMessageDescribe,
                     purchaseMessageDescribe,

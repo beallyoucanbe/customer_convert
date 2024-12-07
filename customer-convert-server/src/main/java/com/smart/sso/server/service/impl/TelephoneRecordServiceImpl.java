@@ -662,9 +662,9 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public int getCommunicationTimeCurrentDay(String customerId) {
+    public int getCommunicationTimeCurrentDay(String customerId, LocalDateTime communicationTime) {
         QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
-        LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+        LocalDateTime startOfDay =  communicationTime.toLocalDate().atStartOfDay();
         queryWrapperInfo.eq("customer_id", customerId);
         queryWrapperInfo.gt("communication_time", startOfDay);
         // 查看该客户当天的通话时间长度
