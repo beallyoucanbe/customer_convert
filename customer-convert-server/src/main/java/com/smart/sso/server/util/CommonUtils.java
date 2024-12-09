@@ -108,7 +108,7 @@ public class CommonUtils {
                 message.setRole(chatContent.substring(roleStartIndex, timeCurrentStartIndex).trim());
                 message.setTime(timeCurrent);
                 boolean isFindNoEmpty = false;
-                for (int i = timeNextStartIndex - 1; i >= 0; i--) {
+                for (int i = timeNextStartIndex - 1; i > timeCurrentEndIndex; i--) {
                     // 是否找到一个非空白字符
                     if (isFindNoEmpty && !StringUtils.hasText(String.valueOf(chatContent.charAt(i)))) {
                         roleStartIndex = i + 1;
