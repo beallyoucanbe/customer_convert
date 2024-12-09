@@ -196,28 +196,13 @@ public class SchedulTask {
      */
     @Scheduled(cron = "0 30 8 * * ?")
     public void performTask() {
-        log.error("开始执行客户情况特征同步到bi");
-        // 执行之前先全量更新数据到BI
-        LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
-        List<TelephoneRecordStatics> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
-        if (CollectionUtils.isEmpty(customerRecordList)) {
-            return;
-        }
-        for (TelephoneRecordStatics item : customerRecordList) {
-            try {
-                messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
-            } catch (Exception e) {
-               log.error("更新CustomerCharacter失败，CustomerId={}, activityId={}", item.getCustomerId(), item.getActivityId(), e);
-            }
-        }
-
+        refreshFeatureToBI();
         //获取需要当前的活动
         String activityId = configService.getCurrentActivityId();
         if (Objects.isNull(activityId)) {
             log.error("没有当前的活动，请先配置");
             return;
         }
-
         // 任务的判断
         log.error("开始执行总结信息发送");
         QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
@@ -248,6 +233,27 @@ public class SchedulTask {
         // 更新成功，更新任务状态
         scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
     }
+
+    /**
+     * 执行特征同步到BI的任务
+     */
+    @Scheduled(cron = "0 24 */6 * * ?")
+    public void refreshFeatureToBI() {
+        log.error("开始执行客户情况特征同步到bi");
+        LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
+        List<TelephoneRecordStatics> customerRecordList = recordService.getCustomerIdUpdate(dateTime);
+        if (CollectionUtils.isEmpty(customerRecordList)) {
+            return;
+        }
+        for (TelephoneRecordStatics item : customerRecordList) {
+            try {
+                messageService.updateCustomerCharacter(item.getCustomerId(), item.getActivityId(), false);
+            } catch (Exception e) {
+                log.error("更新CustomerCharacter失败，CustomerId={}, activityId={}", item.getCustomerId(), item.getActivityId(), e);
+            }
+        }
+    }
+
 
     /**
      * 这次参加活动的员工id
