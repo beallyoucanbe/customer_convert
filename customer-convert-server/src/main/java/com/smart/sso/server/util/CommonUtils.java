@@ -93,8 +93,8 @@ public class CommonUtils {
 
         if (matcher.find()) {
             String timeCurrent = matcher.group();
-            int timeCurrentStartIndex = matcher.start();
-            int timeCurrentEndIndex = matcher.end();
+            int timeCurrentStartIndex = matcher.start();// 表示第一个时间数字开始的下标
+            int timeCurrentEndIndex = matcher.end(); // 表示最后一个数字结束的下标 + 1
             String timeNext;
             int timeNextStartIndex;
             int timeNextEndIndex;

@@ -17,6 +17,7 @@ import com.smart.sso.server.secondary.mapper.CustomerInfoOldMapper;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.CustomerRelationService;
+import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
@@ -25,6 +26,7 @@ import com.smart.sso.server.util.ShellUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -64,6 +66,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private TelephoneRecordService recordService;
+    @Autowired
+    @Lazy
+    private MessageService messageService;
+
 
     @Override
     public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -397,6 +403,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
         customerFeatureMapper.updateById(customerFeature);
+        try {
+            messageService.updateCustomerCharacter(customerId, activityId, false);
+        } catch (Exception e) {
+            log.error("更新CustomerCharacter失败，CustomerId={}, activityId={}", customerId, activityId, e);
+        }
     }
 
     @Override
