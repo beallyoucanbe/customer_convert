@@ -14,7 +14,7 @@ project_path = '/opt/customer-convert'
 LOG_FILE = nginx_log_path + '/access.log'
 POSITION_FILE = nginx_log_path + '/nginx_position'
 
-valid_url = ['customer/callback']
+valid_url = ['/umami']
 
 RESULT_FILE_SUFFIXE = '.pkl'
 RESULT_FILE = nginx_log_path + '/monitor_result_tmp_{last_end_position}' + RESULT_FILE_SUFFIXE
@@ -129,7 +129,7 @@ def handle_log(start_position, end_position, logger):
             break
         try:
             # 这里过调掉无效请求
-            if 'customer/callback' in line and 'source_id' not in line:
+            if '/umami' in line:
                 continue
             line = line.split(' ')
             http_code = line[10]

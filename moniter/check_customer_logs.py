@@ -119,7 +119,7 @@ def handle_log(start_position, end_position, logger):
             break
         try:
             # 这里过调掉无效请求
-            if "ERROR" in line or "error" in line or "Error" in line:
+            if "ERROR" in line:
                 data["error"] = data["error"] + 1
             elif "mysql dict is" in line:
                 data["success"] = data["success"] + 1
