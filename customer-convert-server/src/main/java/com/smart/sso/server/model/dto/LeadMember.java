@@ -18,6 +18,7 @@ public class LeadMember {
     @AllArgsConstructor
     public static class Team {
         private String leader;
+        private String id;
         private Map<String, String> members;
     }
 }
