@@ -73,6 +73,18 @@ public class AppConstant {
             "  \n" +
             "详细内容链接：[%s](%s)";
 
+    public static final String PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE = "业务员：%s:\n" +
+            "以下是该员工按成交潜力划分的客户列表，供您用于跟进优先级参考:\n" +
+            "1）**临门一脚**（资金量≥5万且认可数≥3，购买态度为确认购买）\n" +
+            "%s" +
+            "  \n" +
+            "2）**还有少量卡点**（资金量≥5且认可数≥3，购买态度为尚未确认购买）\n" +
+            "%s" +
+            "  \n" +
+            "3）**有潜力待挖掘**（资金量≥5万且认可数≤2）\n" +
+            "%s" +
+            "  \n";
+
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
     public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();
     public static Map<String, String> accessTokenMap = new HashMap<>();

@@ -257,4 +257,11 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
+    @ApiOperation(value = "给单个领导发送统计信息")
+    @PostMapping("/customer/send_message_for_per_leader")
+    public BaseResponse<Void> sendMessageForPerLeader(@RequestParam(value = "user_id") String userId) {
+        messageService.sendMessageForPerLeader(userId);
+        return ResultUtils.success(null);
+    }
+
 }

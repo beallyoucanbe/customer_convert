@@ -8,9 +8,15 @@ import java.util.Map;
 public interface ConfigService {
     /**
      * 获取参加这次活动的员工id
-     * @return 加这次活动的员工id
+     * @return 分区域加这次活动的员工id
      */
     Map<String, List<String>> getStaffIds();
+
+    /**
+     * 获取参加这次活动的员工id
+     * @return 分领导加这次活动的员工id
+     */
+    Map<String, List<String>> getStaffIdsLeader();
 
     String getStaffAreaRobotUrl(String memberId);
 

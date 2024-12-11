@@ -33,7 +33,6 @@ import org.springframework.http.HttpHeaders;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -339,6 +338,90 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setMarkdown(textContent);
             sendMessageToChat(textMessage);
         }
+    }
+
+    @Override
+    public void sendMessageForPerLeader(String userId) {
+        // 获取该领导下的所有员工
+        Map<String, List<String>> staffIdsLeader = configService.getStaffIdsLeader();
+        List<String> staffIds = staffIdsLeader.get(userId);
+        if (CollectionUtils.isEmpty(staffIds)) {
+            log.error("该领导下没有员工，跳过");
+        }
+
+        List<String> high = new ArrayList<>();
+        // 认可数>=3旦态度为尚未认可
+        List<String> middle = new ArrayList<>();
+        // 匹配度为中高且认可数<=2
+        List<String> low = new ArrayList<>();
+
+        String activityId = configService.getCurrentActivityId();
+        QueryWrapper<CustomerCharacter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("activity_id", activityId);
+        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
+        Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
+        for (CustomerCharacter character : characterList) {
+            // 完成购买，跳过不统计
+            if (character.getCompletePurchaseStage()) {
+                continue;
+            }
+            String ownerId = character.getOwnerName();
+            PotentialCustomer potentialCustomer;
+            if (!potentialCustomerMap.containsKey(ownerId)) {
+                potentialCustomer = new PotentialCustomer();
+            } else {
+                potentialCustomer = potentialCustomerMap.get(ownerId);
+            }
+            // 判断 认可度次数
+            int approvalCount = 0;
+            if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
+                approvalCount++;
+            }
+            if (Boolean.parseBoolean(character.getStockSelectionMethod())) {
+                approvalCount++;
+            }
+            if (Boolean.parseBoolean(character.getSelfIssueRecognition())) {
+                approvalCount++;
+            }
+            if (Boolean.parseBoolean(character.getSoftwareValueApproval())) {
+                approvalCount++;
+            }
+            // 资金量≥5万且认可数≥3，购买态度为确认购买
+            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
+                potentialCustomer.getHigh().add(ownerId + ", " + character.getCustomerName() + "，" + character.getCustomerId());
+            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
+                potentialCustomer.getMiddle().add(ownerId + ", " + character.getCustomerName() + "，" + character.getCustomerId());
+            } else if (approvalCount <= 2 &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
+                potentialCustomer.getLow().add(ownerId + ", " + character.getCustomerName() + "，" + character.getCustomerId());
+            }
+            potentialCustomerMap.put(ownerId, potentialCustomer);
+        }
+        // 给leader发送统计消息
+        String message = "";
+        for (Map.Entry<String, PotentialCustomer> entry : potentialCustomerMap.entrySet()) {
+            if (staffIds.contains(entry.getKey())){
+                message = message +
+                        String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE, entry.getKey(),
+                        CommonUtils.convertStringFromList(entry.getValue().getHigh()),
+                        CommonUtils.convertStringFromList(entry.getValue().getMiddle()),
+                        CommonUtils.convertStringFromList(entry.getValue().getLow()));
+            }
+        }
+
+        TextMessage textMessage = new TextMessage();
+        TextMessage.TextContent textContent = new TextMessage.TextContent();
+        textMessage.setTouser(userId);
+        textMessage.setAgentid("1000021");
+        textContent.setContent(message);
+        textMessage.setMsgtype("markdown");
+        textMessage.setMarkdown(textContent);
+        sendMessageToChat(textMessage);
     }
 
     public boolean areEqual(CustomerCharacter cc1, CustomerCharacter cc2) {

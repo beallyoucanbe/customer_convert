@@ -23,4 +23,6 @@ public interface MessageService {
 
     void sendTestMessageToSales(Map<String, String> message);
 
+    void sendMessageForPerLeader(String userId);
+
 }
