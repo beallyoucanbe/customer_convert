@@ -254,6 +254,16 @@ public class SchedulTask {
         }
     }
 
+    /**
+     * 执行发送消息给领导的任务
+     */
+    @Scheduled(cron = "0 0 9,18 * * ?")
+    public void sendMessageToLeader() {
+        log.error("开始执行发送消息给领导");
+        // 获取该领导下的所有员工
+        messageService.sendMessageForPerLeader(null);
+    }
+
 
     /**
      * 这次参加活动的员工id

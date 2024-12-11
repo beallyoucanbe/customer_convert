@@ -82,8 +82,7 @@ public class AppConstant {
             "%s" +
             "  \n" +
             "3）**有潜力待挖掘**（资金量≥5万且认可数≤2）\n" +
-            "%s" +
-            "  \n";
+            "详细内容链接：[http://172.16.192.61:8086/share/app/64/dashboard/36](http://172.16.192.61:8086/share/app/64/dashboard/36)";
 
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
     public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();
