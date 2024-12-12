@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
@@ -106,17 +108,20 @@ public class CustomerController {
     @PostMapping("/customer/callback")
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
-        String staffId = callBackRequest.getData().getCall().getStaffId();
-        boolean needProcess = false;
-        for (Set<String> item : AppConstant.staffIdMap.values()){
-            if (item.contains(staffId)){
-                needProcess = true;
-                break;
+        if (Objects.nonNull(callBackRequest.getData()) && Objects.nonNull(callBackRequest.getData().getCall()) &&
+                !StringUtils.isEmpty(callBackRequest.getData().getCall().getStaffId())) {
+            String staffId = callBackRequest.getData().getCall().getStaffId();
+            boolean needProcess = false;
+            for (Set<String> item : AppConstant.staffIdMap.values()){
+                if (item.contains(staffId)){
+                    needProcess = true;
+                    break;
+                }
             }
-        }
-        if (!needProcess) {
-            log.error("staff id 不参加活动， 跳过不处理: " + staffId);
-            return ResultUtils.success(null);
+            if (!needProcess) {
+                log.error("staff id 不参加活动， 跳过不处理: " + staffId);
+                return ResultUtils.success(null);
+            }
         }
         String redisKey = SOURCEID_KEY_PREFIX + sourceId;
         // 检查key是否存在于Redis中
