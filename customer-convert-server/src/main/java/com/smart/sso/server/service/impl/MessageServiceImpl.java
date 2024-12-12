@@ -396,6 +396,9 @@ public class MessageServiceImpl implements MessageService {
             String leaderId = entry.getKey();
             for (String memberName : entry.getValue()) {
                 PotentialCustomer potentialCustomer = potentialCustomerMap.get(memberName);
+                if (Objects.isNull(potentialCustomer)){
+                    continue;
+                }
                 String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE, entry.getKey(),
                                 CommonUtils.convertStringFromList(potentialCustomer.getHigh()),
                                 CommonUtils.convertStringFromList(potentialCustomer.getMiddle()));

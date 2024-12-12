@@ -47,6 +47,7 @@ public class ConfigServiceImpl implements ConfigService {
             List<String> staffIds = new ArrayList<>();
             for (LeadMember item : leadMembers) {
                 for (LeadMember.Team team : item.getTeams()) {
+                    staffIds.add(team.getId());
                     staffIds.addAll(team.getMembers().keySet());
                 }
             }
