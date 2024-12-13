@@ -177,6 +177,7 @@ public class SchedulTask {
                     customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(), JsonUtil.serialize(tag));
                 } else {
                     CustomerFeature feature= new CustomerFeature();
+                    feature.setId(customerInfo.getId());
                     FeatureContentSales featureContent = new FeatureContentSales();
                     featureContent.setTag(true);
                     feature.setSoftwarePurchaseAttitudeSales(featureContent);

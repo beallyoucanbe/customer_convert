@@ -62,16 +62,14 @@ public class AppConstant {
             "详细内容链接：[%s](%s)";
 
     public static final String PURCHASE_ATTITUDE_SUMMARY_TEMPLATE = "以下是按成交潜力划分的客户列表，供您用于跟进优先级参考:\n" +
-            "1）**临门一脚**（认可数>=3且购买态度为确认购买）\n" +
+            "1）**临门一脚**（资金量≥5万且认可数≥3，购买态度为确认购买）\n" +
             "%s" +
             "  \n" +
-            "2）**还有少量卡点**（认可数>=3且购买态度为尚未确认购买）\n" +
+            "2）**还有少量卡点**（资金量≥5万且认可数≥3，购买态度为尚未确认购买）\n" +
             "%s" +
             "  \n" +
-            "3）**有潜力待挖掘**（客户资金体量大于5万且认可数<=2）\n" +
-            "%s" +
-            "  \n" +
-            "详细内容链接：[%s](%s)";
+            "3）**有潜力待挖掘**（资金量≥5万且认可数≤2）\n" +
+            "详细内容链接：[http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2](http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2)";
 
     public static final String PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE = "业务员：%s:\n" +
             "以下是该员工按成交潜力划分的客户列表，供您用于跟进优先级参考:\n" +
@@ -82,7 +80,7 @@ public class AppConstant {
             "%s" +
             "  \n" +
             "3）**有潜力待挖掘**（资金量≥5万且认可数≤2）\n" +
-            "详细内容链接：[http://172.16.192.61:8086/share/app/64/dashboard/36](http://172.16.192.61:8086/share/app/64/dashboard/36)";
+            "详细内容链接：[http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2](http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2)";
 
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
     public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();

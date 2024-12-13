@@ -118,7 +118,6 @@ public class MessageServiceImpl implements MessageService {
         queryWrapper.eq("activity_id", activityId);
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
         Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
-        String url = "http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2";
         for (CustomerCharacter character : characterList) {
             // 完成购买，跳过不统计
             if (character.getCompletePurchaseStage()) {
@@ -145,14 +144,19 @@ public class MessageServiceImpl implements MessageService {
             if (Boolean.parseBoolean(character.getSoftwareValueApproval())) {
                 approvalCount++;
             }
-            // 认可数>=3旦态度为认可
-            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
-                potentialCustomer.getHigh().add(character.getCustomerName() + "，" + character.getCustomerId());
-            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
-                potentialCustomer.getMiddle().add(character.getCustomerName() + "，" + character.getCustomerId());
+            // 资金量≥5万且认可数≥3，购买态度为确认购买
+            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
+                potentialCustomer.getHigh().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
+            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
+                potentialCustomer.getMiddle().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             } else if (approvalCount <= 2 &&
-                    (character.getConversionRate().equals("较高") || character.getConversionRate().equals("中等"))) {
-                potentialCustomer.getLow().add(character.getCustomerName() + "，" + character.getCustomerId());
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
+                potentialCustomer.getLow().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
             potentialCustomerMap.put(ownerId, potentialCustomer);
         }
@@ -160,9 +164,7 @@ public class MessageServiceImpl implements MessageService {
         for (Map.Entry<String, PotentialCustomer> entry : potentialCustomerMap.entrySet()) {
             String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_TEMPLATE,
                     CommonUtils.convertStringFromList(entry.getValue().getHigh()),
-                    CommonUtils.convertStringFromList(entry.getValue().getMiddle()),
-                    CommonUtils.convertStringFromList(entry.getValue().getLow()),
-                    url, url);
+                    CommonUtils.convertStringFromList(entry.getValue().getMiddle()));
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
             textMessage.setTouser(entry.getKey());
