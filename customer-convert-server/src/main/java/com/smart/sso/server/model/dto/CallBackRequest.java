@@ -30,5 +30,6 @@ public class CallBackRequest {
     @AllArgsConstructor
     public static class Call {
         private String staffId;
+        private String customerId;
     }
 }

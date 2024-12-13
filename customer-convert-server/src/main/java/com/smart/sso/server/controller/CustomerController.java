@@ -109,8 +109,10 @@ public class CustomerController {
     public BaseResponse<Void> callBack(@RequestBody CallBackRequest callBackRequest) {
         String sourceId = callBackRequest.getSourceId();
         String staffId = "";
+        String customerId = "";
         if (Objects.nonNull(callBackRequest.getData()) && Objects.nonNull(callBackRequest.getData().getCall()) &&
                 !StringUtils.isEmpty(callBackRequest.getData().getCall().getStaffId())) {
+            customerId = callBackRequest.getData().getCall().getCustomerId();
             staffId = callBackRequest.getData().getCall().getStaffId();
             boolean needProcess = false;
             for (Set<String> item : AppConstant.staffIdMap.values()){
@@ -120,7 +122,7 @@ public class CustomerController {
                 }
             }
             if (!needProcess) {
-                log.error("staff id: {} 不参加活动， 跳过不处理, source id: {}", staffId, sourceId);
+                log.error("staff id: {} 不参加活动， 跳过不处理, customer id: {}, source id: {}", staffId, customerId, sourceId);
                 return ResultUtils.success(null);
             }
         }
@@ -129,9 +131,9 @@ public class CustomerController {
         Boolean hasKey = redisTemplate.hasKey(redisKey);
         if (Boolean.TRUE.equals(hasKey)) {
             // key已经存在，说明已经处理过
-            log.error("source id:{} 已存在， 跳过不处理, staff id: {}", sourceId, staffId);
+            log.error("source id:{} 已存在， 跳过不处理, staff id: {}, customer id: {}", sourceId, staffId, customerId);
         } else {
-            log.error("开始调用python脚本：source id:{}, staff id: {}", sourceId, staffId);
+            log.error("开始调用python脚本：source id:{}, staff id: {}, customer id: {}", sourceId, staffId, customerId);
             customerInfoService.callback(sourceId);
         }
         return ResultUtils.success(null);
