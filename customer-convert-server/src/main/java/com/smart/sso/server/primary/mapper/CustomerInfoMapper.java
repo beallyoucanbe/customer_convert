@@ -26,4 +26,7 @@ public interface CustomerInfoMapper extends BaseMapper<CustomerInfo> {
                                   @Param("communication_rounds") Integer communication_rounds,
                                   @Param("update_time") Timestamp update_time);
 
+    @Update("UPDATE customer_info SET purchase_time = #{purchase_time} WHERE id = #{id}")
+    int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") Timestamp purchase_time);
+
 }

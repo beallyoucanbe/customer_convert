@@ -47,6 +47,8 @@ public class CustomerInfo implements Serializable {
     private Integer isSend188;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
+
+    private LocalDateTime purchaseTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTimeTelephone;
 }

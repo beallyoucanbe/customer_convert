@@ -18,13 +18,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 
 @Component
@@ -158,6 +156,10 @@ public class SchedulTask {
                 CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper2);
                 if (Objects.isNull(customerInfo)){
                     continue;
+                }
+                // 检查info表中是否有购买时间，如果有，代表已购买，跳过不处理，如果没有，就记录首次探测到购买的时间
+                if (Objects.isNull(customerInfo.getPurchaseTime())) {
+                    customerInfoMapper.updatePurchaseTimeById(customerInfo.getId(), new Timestamp(new Date().getTime()));
                 }
                 CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
                 if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
