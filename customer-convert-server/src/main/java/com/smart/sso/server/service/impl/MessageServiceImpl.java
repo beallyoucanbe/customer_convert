@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
+import com.smart.sso.server.model.VO.MessageSendVO;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.*;
@@ -32,6 +33,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -293,7 +295,12 @@ public class MessageServiceImpl implements MessageService {
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToChat(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
+            if (nightTime()) {
+                MessageSendVO vo = new MessageSendVO(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
+                AppConstant.messageNeedSend.add(vo);
+            } else {
+                sendMessageToChat(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
+            }
 
             // 发送消息给业务员，发送给个人企微
             String target = "**";
@@ -301,7 +308,12 @@ public class MessageServiceImpl implements MessageService {
             textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
             textMessage.setTouser(customerInfo.getOwnerId());
             textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
-            sendMessageToChat(textMessage);
+            if (nightTime()) {
+                MessageSendVO vo = new MessageSendVO(null, textMessage);
+                AppConstant.messageNeedSend.add(vo);
+            } else {
+                sendMessageToChat(textMessage);
+            }
         }
     }
 
@@ -414,6 +426,13 @@ public class MessageServiceImpl implements MessageService {
                 sendMessageToChat(textMessage);
             }
         }
+    }
+
+    private boolean nightTime(){
+        LocalTime now = LocalTime.now();
+        LocalTime start = LocalTime.of(22, 0);
+        LocalTime end = LocalTime.of(8, 0).plusHours(24); // 直接加24小时来包含次日的8点
+        return now.isAfter(start) && now.isBefore(end);
     }
 
     public boolean areEqual(CustomerCharacter cc1, CustomerCharacter cc2) {

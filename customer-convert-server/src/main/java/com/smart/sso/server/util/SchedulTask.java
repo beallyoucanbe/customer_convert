@@ -3,6 +3,7 @@ package com.smart.sso.server.util;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
+import com.smart.sso.server.model.VO.MessageSendVO;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.primary.mapper.ScheduledTasksMapper;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -287,4 +289,23 @@ public class SchedulTask {
         log.error("全量刷新通话次数任务执行完成");
     }
 
+    // 每天早上8点，判断昨晚有无需要发送的信息
+    @Scheduled(cron = "0 0 8 * * ?")
+    public void executeMessageSend() {
+        log.error("开始执行延迟消息发送任务");
+        int size = AppConstant.messageNeedSend.size();
+        log.error("需要发送的消息数是：" + size);
+        if (size < 1) {
+            return;
+        }
+        while (!AppConstant.messageNeedSend.isEmpty()){
+            MessageSendVO vo = AppConstant.messageNeedSend.poll();
+            if (StringUtils.isEmpty(vo.getSendUrl())){
+                messageService.sendMessageToChat(vo.getTextMessage());
+            } else {
+                messageService.sendMessageToChat(vo.getSendUrl(), vo.getTextMessage());
+            }
+        }
+        log.error("延迟消息发送任务执行完成");
+    }
 }

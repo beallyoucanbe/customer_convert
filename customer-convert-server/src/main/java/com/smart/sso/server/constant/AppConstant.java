@@ -1,9 +1,12 @@
 package com.smart.sso.server.constant;
 
 import com.smart.sso.server.model.QiweiApplicationConfig;
+import com.smart.sso.server.model.VO.MessageSendVO;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -87,4 +90,6 @@ public class AppConstant {
     public static Map<String, String> accessTokenMap = new HashMap<>();
     public static Map<String, String> robotUrl = new HashMap<>();
 
+    // 这里记录需要延迟发送的消息列表
+    public static Queue<MessageSendVO> messageNeedSend = new LinkedList<>();
 }
