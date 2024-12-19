@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 @Slf4j
 public class MyCommandLineRunner implements CommandLineRunner {
 
-    @Autowired
+//    @Autowired
     private ConfigService configService;
     @Override
     public void run(String... args) {

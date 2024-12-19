@@ -17,6 +17,7 @@ import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
+import com.smart.sso.server.util.JsonUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -270,6 +271,22 @@ public class CustomerController {
     @PostMapping("/customer/send_message_for_per_leader")
     public BaseResponse<Void> sendMessageForPerLeader(@RequestParam(value = "user_id") String userId) {
         messageService.sendMessageForPerLeader(userId);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "企微的回调接口")
+    @PostMapping("/customer/communication_sync/wecom")
+    public BaseResponse<Void> communicationSyncWecom(@RequestBody Map<String, Object> message) {
+        String filePath = "/data/customer-convert/callback/wecom/message.txt";
+        CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "电话的回调接口")
+    @PostMapping("/customer/communication_sync/telephone")
+    public BaseResponse<Void> communicationSyncTelephone(@RequestBody Map<String, Object> message) {
+        String filePath = "/data/customer-convert/callback/telephone/message.txt";
+        CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
         return ResultUtils.success(null);
     }
 

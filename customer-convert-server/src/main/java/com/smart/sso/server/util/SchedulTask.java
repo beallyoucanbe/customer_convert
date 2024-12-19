@@ -48,7 +48,7 @@ public class SchedulTask {
     @Autowired
     private TelephoneRecordService recordService;
 
-    @Scheduled(cron = "0 */15 * * * ?")
+//    @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
         // 是否有任务再执行
         log.error("开始执行客户匹配度刷新任务！");
@@ -111,7 +111,7 @@ public class SchedulTask {
     /**
      * 每天8点半执行购买状态同步任务
      */
-    @Scheduled(cron = "0 40 8 * * ?")
+//    @Scheduled(cron = "0 40 8 * * ?")
     public void purchaseTask() {
         log.error("开始执行客户购买状态同步任务");
         QueryWrapper<ScheduledTask> taskQueryWrapper = new QueryWrapper<>();
@@ -199,7 +199,7 @@ public class SchedulTask {
     /**
      * 每天8点半发送一次总结
      */
-    @Scheduled(cron = "0 30 8 * * ?")
+//    @Scheduled(cron = "0 30 8 * * ?")
     public void performTask() {
         refreshFeatureToBI();
         //获取需要当前的活动
@@ -242,7 +242,7 @@ public class SchedulTask {
     /**
      * 执行特征同步到BI的任务
      */
-    @Scheduled(cron = "0 0 19 * * ?")
+//    @Scheduled(cron = "0 0 19 * * ?")
     public void refreshFeatureToBI() {
         log.error("开始执行客户情况特征同步到bi");
         LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
@@ -262,7 +262,7 @@ public class SchedulTask {
     /**
      * 执行发送消息给领导的任务
      */
-    @Scheduled(cron = "0 0 9,18 * * ?")
+//    @Scheduled(cron = "0 0 9,18 * * ?")
     public void sendMessageToLeader() {
         log.error("开始执行发送消息给领导");
         // 获取该领导下的所有员工
@@ -273,7 +273,7 @@ public class SchedulTask {
     /**
      * 这次参加活动的员工id
      */
-    @Scheduled(cron = "0 */13 * * * ?")
+//    @Scheduled(cron = "0 */13 * * * ?")
     public void refreshStaffId() {
         log.error("开始客户配置同步任务");
         configService.refreshCustomerConfig();
@@ -282,7 +282,7 @@ public class SchedulTask {
 
 
     // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
-    @Scheduled(cron = "0 30 3 * * ?")
+//    @Scheduled(cron = "0 30 3 * * ?")
     public void refreshCommunicationRounds() {
         log.error("开始全量刷新通话次数任务");
         recordService.refreshCommunicationRounds();
@@ -290,7 +290,7 @@ public class SchedulTask {
     }
 
     // 每天早上8点，判断昨晚有无需要发送的信息
-    @Scheduled(cron = "0 0 8 * * ?")
+//    @Scheduled(cron = "0 0 8 * * ?")
     public void executeMessageSend() {
         log.error("开始执行延迟消息发送任务");
         int size = AppConstant.messageNeedSend.size();
