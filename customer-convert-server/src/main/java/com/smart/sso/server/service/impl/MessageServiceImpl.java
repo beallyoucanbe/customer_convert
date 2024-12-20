@@ -431,8 +431,8 @@ public class MessageServiceImpl implements MessageService {
     private boolean nightTime(){
         LocalTime now = LocalTime.now();
         LocalTime start = LocalTime.of(22, 0);
-        LocalTime end = LocalTime.of(8, 0).plusHours(24); // 直接加24小时来包含次日的8点
-        return now.isAfter(start) && now.isBefore(end);
+        LocalTime end = LocalTime.of(8, 0);
+        return now.isAfter(start) || now.isBefore(end);
     }
 
     public boolean areEqual(CustomerCharacter cc1, CustomerCharacter cc2) {
