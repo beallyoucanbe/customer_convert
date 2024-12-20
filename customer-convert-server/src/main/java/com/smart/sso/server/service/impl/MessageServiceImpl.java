@@ -296,6 +296,7 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
             if (nightTime()) {
+                log.error("延迟发送消息");
                 MessageSendVO vo = new MessageSendVO(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
                 AppConstant.messageNeedSend.add(vo);
             } else {
@@ -309,6 +310,7 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setTouser(customerInfo.getOwnerId());
             textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
             if (nightTime()) {
+                log.error("延迟发送消息");
                 MessageSendVO vo = new MessageSendVO(null, textMessage);
                 AppConstant.messageNeedSend.add(vo);
             } else {
