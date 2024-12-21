@@ -36,7 +36,7 @@ public interface CustomerInfoMapper extends BaseMapper<CustomerInfo> {
      * @param activity_id
      * @return
      */
-    @Select("select * from customer_info where update_time < #{update_time} and activity_id = #{activity_id}")
+    @Select("select * from customer_info where update_time < #{update_time} and activity_id = #{activity_id} and communication_rounds > 0")
     List<CustomerInfo> getCustomerInfoByUpdateTime(@Param("update_time") LocalDateTime update_time,
                                                    @Param("activity_id") String activity_id);
 

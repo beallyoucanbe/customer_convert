@@ -165,8 +165,9 @@ public class MessageServiceImpl implements MessageService {
                     (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
-            if (approvalCount >= 3
-                    && (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
+            if (approvalCount >= 3 &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
                     && customerInfoLongTimeNoSeeMap.containsKey(character.getCustomerId())) {
                 potentialCustomer.getLongTimeNoSee().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
@@ -419,7 +420,8 @@ public class MessageServiceImpl implements MessageService {
                     (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
-            if (approvalCount >= 3
+            if (approvalCount >= 3 &&
+                    !StringUtils.isEmpty(character.getFundsVolume())
                     && (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
                     && customerInfoLongTimeNoSeeMap.containsKey(character.getCustomerId())) {
                 potentialCustomer.getLongTimeNoSee().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
@@ -433,7 +435,7 @@ public class MessageServiceImpl implements MessageService {
                 if (Objects.isNull(potentialCustomer)){
                     continue;
                 }
-                String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE, entry.getKey(),
+                String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE, memberName,
                                 CommonUtils.convertStringFromList(potentialCustomer.getHigh()),
                                 CommonUtils.convertStringFromList(potentialCustomer.getMiddle()),
                                 CommonUtils.convertStringFromList(potentialCustomer.getLongTimeNoSee()));
