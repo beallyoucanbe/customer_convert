@@ -619,6 +619,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
+    /**
+     *
+     * @param activeId
+     * @return
+     */
+    @Override
+    public List<CustomerInfo> getCustomerInfoLongTimeNoSee(String activeId) {
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取三天前的日期
+        LocalDateTime threeDayBefore = currentTime.minusDays(3);
+        return customerInfoMapper.getCustomerInfoByUpdateTime(threeDayBefore, activeId);
+    }
+
     private boolean equal(Feature feature) {
         if (Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
             return true;

@@ -11,10 +11,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PotentialCustomer {
-    // 认可数>=3旦态度为认可
+    // 资金量≥5万且认可数≥3，购买态度为确认购买
     private List<String> high = new ArrayList<>();
-    // 认可数>=3旦态度为尚未认可
+    // 资金量≥5万且认可数≥3，购买态度为尚未确认购买
     private List<String> middle = new ArrayList<>();
-    // 匹配度为中高且认可数<=2
+    // 资金量≥5万且认可数≤2
     private List<String> low = new ArrayList<>();
+    // 资金量≥5万且认可数≥3，超过3天未联系
+    private List<String> longTimeNoSee = new ArrayList<>();
 }

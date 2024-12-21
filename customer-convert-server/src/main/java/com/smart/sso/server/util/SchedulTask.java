@@ -308,4 +308,19 @@ public class SchedulTask {
         }
         log.error("延迟消息发送任务执行完成");
     }
+
+    /**
+     * 沟通时长的统计
+     */
+    @Scheduled(cron = "0 0 7 * * ?")
+    public void executeCommunicationduration() {
+        log.error("开始执行沟通时长的统计任务");
+        // 获取截止到现在有通过的销售人员名单
+        List<String> ownerList = recordService.getOwnerHasTeleToday();
+        for (String ownerId : ownerList) {
+            messageService.sendCommunicationSummary(ownerId);
+        }
+        log.error("沟通时长的统计任务执行完成");
+    }
+
 }

@@ -2,6 +2,7 @@ package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
 import com.smart.sso.server.model.CustomerInfo;
+import com.smart.sso.server.model.TelephoneRecord;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -38,4 +39,28 @@ public interface TelephoneRecordService {
     TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
 
     CustomerInfo syncCustomerInfoFromRecord(String customerId, String activityId);
+
+    /**
+     * 统计当天有打过电话的销售id
+     * @return
+     */
+    List<String> getOwnerHasTeleToday();
+
+    /**
+     * 获取销售当天的所有通话
+     * @return
+     */
+    List<TelephoneRecord> getOwnerTelephoneRecordToday(String ownerId);
+
+    /**
+     * 统计昨天有打过电话的销售id
+     * @return
+     */
+    List<String> getOwnerHasTeleYesterday();
+
+    /**
+     * 获取销售昨天的所有通话
+     * @return
+     */
+    List<TelephoneRecord> getOwnerTelephoneRecordYesterday(String ownerId);
 }

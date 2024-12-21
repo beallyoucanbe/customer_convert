@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.smart.sso.server.model.CustomerInfo;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CustomerInfoMapper extends BaseMapper<CustomerInfo> {
@@ -28,5 +29,15 @@ public interface CustomerInfoMapper extends BaseMapper<CustomerInfo> {
 
     @Update("UPDATE customer_info SET purchase_time = #{purchase_time} WHERE id = #{id}")
     int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") Timestamp purchase_time);
+
+    /**
+     * 筛选出超过一段时间未联系的客户
+     * @param update_time
+     * @param activity_id
+     * @return
+     */
+    @Select("select * from customer_info where update_time < #{update_time} and activity_id = #{activity_id}")
+    List<CustomerInfo> getCustomerInfoByUpdateTime(@Param("update_time") LocalDateTime update_time,
+                                                   @Param("activity_id") String activity_id);
 
 }

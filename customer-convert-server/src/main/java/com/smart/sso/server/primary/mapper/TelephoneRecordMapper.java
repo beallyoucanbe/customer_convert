@@ -26,4 +26,27 @@ public interface TelephoneRecordMapper extends BaseMapper<TelephoneRecord> {
     @Select("SELECT customer_id, activity_id, COUNT(*) AS total_calls, MAX(communication_time) AS latest_communication_time FROM telephone_record WHERE customer_id = #{customer_id} and activity_id = #{activity_id}")
     TelephoneRecordStatics selectTelephoneRecordStaticsOne(@Param("customer_id") String customer_id, @Param("activity_id") String activity_id);
 
+    /**
+     * 在某个时间段内有打过电话的销售人员名单
+     * @param activity_id
+     * @param start_time
+     * @param end_time
+     * @return
+     */
+    @Select("SELECT DISTINCT owner_id FROM telephone_record WHERE activity_id = #{activity_id} and communication_time > #{start_time} and communication_time < #{end_time}")
+    List<String> selectOwnerHasTele(@Param("activity_id") String activity_id,
+                                    @Param("start_time") LocalDateTime start_time,
+                                    @Param("end_time") LocalDateTime end_time);
+
+    /**
+     * 获取在某个时间段内某个销售的所有通话
+     * @param owner_id
+     * @param start_time
+     * @param end_time
+     * @return
+     */
+    @Select("SELECT * FROM telephone_record WHERE owner_id = #{owner_id} and communication_time > #{start_time} and communication_time < #{end_time}")
+    List<TelephoneRecord> selectOwnerTelephoneRecord(@Param("owner_id") String owner_id,
+                                    @Param("start_time") LocalDateTime start_time,
+                                    @Param("end_time") LocalDateTime end_time);
 }

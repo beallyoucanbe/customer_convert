@@ -72,6 +72,10 @@ public class AppConstant {
             "%s" +
             "  \n" +
             "3）**有潜力待挖掘**（资金量≥5万且认可数≤2）\n" +
+            "  \n" +
+            "4）**有潜力，但长期未沟通**（资金量≥5万且认可数≥3，超过3天未联系）\n" +
+            "%s" +
+            "  \n" +
             "详细内容链接：[http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2](http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2)";
 
     public static final String PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE = "业务员：%s:\n" +
@@ -83,6 +87,10 @@ public class AppConstant {
             "%s" +
             "  \n" +
             "3）**有潜力待挖掘**（资金量≥5万且认可数≤2）\n" +
+            "  \n" +
+            "4）**有潜力，但长期未沟通**（资金量≥5万且认可数≥3，超过3天未联系）\n" +
+            "%s" +
+            "  \n" +
             "详细内容链接：[http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2](http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2)";
 
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();

@@ -724,4 +724,50 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         }
         return customerInfo;
     }
+
+    @Override
+    public List<String> getOwnerHasTeleToday() {
+        // 获取当前时间的 LocalDateTime 对象
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取当天日期的开始时间（00:00:00）的 LocalDateTime 对象
+        LocalDateTime startOfDay = currentTime.toLocalDate().atStartOfDay();
+        String activityId = configService.getCurrentActivityId();
+        return recordMapper.selectOwnerHasTele(activityId, startOfDay, currentTime);
+    }
+
+    @Override
+    public List<TelephoneRecord> getOwnerTelephoneRecordToday(String ownerId) {
+        // 获取当前时间的 LocalDateTime 对象
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取当天日期的开始时间（00:00:00）的 LocalDateTime 对象
+        LocalDateTime startOfDay = currentTime.toLocalDate().atStartOfDay();
+        return recordMapper.selectOwnerTelephoneRecord(ownerId, startOfDay, currentTime);
+    }
+
+    @Override
+    public List<String> getOwnerHasTeleYesterday() {
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取昨天的日期
+        LocalDateTime yesterday = currentTime.minusDays(1);
+        // 获取昨天的开始时间（00:00:00）
+        LocalDateTime startOfYesterday = yesterday.toLocalDate().atStartOfDay();
+        // 获取昨天的结束时间（23:59:59）
+        LocalDateTime endOfYesterday = yesterday.toLocalDate().atStartOfDay().plusDays(1).minusSeconds(1);
+        String activityId = configService.getCurrentActivityId();
+        return recordMapper.selectOwnerHasTele(activityId, startOfYesterday, endOfYesterday);
+    }
+
+    @Override
+    public List<TelephoneRecord> getOwnerTelephoneRecordYesterday(String ownerId) {
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取昨天的日期
+        LocalDateTime yesterday = currentTime.minusDays(1);
+        // 获取昨天的开始时间（00:00:00）
+        LocalDateTime startOfYesterday = yesterday.toLocalDate().atStartOfDay();
+        // 获取昨天的结束时间（23:59:59）
+        LocalDateTime endOfYesterday = yesterday.toLocalDate().atStartOfDay().plusDays(1).minusSeconds(1);
+        return recordMapper.selectOwnerTelephoneRecord(ownerId, startOfYesterday, endOfYesterday);
+    }
 }

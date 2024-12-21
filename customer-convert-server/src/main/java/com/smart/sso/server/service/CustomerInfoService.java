@@ -39,4 +39,11 @@ public interface CustomerInfoService {
 
     void syncCustomerInfoFromRelation();
 
+    /**
+     * 获取超过三天为联系的客户人员
+     * @param activeId
+     * @return
+     */
+    List<CustomerInfo> getCustomerInfoLongTimeNoSee(String activeId);
+
 }

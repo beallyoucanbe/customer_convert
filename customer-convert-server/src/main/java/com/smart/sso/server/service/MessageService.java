@@ -25,4 +25,6 @@ public interface MessageService {
 
     void sendMessageForPerLeader(String userId);
 
+    void sendCommunicationSummary(String ownerId);
+
 }
