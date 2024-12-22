@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.smart.sso.server.constant.AppConstant.CUSTOMER_DASHBOARD_URL;
+import static com.smart.sso.server.constant.AppConstant.*;
 
 
 @Service
@@ -165,8 +165,7 @@ public class MessageServiceImpl implements MessageService {
                     (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
-            if (approvalCount >= 3 &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+            if (!StringUtils.isEmpty(character.getFundsVolume()) &&
                     (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
                     && customerInfoLongTimeNoSeeMap.containsKey(character.getCustomerId())) {
                 potentialCustomer.getLongTimeNoSee().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
@@ -420,8 +419,7 @@ public class MessageServiceImpl implements MessageService {
                     (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
-            if (approvalCount >= 3 &&
-                    !StringUtils.isEmpty(character.getFundsVolume())
+            if (!StringUtils.isEmpty(character.getFundsVolume())
                     && (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
                     && customerInfoLongTimeNoSeeMap.containsKey(character.getCustomerId())) {
                 potentialCustomer.getLongTimeNoSee().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
@@ -452,20 +450,148 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void sendCommunicationSummary(String ownerId) {
-        // 获取某个人在某个时间段内所有的通话
-        List<TelephoneRecord> telephoneRecordList = recordService.getOwnerTelephoneRecordToday(ownerId);
-        Map<String, Integer> teleTimeMap = new HashMap<>();
-        // 统计每个客户的通话时长，按照分钟统计
-        for (TelephoneRecord item : telephoneRecordList) {
-            if (teleTimeMap.containsKey(item.getCustomerId())) {
-                teleTimeMap.put(item.getCustomerId(), teleTimeMap.get(item.getCustomerId()) + item.getCommunicationDuration());
+    public void sendCommunicationSummary(List<String> ownerIdList, String activityId, String day) {
+        QueryWrapper<CustomerCharacter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("activity_id", activityId);
+        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
+        Map<String, CustomerCharacter> characterMap = characterList.stream().collect(Collectors.toMap(CustomerCharacter::getCustomerId, Function.identity()));
+        List<String> allCustomerExceed8Hour = recordService.selectCustomerExceed8Hour(activityId);
+        Map<String, Set<String>> customerOneStaff = new HashMap<>();
+
+        Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
+        for (CustomerCharacter character : characterList) {
+            // 完成购买，跳过不统计
+            if (character.getCompletePurchaseStage()) {
+                continue;
+            }
+            String ownerId = character.getOwnerId();
+            PotentialCustomer potentialCustomer;
+            if (!potentialCustomerMap.containsKey(ownerId)) {
+                potentialCustomer = new PotentialCustomer();
+                potentialCustomerMap.put(ownerId, potentialCustomer);
             } else {
-                teleTimeMap.put(item.getCustomerId(), item.getCommunicationDuration());
+                potentialCustomer = potentialCustomerMap.get(ownerId);
+            }
+            if (!customerOneStaff.containsKey(ownerId)) {
+                Set<String> allCustomers = new HashSet<>();
+                allCustomers.add(character.getCustomerId());
+                customerOneStaff.put(ownerId, allCustomers);
+            } else {
+                customerOneStaff.get(ownerId).add(character.getCustomerId());
+            }
+            // 判断 认可度次数
+            int approvalCount = getApprovalCount(character);
+            // 资金量≥5万且认可数≥3，购买态度为确认购买
+            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
+                potentialCustomer.getHigh().add(character.getCustomerId());
+            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
+                potentialCustomer.getMiddle().add(character.getCustomerId());
+            } else if (approvalCount <= 2 &&
+                    !StringUtils.isEmpty(character.getFundsVolume()) &&
+                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
+                potentialCustomer.getLow().add(character.getCustomerId());
             }
         }
-        int communicationDurationToday = teleTimeMap.values().stream().mapToInt(Integer::intValue).sum();
-        // 统计该销售下所有客户的特征信息
+        for (String ownerId : ownerIdList){
+            // 获取某个人在某个时间段内所有的通话
+            List<TelephoneRecord> telephoneRecordList;
+            if (day.equals("today")) {
+                telephoneRecordList = recordService.getOwnerTelephoneRecordToday(ownerId);
+            } else {
+                telephoneRecordList = recordService.getOwnerTelephoneRecordYesterday(ownerId);
+            }
+            String ownerName = telephoneRecordList.get(0).getOwnerName();
+            Map<String, Integer> teleTimeMap = new HashMap<>();
+            // 统计每个客户的通话时长，按照分钟统计
+            for (TelephoneRecord item : telephoneRecordList) {
+                if (teleTimeMap.containsKey(item.getCustomerId())) {
+                    teleTimeMap.put(item.getCustomerId(), teleTimeMap.get(item.getCustomerId()) + item.getCommunicationDuration());
+                } else {
+                    teleTimeMap.put(item.getCustomerId(), item.getCommunicationDuration());
+                }
+            }
+            int communicationDurationToday = teleTimeMap.values().stream().mapToInt(Integer::intValue).sum();
+            // 统计该销售下所有客户的特征信息
+            int highCount = 0;
+            int highTime = 0;
+            int middleCount = 0;
+            int middleTime = 0;
+            int lowCount = 0;
+            int lowTime = 0;
+            int elseTime = 0;
+            String elseString = "";
+            PotentialCustomer potentialCustomer = potentialCustomerMap.get(ownerId);
+            Set<String> highSet = new HashSet<>(potentialCustomer.getHigh());
+            Set<String> middleSet = new HashSet<>(potentialCustomer.getMiddle());
+            Set<String> lowSet = new HashSet<>(potentialCustomer.getLow());
+            for (Map.Entry<String, Integer> entry: teleTimeMap.entrySet()) {
+                if (highSet.contains(entry.getKey())){
+                    highCount++;
+                    highTime += entry.getValue();
+                } else if (middleSet.contains(entry.getKey())){
+                    middleCount++;
+                    middleTime += entry.getValue();
+                }  else if (lowSet.contains(entry.getKey())){
+                    lowCount++;
+                    lowTime += entry.getValue();
+                } else {
+                    elseString = elseString + characterMap.get(entry.getKey()).getCustomerName() + "，" + entry.getKey() + "\n";
+                    elseTime += entry.getValue();
+                }
+            }
+            if (StringUtils.hasText(elseString)) {
+                elseString = elseString + "总时长为" + getTimeString(elseTime);
+            }
+
+            // 构建超长通话
+            StringBuilder customerExceedTimeStr = new StringBuilder();
+            // 是否有单个客户当天通话超过2个小时
+            Set<String> customerExceed2Hour = teleTimeMap.entrySet().stream().filter(item -> item.getValue() >= 120).map(Map.Entry::getKey).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(customerExceed2Hour)) {
+                for (String one : customerExceed2Hour) {
+                    customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
+                            .append("，单通通话超过2小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
+                            .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
+                            .append(getPurchaseAttitude(characterMap.get(one).getSoftwarePurchaseAttitude())).append("）\n");
+                }
+            }
+            // 是否有客户累计通话超过8小时
+            Set<String> customerExceed8Hour = allCustomerExceed8Hour.stream().filter(item -> customerOneStaff.get(ownerId).contains(item)).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(customerExceed8Hour)) {
+                for (String one : customerExceed8Hour) {
+                    customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
+                            .append("，累计通话超过4小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
+                            .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
+                            .append(getPurchaseAttitude(characterMap.get(one).getSoftwarePurchaseAttitude())).append("）\n");
+                }
+            }
+            String dayStr = day.equals("today") ? "今日" : "昨日";
+            String message = String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF_TEMPLATE,
+                    dayStr, getTimeString(communicationDurationToday),
+                    String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, highSet.size(), highCount, getTimeString(highTime)),
+                    String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, middleSet.size(), middleCount, getTimeString(middleTime)),
+                    String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, lowSet.size(), lowCount, getTimeString(lowTime)),
+                    elseString,
+                    customerExceedTimeStr
+                    );
+            TextMessage textMessage = new TextMessage();
+            TextMessage.TextContent textContent = new TextMessage.TextContent();
+            textMessage.setTouser(ownerId);
+            textMessage.setAgentid("1000021");
+            textContent.setContent(message);
+            textMessage.setMsgtype("markdown");
+            textMessage.setMarkdown(textContent);
+            sendMessageToChat(textMessage);
+
+            message = String.format( "业务员：%s:\n", ownerName) + message;
+            textMessage.getMarkdown().setContent(message);
+            // 发送给主管
+            sendMessageToChat(configService.getStaffAreaRobotUrl(ownerId), textMessage);
+        }
     }
 
     private String getTimeString(int minutes){
@@ -480,6 +606,36 @@ public class MessageServiceImpl implements MessageService {
             // 如果小时数为0，则只返回分钟数
             return remainingMinutes + "分钟";
         }
+    }
+
+    private String getPurchaseAttitude(String purchaseAttitude){
+        if (StringUtils.isEmpty(purchaseAttitude)) {
+            return "未提及";
+        } else if (purchaseAttitude.equals("true")){
+            return "认可";
+        } else if (purchaseAttitude.equals("false")){
+            return "不认可";
+        }
+        return "未提及";
+    }
+
+    private int getApprovalCount(CustomerCharacter character){
+        // 判断 认可度次数
+        int approvalCount = 0;
+        if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
+            approvalCount++;
+        }
+        if (Boolean.parseBoolean(character.getStockSelectionMethod())) {
+            approvalCount++;
+        }
+        if (Boolean.parseBoolean(character.getSelfIssueRecognition())) {
+            approvalCount++;
+        }
+        if (Boolean.parseBoolean(character.getSoftwareValueApproval())) {
+            approvalCount++;
+        }
+
+        return approvalCount;
     }
 
     private boolean nightTime(){

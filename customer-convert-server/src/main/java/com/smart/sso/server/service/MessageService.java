@@ -2,6 +2,7 @@ package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.TextMessage;
 
+import java.util.List;
 import java.util.Map;
 
 public interface MessageService {
@@ -25,6 +26,6 @@ public interface MessageService {
 
     void sendMessageForPerLeader(String userId);
 
-    void sendCommunicationSummary(String ownerId);
+    void sendCommunicationSummary(List<String> ownerIdList, String activityId, String day);
 
 }

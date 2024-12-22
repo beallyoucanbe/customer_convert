@@ -312,14 +312,23 @@ public class SchedulTask {
     /**
      * 沟通时长的统计
      */
-    @Scheduled(cron = "0 0 7 * * ?")
-    public void executeCommunicationduration() {
+    @Scheduled(cron = "0 0 17 * * ?")
+    public void executeCommunicationdurationToday() {
         log.error("开始执行沟通时长的统计任务");
-        // 获取截止到现在有通过的销售人员名单
-        List<String> ownerList = recordService.getOwnerHasTeleToday();
-        for (String ownerId : ownerList) {
-            messageService.sendCommunicationSummary(ownerId);
-        }
+        String activityId = configService.getCurrentActivityId();
+        // 获取今天截止到现在有过通话的销售人员名单
+        List<String> ownerList = recordService.getOwnerHasTeleToday(activityId);
+        messageService.sendCommunicationSummary(ownerList, activityId, "today");
+        log.error("沟通时长的统计任务执行完成");
+    }
+
+    @Scheduled(cron = "0 25 8 * * ?")
+    public void executeCommunicationdurationYesterday() {
+        log.error("开始执行沟通时长的统计任务");
+        String activityId = configService.getCurrentActivityId();
+        // 获取昨天有过通话的销售人员名单
+        List<String> ownerList = recordService.getOwnerHasTeleYesterday(activityId);
+        messageService.sendCommunicationSummary(ownerList, activityId, "yesterday");
         log.error("沟通时长的统计任务执行完成");
     }
 

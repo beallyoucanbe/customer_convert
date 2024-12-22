@@ -44,7 +44,7 @@ public interface TelephoneRecordService {
      * 统计当天有打过电话的销售id
      * @return
      */
-    List<String> getOwnerHasTeleToday();
+    List<String> getOwnerHasTeleToday(String activityId);
 
     /**
      * 获取销售当天的所有通话
@@ -56,11 +56,13 @@ public interface TelephoneRecordService {
      * 统计昨天有打过电话的销售id
      * @return
      */
-    List<String> getOwnerHasTeleYesterday();
+    List<String> getOwnerHasTeleYesterday(String activityId);
 
     /**
      * 获取销售昨天的所有通话
      * @return
      */
     List<TelephoneRecord> getOwnerTelephoneRecordYesterday(String ownerId);
+
+    List<String> selectCustomerExceed8Hour(String activityId);
 }

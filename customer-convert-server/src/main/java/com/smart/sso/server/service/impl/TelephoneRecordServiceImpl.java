@@ -726,12 +726,11 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public List<String> getOwnerHasTeleToday() {
+    public List<String> getOwnerHasTeleToday(String activityId) {
         // 获取当前时间的 LocalDateTime 对象
         LocalDateTime currentTime = LocalDateTime.now();
         // 获取当天日期的开始时间（00:00:00）的 LocalDateTime 对象
         LocalDateTime startOfDay = currentTime.toLocalDate().atStartOfDay();
-        String activityId = configService.getCurrentActivityId();
         return recordMapper.selectOwnerHasTele(activityId, startOfDay, currentTime);
     }
 
@@ -745,7 +744,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public List<String> getOwnerHasTeleYesterday() {
+    public List<String> getOwnerHasTeleYesterday(String activityId) {
         // 获取当前时间
         LocalDateTime currentTime = LocalDateTime.now();
         // 获取昨天的日期
@@ -754,7 +753,6 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         LocalDateTime startOfYesterday = yesterday.toLocalDate().atStartOfDay();
         // 获取昨天的结束时间（23:59:59）
         LocalDateTime endOfYesterday = yesterday.toLocalDate().atStartOfDay().plusDays(1).minusSeconds(1);
-        String activityId = configService.getCurrentActivityId();
         return recordMapper.selectOwnerHasTele(activityId, startOfYesterday, endOfYesterday);
     }
 
@@ -769,5 +767,10 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         // 获取昨天的结束时间（23:59:59）
         LocalDateTime endOfYesterday = yesterday.toLocalDate().atStartOfDay().plusDays(1).minusSeconds(1);
         return recordMapper.selectOwnerTelephoneRecord(ownerId, startOfYesterday, endOfYesterday);
+    }
+
+    @Override
+    public List<String> selectCustomerExceed8Hour(String activityId) {
+        return recordMapper.selectCustomerExceed8Hour(activityId);
     }
 }

@@ -49,4 +49,11 @@ public interface TelephoneRecordMapper extends BaseMapper<TelephoneRecord> {
     List<TelephoneRecord> selectOwnerTelephoneRecord(@Param("owner_id") String owner_id,
                                     @Param("start_time") LocalDateTime start_time,
                                     @Param("end_time") LocalDateTime end_time);
+
+    /**
+     * 查询累计通话超过8小时的客户
+     * @return
+     */
+    @Select("SELECT customer_id FROM telephone_record WHERE activity_id = #{activity_id} group by customer_id HAVING SUM(communication_duration) > 240")
+    List<String> selectCustomerExceed8Hour(@Param("activity_id") String activity_id);
 }
