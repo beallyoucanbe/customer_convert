@@ -58,9 +58,10 @@ public class AppConstant {
             "<font color=\"info\">%s</font>\n" +
             "详细内容链接：[%s](%s)";
 
-    public static final String CUSTOMER_PURCHASE_TEMPLATE = "您团队的**%s**在%s与客户**%s**通完电话，今日通话总时长10分钟以上。\n" +
+    public static final String CUSTOMER_PURCHASE_TEMPLATE = "您团队的**%s**在%s与客户**%s**通完电话，今日通话总时长30分钟以上。\n" +
             "客户的资金体量为：**%s**\n" +
             "客户对购买软件的态度为：**%s**\n" +
+            "客户的认可数为：**%s**\n" +
             "%s" +
             "详细内容链接：[%s](%s)";
 
@@ -94,7 +95,7 @@ public class AppConstant {
             "详细内容链接：[http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2](http://172.16.192.61:8086/publish/E130491D3CA6E697A4E9479E1754C69E/dashboard/E55EFC762B3F0245C8F48FB6D6F17E4E2)";
 
     public static final String COMMUNICATION_TIME_SUMMARY_FOR_STAFF_TEMPLATE =
-            "%s通话总时长为%s，时间分配如下：:\n" +
+            "%s通话总时长为**%s**，时间分配如下：\n" +
             "1）**临门一脚**（资金量≥5万且认可数≥3，购买态度为确认购买）\n" +
             "%s" +
             "  \n" +
@@ -111,7 +112,7 @@ public class AppConstant {
             "<font color=\"info\">%s</font>";
 
 
-    public static final String COMMUNICATION_TIME_SUMMARY_FOR_STAFF = "客户总计%s个，其中通话%s个，总时长为%s";
+    public static final String COMMUNICATION_TIME_SUMMARY_FOR_STAFF = "客户总计%s个，其中通话%s个，总时长为**%s**";
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
     public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();
     public static Map<String, String> accessTokenMap = new HashMap<>();

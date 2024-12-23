@@ -12,6 +12,8 @@ public interface ConfigService {
      */
     Map<String, List<String>> getStaffIds();
 
+    Map<String, String> getStaffLeaderMap();
+
     /**
      * 获取参加这次活动的员工id
      * @return 分领导加这次活动的员工id

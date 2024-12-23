@@ -57,6 +57,31 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
+    public Map<String, String> getStaffLeaderMap() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER_MEMBERS.getValue());
+        List<Config> configList = configMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(configList)) {
+            log.error("没有配置参加活动的销售名单，请先配置");
+            throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
+        }
+        Map<String, String> result = new HashMap<>();
+        for (Config config : configList) {
+            List<LeadMember> leadMembers = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMember>>() {
+            });
+            for (LeadMember item : leadMembers) {
+                for (LeadMember.Team team : item.getTeams()) {
+                    for (String memberId : team.getMembers().keySet()){
+                        result.put(memberId, team.getId());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Map<String, List<String>> getStaffIdsLeader() {
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());

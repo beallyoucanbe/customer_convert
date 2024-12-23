@@ -215,7 +215,7 @@ public class MessageServiceImpl implements MessageService {
         if (checkPurchaseAttitude && !newCustomerCharacter.getCompletePurchaseStage()) {
             // 给该客户当天的通话时间大于30分钟
             int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId, newCustomerCharacter.getUpdateTime());
-            if (communicationDurationSum < 10) {
+            if (communicationDurationSum < 30) {
                 return;
             }
             String purchaseMessageDescribe;
@@ -298,6 +298,7 @@ public class MessageServiceImpl implements MessageService {
                     newCustomerCharacter.getCustomerName(),
                     fundsMessageDescribe,
                     purchaseMessageDescribe,
+                    getApprovalCount(newCustomerCharacter),
                     possibleReasonStringBuilder,
                     url, url);
             TextMessage textMessage = new TextMessage();
@@ -458,6 +459,8 @@ public class MessageServiceImpl implements MessageService {
         List<String> allCustomerExceed8Hour = recordService.selectCustomerExceed8Hour(activityId);
         Map<String, Set<String>> customerOneStaff = new HashMap<>();
 
+        Map<String, String> staffLeaderMap = configService.getStaffLeaderMap();
+
         Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
         for (CustomerCharacter character : characterList) {
             // 完成购买，跳过不统计
@@ -523,7 +526,7 @@ public class MessageServiceImpl implements MessageService {
             int lowCount = 0;
             int lowTime = 0;
             int elseTime = 0;
-            String elseString = "";
+            StringBuilder elseString = new StringBuilder();
             PotentialCustomer potentialCustomer = potentialCustomerMap.get(ownerId);
             Set<String> highSet = new HashSet<>(potentialCustomer.getHigh());
             Set<String> middleSet = new HashSet<>(potentialCustomer.getMiddle());
@@ -539,12 +542,15 @@ public class MessageServiceImpl implements MessageService {
                     lowCount++;
                     lowTime += entry.getValue();
                 } else {
-                    elseString = elseString + characterMap.get(entry.getKey()).getCustomerName() + "，" + entry.getKey() + "\n";
+                    elseString.append(characterMap.get(entry.getKey()).getCustomerName()).append("，").append(entry.getKey())
+                            .append("（资金体量为：").append(StringUtils.isEmpty(characterMap.get(entry.getKey()).getFundsVolume()) ? "未提及" : characterMap.get(entry.getKey()).getFundsVolume())
+                            .append("，认可数为：").append(getApprovalCount(characterMap.get(entry.getKey()))).append("个，购买态度为：")
+                            .append(getPurchaseAttitude(characterMap.get(entry.getKey()).getSoftwarePurchaseAttitude())).append("）\n");
                     elseTime += entry.getValue();
                 }
             }
             if (StringUtils.hasText(elseString)) {
-                elseString = elseString + "总时长为" + getTimeString(elseTime);
+                elseString.append("总时长为**").append(getTimeString(elseTime)).append("**");
             }
 
             // 构建超长通话
@@ -589,6 +595,7 @@ public class MessageServiceImpl implements MessageService {
 
             message = String.format( "业务员：%s:\n", ownerName) + message;
             textMessage.getMarkdown().setContent(message);
+            textMessage.setTouser(staffLeaderMap.get(ownerId));
             // 发送给主管
             sendMessageToChat(configService.getStaffAreaRobotUrl(ownerId), textMessage);
         }
