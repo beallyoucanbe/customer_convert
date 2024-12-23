@@ -612,7 +612,7 @@ public class MessageServiceImpl implements MessageService {
             textMessage.getMarkdown().setContent(message);
             textMessage.setTouser(staffLeaderMap.get(ownerId));
             // 发送给主管
-            sendMessageToChat(configService.getStaffAreaRobotUrl(ownerId), textMessage);
+            sendMessageToChat(textMessage);
         }
     }
 
