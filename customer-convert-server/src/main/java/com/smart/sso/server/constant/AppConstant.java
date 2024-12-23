@@ -25,22 +25,11 @@ public class AppConstant {
 
     public static final String PURCHASE_STATE_CHECK = "PURCHASE_STATE_CHECK";
 
-    public static final String REFRESH_CUSTOMER_COMPLETE_DESCRIBE = "REFRESH_CUSTOMER_COMPLETE_DESCRIBE";
-
     public static final String SOURCEID_KEY_PREFIX = "processed:";
-
-    public static final String CUSTOMER_DASHBOARD_URL = "http://172.16.192.61:8086/preview/33/dashboard/27";
 
     public static final String GET_SECRET_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
 
     public static final String SEND_APPLICATION_MESSAGE_URL = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s";
-
-    public static final String CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE = "以下是您的半日报更新。自上次半日报至%s:\n" +
-            "### 【进展】\n" +
-            "<font color=\"warning\">%s</font>\n" +
-            "### 【待完成】\n" +
-            "<font color=\"info\">%s</font>\n" +
-            "详细内容链接：[%s](%s)";
 
     public static final String CUSTOMER_PURCHASE_TEMPLATE = "您团队的**%s**在%s与客户**%s**通完电话，今日通话总时长30分钟以上。\n" +
             "客户的资金体量为：**%s**\n" +
