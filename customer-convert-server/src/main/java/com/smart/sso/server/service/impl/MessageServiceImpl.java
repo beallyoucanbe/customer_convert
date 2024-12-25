@@ -439,7 +439,6 @@ public class MessageServiceImpl implements MessageService {
         List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
         Map<String, CustomerCharacter> characterMap = characterList.stream().collect(Collectors.toMap(CustomerCharacter::getCustomerId, Function.identity()));
         List<String> allCustomerExceed8Hour = recordService.selectCustomerExceed8Hour(activityId);
-        Map<String, Set<String>> customerOneStaff = new HashMap<>();
 
         Map<String, String> staffLeaderMap = configService.getStaffLeaderMap();
 
@@ -456,13 +455,6 @@ public class MessageServiceImpl implements MessageService {
                 potentialCustomerMap.put(ownerId, potentialCustomer);
             } else {
                 potentialCustomer = potentialCustomerMap.get(ownerId);
-            }
-            if (!customerOneStaff.containsKey(ownerId)) {
-                Set<String> allCustomers = new HashSet<>();
-                allCustomers.add(character.getCustomerId());
-                customerOneStaff.put(ownerId, allCustomers);
-            } else {
-                customerOneStaff.get(ownerId).add(character.getCustomerId());
             }
             // 判断 认可度次数
             int approvalCount = getApprovalCount(character);
@@ -560,7 +552,7 @@ public class MessageServiceImpl implements MessageService {
                 }
             }
             // 是否有客户累计通话超过8小时
-            Set<String> customerExceed8Hour = allCustomerExceed8Hour.stream().filter(item -> customerOneStaff.get(ownerId).contains(item)).collect(Collectors.toSet());
+            Set<String> customerExceed8Hour = allCustomerExceed8Hour.stream().filter(teleTimeMap::containsKey).collect(Collectors.toSet());
             if (!CollectionUtils.isEmpty(customerExceed8Hour)) {
                 for (String one : customerExceed8Hour) {
                     try {
