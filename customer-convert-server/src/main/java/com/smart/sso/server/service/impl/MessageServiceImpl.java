@@ -33,6 +33,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -216,6 +217,13 @@ public class MessageServiceImpl implements MessageService {
             // 给该客户当天的通话时间大于30分钟
             int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId, newCustomerCharacter.getUpdateTime());
             if (communicationDurationSum < 30) {
+                return;
+            }
+            // 通话时间与现在的时间差（只推送当天和昨天的通话）
+            LocalDateTime now = LocalDateTime.now();
+            // 获取昨天的开始时间 (00:00:00)
+            LocalDateTime yesterdayStart = now.toLocalDate().atStartOfDay().minusDays(1);
+            if (newCustomerCharacter.getUpdateTime().isBefore(yesterdayStart)) {
                 return;
             }
             String purchaseMessageDescribe = getPurchaseAttitude(newCustomerCharacter.getSoftwarePurchaseAttitude());

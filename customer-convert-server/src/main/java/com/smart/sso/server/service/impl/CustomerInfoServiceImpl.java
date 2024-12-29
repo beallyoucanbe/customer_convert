@@ -544,7 +544,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public void statistics() {
         QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
         // 筛选时间
-        queryWrapperInfo.eq("current_campaign", "361");
+        queryWrapperInfo.eq("activity_id", "373");
         List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
         System.out.println("总客户数：" + customerFeatureList.size());
         int customerNum = 0;
