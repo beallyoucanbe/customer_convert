@@ -10,6 +10,7 @@ public class CustomerFeatureResponse {
     private ProcessSummary summary;
     private Basic basic;
     private CustomerProcessSummary.TradingMethod tradingMethod;
+//    private
 
 
     @Getter
@@ -57,6 +58,16 @@ public class CustomerFeatureResponse {
         public Question(String message){
             this.message = message;
         }
+    }
+
+    /**
+     * 客户温度
+     */
+    public static class Warmth{
+
+        // 交付课听课情况
+//        private delivery_course
+
     }
 
 }
