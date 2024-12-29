@@ -6,6 +6,6 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class CustomerInfoListResponse extends CommonPageList{
+public class CustomerBaseListResponse extends CommonPageList{
     private List<CustomerListVO>  customers;
 }

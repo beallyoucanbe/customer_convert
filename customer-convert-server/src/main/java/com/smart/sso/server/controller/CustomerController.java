@@ -11,7 +11,7 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
-import com.smart.sso.server.model.dto.CustomerInfoListResponse;
+import com.smart.sso.server.model.dto.CustomerBaseListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
@@ -53,7 +53,7 @@ public class CustomerController {
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
-    public BaseResponse<CustomerInfoListResponse> getCustomerList(@RequestParam(value = "offset", defaultValue = "1") Integer page,
+    public BaseResponse<CustomerBaseListResponse> getCustomerList(@RequestParam(value = "offset", defaultValue = "1") Integer page,
                                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit,
                                                                   @RequestParam(value = "sort_by", defaultValue = "update_time") String sortBy,
                                                                   @RequestParam(value = "order", defaultValue = "desc") String order,
@@ -62,7 +62,7 @@ public class CustomerController {
                                                                   @RequestParam(value = "conversion_rate", required = false) String conversionRate,
                                                                   @RequestParam(value = "activity_name", required = false) String  activityName) {
         CustomerInfoListRequest params = new CustomerInfoListRequest(page, limit, sortBy, order, customerName, ownerName, conversionRate, activityName);
-        CustomerInfoListResponse commonPageList = customerInfoService.queryCustomerInfoList(params);
+        CustomerBaseListResponse commonPageList = customerInfoService.queryCustomerInfoList(params);
         return ResultUtils.success(commonPageList);
     }
 
@@ -80,13 +80,6 @@ public class CustomerController {
                                                                      @PathVariable(value = "activity_id") String activityId) {
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, activityId);
         return ResultUtils.success(FeatureProfile);
-    }
-
-    @ApiOperation(value = "获取客户过程总结")
-    @GetMapping("/customer/{id}/summary")
-    public BaseResponse<CustomerProcessSummary> getCustomerSummary(@PathVariable(value = "id") String id) {
-        CustomerProcessSummary customerSummary = customerInfoService.queryCustomerProcessSummaryById(id);
-        return ResultUtils.success(customerSummary);
     }
 
     @ApiOperation(value = "获取客户参加的活动列表")
@@ -172,18 +165,6 @@ public class CustomerController {
                                        String from, String manager,
                                        HttpServletResponse response) throws IOException {
         String targetUrl = customerInfoService.getRedirectUrl(customerId, activityId, from, manager);
-        // 使用HttpServletResponse进行重定向
-        response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
-        response.setStatus(302);
-        return ResultUtils.success(null);
-    }
-
-    @ApiOperation(value = "跳转接口")
-    @GetMapping("/customer/redirect_old")
-    public BaseResponse<Void> redirectOld(@RequestParam(value = "customer_id") String customerId,
-                                       @RequestParam(value = "active_id") String activityId,
-                                       HttpServletResponse response) throws IOException {
-        String targetUrl = customerInfoService.getRedirectUrlOld(customerId, activityId);
         // 使用HttpServletResponse进行重定向
         response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
         response.setStatus(302);

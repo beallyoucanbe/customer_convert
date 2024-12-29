@@ -7,13 +7,12 @@ import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
-import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
+import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.*;
-import com.smart.sso.server.secondary.mapper.CustomerInfoOldMapper;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.CustomerRelationService;
@@ -49,9 +48,7 @@ import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Autowired
-    private CustomerInfoMapper customerInfoMapper;
-    @Autowired
-    private CustomerInfoOldMapper customerInfoOldMapper;
+    private CustomerBaseMapper customerBaseMapper;
     @Autowired
     private CustomerFeatureMapper customerFeatureMapper;
     @Autowired
@@ -72,9 +69,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
 
     @Override
-    public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
-        Page<CustomerInfo> selectPage = new Page<>(params.getPage(), params.getLimit());
-        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
+    public CustomerBaseListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
+        Page<CustomerBase> selectPage = new Page<>(params.getPage(), params.getLimit());
+        QueryWrapper<CustomerBase> queryWrapper = new QueryWrapper<>();
 
         if (!StringUtils.isEmpty(params.getCustomerName())) {
             queryWrapper.like("customer_name", params.getCustomerName());
@@ -105,8 +102,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         } else {
             queryWrapper.orderBy(true, isAsc, sortOrder);
         }
-        Page<CustomerInfo> resultPage = customerInfoMapper.selectPage(selectPage, queryWrapper);
-        CustomerInfoListResponse result = new CustomerInfoListResponse();
+        Page<CustomerBase> resultPage = customerBaseMapper.selectPage(selectPage, queryWrapper);
+        CustomerBaseListResponse result = new CustomerBaseListResponse();
         result.setTotal(resultPage.getTotal());
         result.setLimit(params.getLimit());
         result.setOffset(params.getPage());
@@ -116,34 +113,34 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerProfile queryCustomerById(String customerId, String activityId) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
-        if (Objects.isNull(customerInfo)) {
-            customerInfo = recordService.syncCustomerInfoFromRecord(customerId, customerId);
-            if (Objects.isNull(customerInfo)) {
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        if (Objects.isNull(customerBase)) {
+            customerBase = recordService.syncCustomerInfoFromRecord(customerId, customerId);
+            if (Objects.isNull(customerBase)) {
                 return null;
             }
         }
-        CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
+        CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerBase.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
 
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
 
-        CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
-        customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM));
-        customerProfile.setIsSend188(customerInfo.getIsSend188());
+        CustomerProfile customerProfile = convert2CustomerProfile(customerBase);
+        customerProfile.setCustomerStage(getCustomerStageStatus(customerBase, featureFromSale, featureFromLLM));
+        customerProfile.setIsSend188(customerBase.getIsSend188());
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
         // 这里重新判断下打电话的次数
         TelephoneRecordStatics round = recordService.getCommunicationRound(customerId, activityId);
         if (customerProfile.getCommunicationRounds() != round.getTotalCalls()) {
-            customerInfoMapper.updateCommunicationRounds(customerId, activityId, round.getTotalCalls(), round.getLatestCommunicationTime());
+            customerBaseMapper.updateCommunicationRounds(customerId, activityId, round.getTotalCalls(), round.getLatestCommunicationTime());
             customerProfile.setCommunicationRounds(round.getTotalCalls());
         }
         // 重新判断一下匹配度，防止更新不及时的情况
         String conversionRate = getConversionRate(customerFeature);
-        if (!customerInfo.getConversionRate().equals(conversionRate)) {
-            customerInfoMapper.updateConversionRateById(customerInfo.getId(), conversionRate);
+        if (!customerBase.getConversionRate().equals(conversionRate)) {
+            customerBaseMapper.updateConversionRateById(customerBase.getId(), conversionRate);
             customerProfile.setConversionRate(conversionRate);
         }
         customerProfile.setLastCommunicationDate(Objects.isNull(featureFromLLM) ? null : featureFromLLM.getCommunicationTime());
@@ -152,36 +149,28 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String activityId) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
-        if (Objects.isNull(customerInfo)) {
-            customerInfo = recordService.syncCustomerInfoFromRecord(customerId, customerId);
-            if (Objects.isNull(customerInfo)) {
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        if (Objects.isNull(customerBase)) {
+            customerBase = recordService.syncCustomerInfoFromRecord(customerId, customerId);
+            if (Objects.isNull(customerBase)) {
                 return null;
             }
         }
-        CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerInfo.getId());
+        CustomerFeature featureFromSale = customerFeatureMapper.selectById(customerBase.getId());
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
         // 没有通话记录，直接返回
         if (Objects.isNull(featureFromLLM)) {
             featureFromLLM = new CustomerFeatureFromLLM();
         }
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
-        CustomerStageStatus stageStatus = getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM);
+        CustomerStageStatus stageStatus = getCustomerStageStatus(customerBase, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         if (Objects.nonNull(customerFeature)) {
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
             getStandardExplanationCompletion(customerFeature);
-            customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
+            customerFeature.setSummary(getProcessSummary(customerFeature, customerBase, stageStatus, summaryResponse));
         }
         return customerFeature;
-    }
-
-    @Override
-    public CustomerProcessSummary queryCustomerProcessSummaryById(String id) {
-        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerFeature featureFromSale = customerFeatureMapper.selectById(id);
-        CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerInfo.getCustomerId(), customerInfo.getActivityId());
-        return convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
     }
 
     @Override
@@ -214,7 +203,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public CustomerStageStatus getCustomerStageStatus(CustomerInfo customerInfo, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM) {
+    public CustomerStageStatus getCustomerStageStatus(CustomerBase customerBase, CustomerFeature featureFromSale, CustomerFeatureFromLLM featureFromLLM) {
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
@@ -281,15 +270,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
         try {
-            CustomerRelation customerRelation = customerRelationService.getByActivityAndCustomer(customerInfo.getCustomerId(),
-                    customerInfo.getOwnerId(), customerInfo.getActivityId());
+            CustomerRelation customerRelation = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
+                    customerBase.getOwnerId(), customerBase.getActivityId());
             if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
                     && customerRelation.getCustomerSigned()) {
                 stageStatus.setCompletePurchase(1);
             }
-            customerInfo.setIsSend188(customerRelation.getIsSend188());
+            customerBase.setIsSend188(customerRelation.getIsSend188());
         } catch (Exception e) {
-            log.error("判断确认购买状态失败, ID={}", customerInfo.getCustomerId());
+            log.error("判断确认购买状态失败, ID={}", customerBase.getCustomerId());
         }
         return stageStatus;
     }
@@ -297,34 +286,21 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public List<ActivityInfoWithVersion> getActivityInfoByCustomerId(String customerId) {
         List<ActivityInfoWithVersion> result = new ArrayList<>();
-        List<ActivityInfo> newActivity = customerInfoMapper.selectActivityInfoByCustomerId(customerId);
+        List<ActivityInfo> newActivity = customerBaseMapper.selectActivityInfoByCustomerId(customerId);
         for (ActivityInfo activityInfo : newActivity) {
             ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(activityInfo);
             result.add(activityInfoWithVersion);
-        }
-        // 是否有旧活动
-        try {
-            String activity = customerInfoOldMapper.selectActivityByCustomerId(customerId);
-            if (!StringUtils.isEmpty(activity)) {
-                Map<String, String> activityIdNames = configService.getActivityIdNames();
-                ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion(Boolean.TRUE);
-                activityInfoWithVersion.setActivityId(activity);
-                activityInfoWithVersion.setActivityName(activityIdNames.containsKey(activity) ? activityIdNames.get(activity) : activity);
-                result.add(activityInfoWithVersion);
-            }
-        } catch (Exception e) {
-            log.error("获取旧活动失败，跳过");
         }
         return result;
     }
 
     @Override
     public void modifyCustomerFeatureById(String customerId, String activityId, CustomerFeatureResponse customerFeatureRequest) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
-        CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerFeature customerFeature = customerFeatureMapper.selectById(customerBase.getId());
         if (Objects.isNull(customerFeature)) {
             customerFeature = new CustomerFeature();
-            customerFeature.setId(customerInfo.getId());
+            customerFeature.setId(customerBase.getId());
             customerFeatureMapper.insert(customerFeature);
         }
         if (Objects.nonNull(customerFeatureRequest.getBasic())) {
@@ -423,38 +399,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public String getRedirectUrlOld(String customerId, String activeId) {
-        QueryWrapper<CustomerInfoOld> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("customer_id", customerId);
-        queryWrapper.eq("current_campaign", activeId);
-
-        CustomerInfoOld customerInfo = customerInfoOldMapper.selectOne(queryWrapper);
-        String id = "";
-        if (Objects.isNull(customerInfo)) {
-            log.error("获取客户失败");
-        } else {
-            id = customerInfo.getId();
-        }
-        String urlFormatter = "https://newcmp.emoney.cn/chat/old-frontend/customer?id=%s";
-        return String.format(urlFormatter, id);
-    }
-
-
-    @Override
     public void updateCharacterCostTime(String id) {
         // 总结各个特征的花费的时间
-        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
+        CustomerBase customerBase = customerBaseMapper.selectById(id);
         QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
-        queryWrapperInfo.eq("customer_id", customerInfo.getCustomerId());
+        queryWrapperInfo.eq("customer_id", customerBase.getCustomerId());
         queryWrapperInfo.orderByAsc("communication_time");
         // 查看该客户的所有通话记录，并且按照顺序排列
         List<TelephoneRecord> customerFeatureList = telephoneRecordMapper.selectList(queryWrapperInfo);
         CharacterCostTime characterCostTime = new CharacterCostTime();
-        characterCostTime.setId(customerInfo.getId());
-        characterCostTime.setCustomerId(customerInfo.getCustomerId());
-        characterCostTime.setCustomerName(customerInfo.getCustomerName());
-        characterCostTime.setOwnerId(customerInfo.getOwnerId());
-        characterCostTime.setOwnerName(customerInfo.getOwnerName());
+        characterCostTime.setId(customerBase.getId());
+        characterCostTime.setCustomerId(customerBase.getCustomerId());
+        characterCostTime.setCustomerName(customerBase.getCustomerName());
+        characterCostTime.setOwnerId(customerBase.getOwnerId());
+        characterCostTime.setOwnerName(customerBase.getOwnerName());
         int communicationTime = 0; // 累计通话时间
         int communicationRound = 1; // 累计通话轮次
         for (TelephoneRecord telephoneRecord : customerFeatureList) {
@@ -542,16 +500,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public void statistics() {
-        QueryWrapper<CustomerInfo> queryWrapperInfo = new QueryWrapper<>();
+        QueryWrapper<CustomerBase> queryWrapperInfo = new QueryWrapper<>();
         // 筛选时间
         queryWrapperInfo.eq("current_campaign", "361");
-        List<CustomerInfo> customerFeatureList = customerInfoMapper.selectList(queryWrapperInfo);
+        List<CustomerBase> customerFeatureList = customerBaseMapper.selectList(queryWrapperInfo);
         System.out.println("总客户数：" + customerFeatureList.size());
         int customerNum = 0;
         int featureNum = 0;
         List<String> result = new ArrayList<>();
-        for (CustomerInfo customerInfo : customerFeatureList) {
-            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
+        for (CustomerBase customerBase : customerFeatureList) {
+            CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerBase.getCustomerId(), customerBase.getActivityId());
             boolean tttt = true;
             if (!equal(featureProfile.getBasic().getFundsVolume())) {
                 tttt = false;
@@ -584,7 +542,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
             if (!tttt) {
                 customerNum++;
-                result.add(customerInfo.getId());
+                result.add(customerBase.getId());
             }
         }
         System.out.println("customerNum=" + customerNum + ", featureNum = " + featureNum);
@@ -602,20 +560,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 LocalDateTime.of(2024, 1, 1, 12, 0, 0));
         Map<String, String> activityIdNames = configService.getActivityIdNames();
         for (CustomerRelation relation : characterList) {
-            CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), activityId);
-            if (Objects.nonNull(customerInfo)) {
+            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), activityId);
+            if (Objects.nonNull(customerBase)) {
                 continue;
             }
-            customerInfo = new CustomerInfo();
-            customerInfo.setId(CommonUtils.generatePrimaryKey());
-            customerInfo.setCustomerId(Long.toString(relation.getCustomerId()));
-            customerInfo.setOwnerId(relation.getOwnerId());
-            customerInfo.setCustomerName(relation.getCustomerName());
-            customerInfo.setOwnerName(relation.getOwnerName());
-            customerInfo.setActivityId(activityId);
-            customerInfo.setActivityName(activityIdNames.get(activityId));
-            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
-            customerInfoMapper.insert(customerInfo);
+            customerBase = new CustomerBase();
+            customerBase.setId(CommonUtils.generatePrimaryKey());
+            customerBase.setCustomerId(Long.toString(relation.getCustomerId()));
+            customerBase.setOwnerId(relation.getOwnerId());
+            customerBase.setCustomerName(relation.getCustomerName());
+            customerBase.setOwnerName(relation.getOwnerName());
+            customerBase.setActivityId(activityId);
+            customerBase.setActivityName(activityIdNames.get(activityId));
+            customerBase.setUpdateTimeTelephone(LocalDateTime.now());
+            customerBaseMapper.insert(customerBase);
         }
     }
 
@@ -665,20 +623,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
 
-    public List<CustomerListVO> convert(List<CustomerInfo> customerInfoList) {
-        return customerInfoList.stream().map(item -> {
+    public List<CustomerListVO> convert(List<CustomerBase> customerBaseList) {
+        return customerBaseList.stream().map(item -> {
             CustomerListVO customerListVO = new CustomerListVO();
             BeanUtils.copyProperties(item, customerListVO);
             return customerListVO;
         }).collect(Collectors.toList());
     }
 
-    public CustomerProfile convert2CustomerProfile(CustomerInfo customerInfo) {
-        if (Objects.isNull(customerInfo)) {
+    public CustomerProfile convert2CustomerProfile(CustomerBase customerBase) {
+        if (Objects.isNull(customerBase)) {
             return null;
         }
         CustomerProfile customerProfile = new CustomerProfile();
-        BeanUtils.copyProperties(customerInfo, customerProfile);
+        BeanUtils.copyProperties(customerBase, customerProfile);
         return customerProfile;
     }
 
@@ -868,7 +826,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return explanationContent;
     }
 
-    private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerInfo customerInfo, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
+    private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerBase customerBase, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
         CustomerFeatureResponse.ProcessSummary processSummary = new CustomerFeatureResponse.ProcessSummary();
         List<String> advantage = new ArrayList<>();
         List<CustomerFeatureResponse.Question> questions = new ArrayList<>();
@@ -876,11 +834,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 客户客户匹配度判断
             // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”
             // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
-            String conversionRate = customerInfo.getConversionRate();
+            String conversionRate = customerBase.getConversionRate();
             if (!conversionRate.equals("incomplete")) {
                 advantage.add("完成客户匹配度判断");
-            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                    customerInfo.getCommunicationRounds() >= 2) {
+            } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
+                    customerBase.getCommunicationRounds() >= 2) {
                 questions.add(new CustomerFeatureResponse.Question("尚未完成客户匹配度判断，需继续收集客户信息"));
             }
             // 客户交易风格了解
@@ -889,8 +847,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             int tradingStyle = stageStatus.getTransactionStyle();
             if (tradingStyle == 1) {
                 advantage.add("完成客户交易风格了解");
-            } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                    customerInfo.getCommunicationRounds() >= 2) {
+            } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
+                    customerBase.getCommunicationRounds() >= 2) {
                 questions.add(new CustomerFeatureResponse.Question("尚未完成客户交易风格了解，需继续收集客户信息"));
             }
             // 跟进的客户
@@ -967,8 +925,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
                         infoExplanation.getSoftwareValueQuantified().getResult()) {
                     advantage.add("完成痛点和价值量化放大");
-                } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
-                        customerInfo.getCommunicationRounds() >= 3) {
+                } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
+                        customerBase.getCommunicationRounds() >= 3) {
                     questions.add(new CustomerFeatureResponse.Question("尚未完成痛点和价值量化放大，需后续完成"));
                 }
             } catch (Exception e) {

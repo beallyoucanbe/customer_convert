@@ -1,8 +1,8 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.smart.sso.server.model.CustomerInfo;
-import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
+import com.smart.sso.server.model.CustomerBase;
+import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.model.CommunicationContent;
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
@@ -23,9 +23,7 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +36,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Autowired
     private TelephoneRecordMapper recordMapper;
     @Autowired
-    private CustomerInfoMapper customerInfoMapper;
+    private CustomerBaseMapper customerBaseMapper;
     @Autowired
     private TelephoneRecordMapper telephoneRecordMapper;
     @Autowired
@@ -657,7 +655,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return;
         }
         for (TelephoneRecordStatics item : customerIdList) {
-            customerInfoMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
+            customerBaseMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
         }
     }
 
@@ -689,11 +687,11 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public CustomerInfo syncCustomerInfoFromRecord(String customerId, String activityId) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+    public CustomerBase syncCustomerInfoFromRecord(String customerId, String activityId) {
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         // info 表存在记录，并且客户名称不为空，说明已经同步过信息，跳过
-        if (Objects.nonNull(customerInfo) && !StringUtils.isEmpty(customerInfo.getCustomerName())) {
-            return customerInfo;
+        if (Objects.nonNull(customerBase) && !StringUtils.isEmpty(customerBase.getCustomerName())) {
+            return customerBase;
         }
         Map<String, String> activityIdNames = configService.getActivityIdNames();
         TelephoneRecord telephoneRecord = telephoneRecordMapper.selectOneTelephoneRecord(customerId, activityId);
@@ -702,26 +700,26 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return null;
         }
         // info 表不存在记录，新建一条
-        if (Objects.isNull(customerInfo)){
-            customerInfo = new CustomerInfo();
-            customerInfo.setId(CommonUtils.generatePrimaryKey());
-            customerInfo.setCustomerName(telephoneRecord.getCustomerName());
-            customerInfo.setCustomerId(telephoneRecord.getCustomerId());
-            customerInfo.setOwnerName(telephoneRecord.getOwnerName());
-            customerInfo.setOwnerId(telephoneRecord.getOwnerId());
-            customerInfo.setActivityId(telephoneRecord.getActivityId());
-            customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
-            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
-            customerInfoMapper.insert(customerInfo);
+        if (Objects.isNull(customerBase)){
+            customerBase = new CustomerBase();
+            customerBase.setId(CommonUtils.generatePrimaryKey());
+            customerBase.setCustomerName(telephoneRecord.getCustomerName());
+            customerBase.setCustomerId(telephoneRecord.getCustomerId());
+            customerBase.setOwnerName(telephoneRecord.getOwnerName());
+            customerBase.setOwnerId(telephoneRecord.getOwnerId());
+            customerBase.setActivityId(telephoneRecord.getActivityId());
+            customerBase.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
+            customerBase.setUpdateTimeTelephone(LocalDateTime.now());
+            customerBaseMapper.insert(customerBase);
         } else {
             // info 表存在记录，需要同步名称等关键信息
-            customerInfo.setCustomerName(telephoneRecord.getCustomerName());
-            customerInfo.setOwnerName(telephoneRecord.getOwnerName());
-            customerInfo.setOwnerId(telephoneRecord.getOwnerId());
-            customerInfo.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
-            customerInfo.setUpdateTimeTelephone(LocalDateTime.now());
-            customerInfoMapper.updateById(customerInfo);
+            customerBase.setCustomerName(telephoneRecord.getCustomerName());
+            customerBase.setOwnerName(telephoneRecord.getOwnerName());
+            customerBase.setOwnerId(telephoneRecord.getOwnerId());
+            customerBase.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
+            customerBase.setUpdateTimeTelephone(LocalDateTime.now());
+            customerBaseMapper.updateById(customerBase);
         }
-        return customerInfo;
+        return customerBase;
     }
 }

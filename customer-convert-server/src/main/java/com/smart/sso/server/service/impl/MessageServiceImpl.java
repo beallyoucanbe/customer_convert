@@ -8,7 +8,7 @@ import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.model.VO.MessageSendVO;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
-import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
+import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
@@ -54,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private CustomerCharacterMapper customerCharacterMapper;
     @Autowired
-    private CustomerInfoMapper customerInfoMapper;
+    private CustomerBaseMapper customerBaseMapper;
     @Autowired
     private TelephoneRecordService recordService;
 
@@ -180,18 +180,18 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public void updateCustomerCharacter(String customerId, String activityId, boolean checkPurchaseAttitude) {
-        CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         // info 表不存在，先触发同步
-        if (Objects.isNull(customerInfo)) {
+        if (Objects.isNull(customerBase)) {
             customerInfoService.queryCustomerById(customerId, activityId);
-            customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+            customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         }
-        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerInfo.getCustomerId(), customerInfo.getActivityId());
-        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
+        CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerBase.getCustomerId(), customerBase.getActivityId());
+        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerBase.getCustomerId(), customerBase.getActivityId());
 
         CustomerCharacter customerCharacter = customerCharacterMapper.selectByCustomerIdAndActivityId(customerId, activityId);
         CustomerCharacter newCustomerCharacter = new CustomerCharacter();
-        updateCharacter(newCustomerCharacter, customerInfo, customerProfile, customerFeature);
+        updateCharacter(newCustomerCharacter, customerBase, customerProfile, customerFeature);
         if (Objects.isNull(customerCharacter)) {
             // 新建
             customerCharacterMapper.insert(newCustomerCharacter);
@@ -217,7 +217,7 @@ public class MessageServiceImpl implements MessageService {
             }
             String fundsMessageDescribe = Objects.nonNull(newCustomerCharacter.getFundsVolume()) ? newCustomerCharacter.getFundsVolume() : "未提及";
             String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
-                    customerInfo.getCustomerId(), customerInfo.getActivityId());
+                    customerBase.getCustomerId(), customerBase.getActivityId());
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
             int id = 1;
             if (!purchaseMessageDescribe.equals("确认购买")) {
@@ -296,18 +296,18 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
             if (nightTime()) {
-                MessageSendVO vo = new MessageSendVO(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
+                MessageSendVO vo = new MessageSendVO(configService.getStaffAreaRobotUrl(customerBase.getOwnerId()), textMessage);
                 AppConstant.messageNeedSend.add(vo);
             } else {
-                sendMessageToChat(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
+                sendMessageToChat(configService.getStaffAreaRobotUrl(customerBase.getOwnerId()), textMessage);
             }
 
             // 发送消息给业务员，发送给个人企微
             String target = "**";
             int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
             textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
-            textMessage.setTouser(customerInfo.getOwnerId());
-            textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+            textMessage.setTouser(customerBase.getOwnerId());
+            textMessage.setAgentid(getAgentId(customerBase.getOwnerId()));
             if (nightTime()) {
                 MessageSendVO vo = new MessageSendVO(null, textMessage);
                 AppConstant.messageNeedSend.add(vo);
@@ -468,8 +468,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void sendMessage(String id) {
-        CustomerInfo customerInfo = customerInfoMapper.selectById(id);
-        CustomerFeatureResponse featureResponse = customerInfoService.queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
+        CustomerBase customerBase = customerBaseMapper.selectById(id);
+        CustomerFeatureResponse featureResponse = customerInfoService.queryCustomerFeatureById(customerBase.getCustomerId(), customerBase.getActivityId());
         List<String> completeStatus = featureResponse.getSummary().getAdvantage();
         List<CustomerFeatureResponse.Question> incompleteStatus = featureResponse.getSummary().getQuestions();
 
@@ -494,13 +494,13 @@ public class MessageServiceImpl implements MessageService {
             incomplete.append("暂无");
         }
         String rateDesc;
-        if (customerInfo.getConversionRate().equals("low")) {
-            rateDesc = conversionRateMap.get(customerInfo.getConversionRate()) + "（不应重点跟进）";
+        if (customerBase.getConversionRate().equals("low")) {
+            rateDesc = conversionRateMap.get(customerBase.getConversionRate()) + "（不应重点跟进）";
         } else {
-            rateDesc = conversionRateMap.get(customerInfo.getConversionRate());
+            rateDesc = conversionRateMap.get(customerBase.getConversionRate());
         }
-        String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerInfo.getCustomerName(),
-                customerInfo.getCustomerId(),
+        String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, customerBase.getCustomerName(),
+                customerBase.getCustomerId(),
                 rateDesc,
                 complete,
                 incomplete,
@@ -514,15 +514,15 @@ public class MessageServiceImpl implements MessageService {
     }
 
 
-    private void updateCharacter(CustomerCharacter latestCustomerCharacter, CustomerInfo customerInfo,
+    private void updateCharacter(CustomerCharacter latestCustomerCharacter, CustomerBase customerBase,
                                  CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
-        latestCustomerCharacter.setId(customerInfo.getId());
-        latestCustomerCharacter.setCustomerId(customerInfo.getCustomerId());
-        latestCustomerCharacter.setCustomerName(customerInfo.getCustomerName());
-        latestCustomerCharacter.setOwnerId(customerInfo.getOwnerId());
-        latestCustomerCharacter.setOwnerName(customerInfo.getOwnerName());
-        latestCustomerCharacter.setActivityName(customerInfo.getActivityName());
-        latestCustomerCharacter.setActivityId(customerInfo.getActivityId());
+        latestCustomerCharacter.setId(customerBase.getId());
+        latestCustomerCharacter.setCustomerId(customerBase.getCustomerId());
+        latestCustomerCharacter.setCustomerName(customerBase.getCustomerName());
+        latestCustomerCharacter.setOwnerId(customerBase.getOwnerId());
+        latestCustomerCharacter.setOwnerName(customerBase.getOwnerName());
+        latestCustomerCharacter.setActivityName(customerBase.getActivityName());
+        latestCustomerCharacter.setActivityId(customerBase.getActivityId());
         latestCustomerCharacter.setConversionRate(conversionRateMap.get(customerProfile.getConversionRate()));
 
         latestCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);

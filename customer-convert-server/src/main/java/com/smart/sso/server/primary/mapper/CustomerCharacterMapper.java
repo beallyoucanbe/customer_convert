@@ -2,7 +2,6 @@ package com.smart.sso.server.primary.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.smart.sso.server.model.CustomerCharacter;
-import com.smart.sso.server.model.CustomerInfo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;

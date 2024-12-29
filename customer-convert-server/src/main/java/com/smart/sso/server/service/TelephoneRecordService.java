@@ -1,7 +1,7 @@
 package com.smart.sso.server.service;
 
 import com.smart.sso.server.model.CustomerFeatureFromLLM;
-import com.smart.sso.server.model.CustomerInfo;
+import com.smart.sso.server.model.CustomerBase;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -37,5 +37,5 @@ public interface TelephoneRecordService {
 
     TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
 
-    CustomerInfo syncCustomerInfoFromRecord(String customerId, String activityId);
+    CustomerBase syncCustomerInfoFromRecord(String customerId, String activityId);
 }

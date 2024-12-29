@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.model.VO.MessageSendVO;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
-import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
+import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.primary.mapper.ScheduledTasksMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.service.ConfigService;
@@ -15,7 +15,6 @@ import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -34,7 +33,7 @@ public class SchedulTask {
     @Autowired
     private CustomerFeatureMapper customerFeatureMapper;
     @Autowired
-    private CustomerInfoMapper customerInfoMapper;
+    private CustomerBaseMapper customerBaseMapper;
     @Autowired
     private ScheduledTasksMapper scheduledTasksMapper;
     @Autowired
@@ -152,18 +151,18 @@ public class SchedulTask {
         }
         for (CustomerRelation item : customerRelationList) {
             try {
-                QueryWrapper<CustomerInfo> queryWrapper2 = new QueryWrapper<>();
+                QueryWrapper<CustomerBase> queryWrapper2 = new QueryWrapper<>();
                 queryWrapper2.eq("owner_id", item.getOwnerId());
                 queryWrapper2.eq("customer_id", item.getCustomerId().toString());
-                CustomerInfo customerInfo = customerInfoMapper.selectOne(queryWrapper2);
-                if (Objects.isNull(customerInfo)){
+                CustomerBase customerBase = customerBaseMapper.selectOne(queryWrapper2);
+                if (Objects.isNull(customerBase)){
                     continue;
                 }
                 // 检查info表中是否有购买时间，如果有，代表已购买，跳过不处理，如果没有，就记录首次探测到购买的时间
-                if (Objects.isNull(customerInfo.getPurchaseTime())) {
-                    customerInfoMapper.updatePurchaseTimeById(customerInfo.getId(), new Timestamp(new Date().getTime()));
+                if (Objects.isNull(customerBase.getPurchaseTime())) {
+                    customerBaseMapper.updatePurchaseTimeById(customerBase.getId(), new Timestamp(new Date().getTime()));
                 }
-                CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
+                CustomerFeature customerFeature = customerFeatureMapper.selectById(customerBase.getId());
                 if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
                     Map<String, Object> tag =
                             JsonUtil.readValue(JsonUtil.serialize(customerFeature.getSoftwarePurchaseAttitudeSales()),
@@ -181,7 +180,7 @@ public class SchedulTask {
                     customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(), JsonUtil.serialize(tag));
                 } else {
                     CustomerFeature feature= new CustomerFeature();
-                    feature.setId(customerInfo.getId());
+                    feature.setId(customerBase.getId());
                     FeatureContentSales featureContent = new FeatureContentSales();
                     featureContent.setTag(true);
                     feature.setSoftwarePurchaseAttitudeSales(featureContent);
