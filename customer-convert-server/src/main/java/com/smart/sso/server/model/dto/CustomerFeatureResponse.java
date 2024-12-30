@@ -1,5 +1,6 @@
 package com.smart.sso.server.model.dto;
 
+import com.smart.sso.server.model.EventDTO;
 import lombok.*;
 
 import java.util.List;
@@ -10,7 +11,8 @@ public class CustomerFeatureResponse {
     private ProcessSummary summary;
     private Basic basic;
     private CustomerProcessSummary.TradingMethod tradingMethod;
-//    private
+    private Warmth warmth;
+    private HandoverPeriod handoverPeriod;
 
 
     @Getter
@@ -63,11 +65,83 @@ public class CustomerFeatureResponse {
     /**
      * 客户温度
      */
+    @Getter
+    @Setter
+    @NoArgsConstructor
     public static class Warmth{
-
         // 交付课听课情况
-//        private delivery_course
+        private CourseContent deliveryCourse;
+        // 营销课听课情况
+        private CourseContent marketingCourse;
+        // 直播/圈子访问频次
+        private FrequencyContent visitFreq;
+        // 功能指标使用频次
+        private FrequencyContent functionFreq;
+        // 客户资金体量
+        private ChatContent fundsVolume;
+        // 是否有时间听课
+        private ChatContent customerCourse;
+    }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class CourseContent{
+        private Integer total;
+        private Integer process;
+        private RecordContent record;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class FrequencyContent{
+        private Object value;
+        private List<String> records;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ChatContent{
+        private String value;
+        private OriginChat originChat;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class HandoverPeriod{
+        private HandoverPeriodBasic basic;
+        private TradeMethodFeature currentStocks;
+        private TradeMethodFeature tradingStyle;
+        private TradeMethodFeature stockMarketAge;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class HandoverPeriodBasic{
+        private FrequencyContent completeIntro;
+        private FrequencyContent remindFreq;
+        private FrequencyContent transFreq;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class RecordContent{
+        private List<RecordTitle> columns;
+        private List<EventDTO> data;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class RecordTitle{
+        private String key;
+        private String lable;
     }
 
 }
