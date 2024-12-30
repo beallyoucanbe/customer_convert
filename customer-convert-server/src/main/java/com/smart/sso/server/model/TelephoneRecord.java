@@ -21,48 +21,74 @@ public class TelephoneRecord {
     private String ownerId;
     private String ownerName;
     private String activityId;
+    private String period;
     private Integer communicationDuration;
     private Timestamp communicationTime;
+    private Timestamp communicationType;
     private String callId;
 
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> fundsVolume;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> earningDesire;
+    private List<CommunicationContent> hasTime;
+
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwareFunctionClarity;
+    private List<CommunicationContent> introduceService_1;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockSelectionMethod;
+    private List<CommunicationContent> introduceService_2;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> selfIssueRecognition;
+    private List<CommunicationContent> introduceService_3;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwareValueApproval;
+    private List<CommunicationContent> introduceService_4;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwarePurchaseAttitude;
+    private List<CommunicationContent> introduceService_5;
+
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> remindService_1;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> remindService_2;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> remindService_3;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> remindService_4;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> remindService_5;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> currentStocks;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPurchaseReason;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> tradeTimingDecision;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> tradingStyle;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> stockMarketAge;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> learningAbility;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> illustrateBasedStock;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> tradeStyleIntroduce;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPickMethodReview;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPickTimingReview;
 
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> earningDesire;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> softwareFunctionClarity;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> stockSelectionMethod;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> selfIssueRecognition;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> softwareValueApproval;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> softwarePurchaseAttitude;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> stockPurchaseReason;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> tradeTimingDecision;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> learningAbility;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> illustrateBasedStock;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> tradeStyleIntroduce;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> stockPickMethodReview;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> stockPickTimingReview;
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> customerIssuesQuantified;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> softwareValueQuantified;
 
     private Integer parsed;

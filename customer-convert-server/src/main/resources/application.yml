@@ -19,12 +19,7 @@ spring:
   datasource:
     primary:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://172.16.192.60:3306/customer_new?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-      username: root
-      password: my-secret-pw
-    secondary:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://172.16.192.60:3306/customer?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://43.143.223.178:3306/customer?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
       username: root
       password: my-secret-pw
   mvc:
