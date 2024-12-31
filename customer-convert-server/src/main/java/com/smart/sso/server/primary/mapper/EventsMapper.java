@@ -13,4 +13,8 @@ public interface EventsMapper extends BaseMapper<Events> {
     List<Events> getEventsByUserIdAndEventName(@Param("user_id") int user_id,
                                                @Param("event_name") String event_name);
 
+    @Select("select count(1) from events where user_id = #{user_id} and event_name = #{event_name}")
+    int getCountByUserIdAndEventName(@Param("user_id") int user_id,
+                                               @Param("event_name") String event_name);
+
 }
