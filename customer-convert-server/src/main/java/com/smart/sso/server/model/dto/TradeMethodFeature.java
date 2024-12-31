@@ -1,9 +1,11 @@
 package com.smart.sso.server.model.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Data
+@NoArgsConstructor
 public class TradeMethodFeature extends Feature {
     private CustomerProcessSummary.ProcessInfoExplanationContent standardAction;
 

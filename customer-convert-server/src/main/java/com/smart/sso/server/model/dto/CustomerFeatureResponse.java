@@ -89,7 +89,7 @@ public class CustomerFeatureResponse {
     public static class CourseContent{
         private Integer total;
         private Integer process;
-        private RecordContent record;
+        private RecordContent records;
     }
 
     @Getter
@@ -97,7 +97,7 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class FrequencyContent{
         private Object value;
-        private List<String> records;
+        private RecordContent records;
     }
 
     @Getter
@@ -141,7 +141,7 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class RecordTitle{
         private String key;
-        private String lable;
+        private String label;
     }
 
 }
