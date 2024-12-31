@@ -92,4 +92,8 @@ public class AppConstant {
 
     // 这里记录需要延迟发送的消息列表
     public static Queue<MessageSendVO> messageNeedSend = new LinkedList<>();
+
+    // 这里定义一些事件常量
+    public static final String EVENT_ATTEND_CLASS = "attend_class";
+
 }

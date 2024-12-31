@@ -19,17 +19,32 @@ public class CustomerFeatureFromLLM {
     private String callId;
 
     private CommunicationContent fundsVolume;
+    private CommunicationContent hasTime;
+
+    private CommunicationContent introduceService_1;
+    private CommunicationContent introduceService_2;
+    private CommunicationContent introduceService_3;
+    private CommunicationContent introduceService_4;
+    private CommunicationContent introduceService_5;
+
+    private CommunicationContent remindService_1;
+    private CommunicationContent remindService_2;
+    private CommunicationContent remindService_3;
+    private CommunicationContent remindService_4;
+    private CommunicationContent remindService_5;
+
+    private CommunicationContent currentStocks;
+    private CommunicationContent tradingStyle;
+    private CommunicationContent stockMarketAge;
+
     private CommunicationContent earningDesire;
     private CommunicationContent softwareFunctionClarity;
     private CommunicationContent stockSelectionMethod;
     private CommunicationContent selfIssueRecognition;
     private CommunicationContent softwareValueApproval;
     private CommunicationContent softwarePurchaseAttitude;
-    private CommunicationContent currentStocks;
     private CommunicationContent stockPurchaseReason;
     private CommunicationContent tradeTimingDecision;
-    private CommunicationContent tradingStyle;
-    private CommunicationContent stockMarketAge;
     private CommunicationContent learningAbility;
     private CommunicationContent illustrateBasedStock;
     private CommunicationContent tradeStyleIntroduce;

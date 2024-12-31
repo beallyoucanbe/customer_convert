@@ -84,6 +84,272 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     }
                 }
             }
+            //客户有没有时间
+            if (!CollectionUtils.isEmpty(record.getHasTime())) {
+                CommunicationContent communicationContent = record.getHasTime().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getHasTime())) {
+                    customerFeatureFromLLM.setHasTime(communicationContent);
+                    customerFeatureFromLLM.getHasTime().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getHasTime().getQuestion()) || customerFeatureFromLLM.getHasTime().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getHasTime().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getHasTime().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getHasTime().getAnswerText()) || customerFeatureFromLLM.getHasTime().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getHasTime().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getHasTime().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getHasTime().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getHasTime().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getHasTime().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            //服务介绍1
+            if (!CollectionUtils.isEmpty(record.getIntroduceService_1())) {
+                CommunicationContent communicationContent = record.getIntroduceService_1().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getIntroduceService_1())) {
+                    customerFeatureFromLLM.setIntroduceService_1(communicationContent);
+                    customerFeatureFromLLM.getIntroduceService_1().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_1().getQuestion()) || customerFeatureFromLLM.getIntroduceService_1().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getIntroduceService_1().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getIntroduceService_1().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_1().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_1().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getIntroduceService_1().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getIntroduceService_1().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getIntroduceService_1().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getIntroduceService_1().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getIntroduceService_1().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //服务介绍2
+            if (!CollectionUtils.isEmpty(record.getIntroduceService_2())) {
+                CommunicationContent communicationContent = record.getIntroduceService_2().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getIntroduceService_2())) {
+                    customerFeatureFromLLM.setIntroduceService_2(communicationContent);
+                    customerFeatureFromLLM.getIntroduceService_2().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_2().getQuestion()) || customerFeatureFromLLM.getIntroduceService_2().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getIntroduceService_2().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getIntroduceService_2().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_2().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_2().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getIntroduceService_2().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getIntroduceService_2().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getIntroduceService_2().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getIntroduceService_2().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getIntroduceService_2().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //服务介绍3
+            if (!CollectionUtils.isEmpty(record.getIntroduceService_3())) {
+                CommunicationContent communicationContent = record.getIntroduceService_3().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getIntroduceService_3())) {
+                    customerFeatureFromLLM.setIntroduceService_3(communicationContent);
+                    customerFeatureFromLLM.getIntroduceService_3().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_3().getQuestion()) || customerFeatureFromLLM.getIntroduceService_3().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getIntroduceService_3().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getIntroduceService_3().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_3().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_3().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getIntroduceService_3().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getIntroduceService_3().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getIntroduceService_3().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getIntroduceService_3().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getIntroduceService_3().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //服务介绍4
+            if (!CollectionUtils.isEmpty(record.getIntroduceService_4())) {
+                CommunicationContent communicationContent = record.getIntroduceService_4().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getIntroduceService_4())) {
+                    customerFeatureFromLLM.setIntroduceService_4(communicationContent);
+                    customerFeatureFromLLM.getIntroduceService_4().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_4().getQuestion()) || customerFeatureFromLLM.getIntroduceService_4().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getIntroduceService_4().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getIntroduceService_4().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_4().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_4().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getIntroduceService_4().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getIntroduceService_4().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getIntroduceService_4().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getIntroduceService_4().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getIntroduceService_4().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //服务介绍5
+            if (!CollectionUtils.isEmpty(record.getIntroduceService_5())) {
+                CommunicationContent communicationContent = record.getIntroduceService_5().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getIntroduceService_5())) {
+                    customerFeatureFromLLM.setIntroduceService_5(communicationContent);
+                    customerFeatureFromLLM.getIntroduceService_5().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_5().getQuestion()) || customerFeatureFromLLM.getIntroduceService_5().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getIntroduceService_5().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getIntroduceService_5().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_5().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_5().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getIntroduceService_5().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getIntroduceService_5().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getIntroduceService_5().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getIntroduceService_5().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getIntroduceService_5().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //提醒1
+            if (!CollectionUtils.isEmpty(record.getRemindService_1())) {
+                CommunicationContent communicationContent = record.getRemindService_1().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getRemindService_1())) {
+                    customerFeatureFromLLM.setRemindService_1(communicationContent);
+                    customerFeatureFromLLM.getRemindService_1().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_1().getQuestion()) || customerFeatureFromLLM.getRemindService_1().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getRemindService_1().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getRemindService_1().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_1().getAnswerText()) || customerFeatureFromLLM.getRemindService_1().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getRemindService_1().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getRemindService_1().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getRemindService_1().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getRemindService_1().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getRemindService_1().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //提醒2
+            if (!CollectionUtils.isEmpty(record.getRemindService_2())) {
+                CommunicationContent communicationContent = record.getRemindService_2().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getRemindService_2())) {
+                    customerFeatureFromLLM.setRemindService_2(communicationContent);
+                    customerFeatureFromLLM.getRemindService_2().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_2().getQuestion()) || customerFeatureFromLLM.getRemindService_2().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getRemindService_2().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getRemindService_2().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_2().getAnswerText()) || customerFeatureFromLLM.getRemindService_2().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getRemindService_2().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getRemindService_2().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getRemindService_2().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getRemindService_2().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getRemindService_2().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //提醒3
+            if (!CollectionUtils.isEmpty(record.getRemindService_3())) {
+                CommunicationContent communicationContent = record.getRemindService_3().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getRemindService_3())) {
+                    customerFeatureFromLLM.setRemindService_3(communicationContent);
+                    customerFeatureFromLLM.getRemindService_3().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_3().getQuestion()) || customerFeatureFromLLM.getRemindService_3().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getRemindService_3().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getRemindService_3().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_3().getAnswerText()) || customerFeatureFromLLM.getRemindService_3().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getRemindService_3().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getRemindService_3().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getRemindService_3().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getRemindService_3().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getRemindService_3().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //提醒4
+            if (!CollectionUtils.isEmpty(record.getRemindService_4())) {
+                CommunicationContent communicationContent = record.getRemindService_4().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getRemindService_4())) {
+                    customerFeatureFromLLM.setRemindService_4(communicationContent);
+                    customerFeatureFromLLM.getRemindService_4().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_4().getQuestion()) || customerFeatureFromLLM.getRemindService_4().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getRemindService_4().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getRemindService_4().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_4().getAnswerText()) || customerFeatureFromLLM.getRemindService_4().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getRemindService_4().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getRemindService_4().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getRemindService_4().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getRemindService_4().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getRemindService_4().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+            //提醒5
+            if (!CollectionUtils.isEmpty(record.getRemindService_5())) {
+                CommunicationContent communicationContent = record.getRemindService_5().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getRemindService_5())) {
+                    customerFeatureFromLLM.setRemindService_5(communicationContent);
+                    customerFeatureFromLLM.getRemindService_5().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_5().getQuestion()) || customerFeatureFromLLM.getRemindService_5().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getRemindService_5().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getRemindService_5().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getRemindService_5().getAnswerText()) || customerFeatureFromLLM.getRemindService_5().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getRemindService_5().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getRemindService_5().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getRemindService_5().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getRemindService_5().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getRemindService_5().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
             //客户的赚钱欲望
             if (!CollectionUtils.isEmpty(record.getEarningDesire())) {
                 CommunicationContent communicationContent = record.getEarningDesire().get(0);
