@@ -24,7 +24,7 @@ public class TelephoneRecord {
     private String period;
     private Integer communicationDuration;
     private Timestamp communicationTime;
-    private Timestamp communicationType;
+    private String communicationType;
     private String callId;
 
     @TableField(typeHandler = CommunicationContentTypeHandler.class)

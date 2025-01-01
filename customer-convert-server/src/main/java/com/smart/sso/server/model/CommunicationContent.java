@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class CommunicationContent {
     private String ts;
     private String question;
+    private String explanation;
     private String answerText;
     private String answerTag;
     private String doubtText;
