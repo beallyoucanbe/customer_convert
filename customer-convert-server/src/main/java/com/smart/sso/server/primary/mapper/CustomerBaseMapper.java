@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.smart.sso.server.model.CustomerBase;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
@@ -26,7 +27,7 @@ public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
                                   @Param("communication_rounds") Integer communication_rounds,
                                   @Param("update_time") Timestamp update_time);
 
-    @Update("UPDATE customer_base SET purchase_time = #{purchase_time} WHERE id = #{id}")
-    int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") Timestamp purchase_time);
+    @Update("UPDATE customer_base SET purchase_time = #{purchase_time}, customer_purchase_status = 1 WHERE id = #{id}")
+    int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") LocalDateTime purchase_time);
 
 }

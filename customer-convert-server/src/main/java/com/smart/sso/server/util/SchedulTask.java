@@ -144,15 +144,15 @@ public class SchedulTask {
             log.error("没有当前的活动，请先配置");
             return;
         }
-        List<CustomerRelation> customerRelationList= customerRelationService.getByActivityAndSigned(activityId);
+        List<CustomerInfo> customerRelationList= customerRelationService.getByActivityAndSigned(activityId);
         // 对每一个支付定金的客户，检查销售记录值是否正确
         if (CollectionUtils.isEmpty(customerRelationList)) {
             return;
         }
-        for (CustomerRelation item : customerRelationList) {
+        for (CustomerInfo item : customerRelationList) {
             try {
                 QueryWrapper<CustomerBase> queryWrapper2 = new QueryWrapper<>();
-                queryWrapper2.eq("owner_id", item.getOwnerId());
+                queryWrapper2.eq("owner_id", item.getSalesId().toString());
                 queryWrapper2.eq("customer_id", item.getCustomerId().toString());
                 CustomerBase customerBase = customerBaseMapper.selectOne(queryWrapper2);
                 if (Objects.isNull(customerBase)){
@@ -160,7 +160,7 @@ public class SchedulTask {
                 }
                 // 检查info表中是否有购买时间，如果有，代表已购买，跳过不处理，如果没有，就记录首次探测到购买的时间
                 if (Objects.isNull(customerBase.getPurchaseTime())) {
-                    customerBaseMapper.updatePurchaseTimeById(customerBase.getId(), new Timestamp(new Date().getTime()));
+                    customerBaseMapper.updatePurchaseTimeById(customerBase.getId(), item.getPurchaseTime());
                 }
                 CustomerFeature customerFeature = customerFeatureMapper.selectById(customerBase.getId());
                 if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){

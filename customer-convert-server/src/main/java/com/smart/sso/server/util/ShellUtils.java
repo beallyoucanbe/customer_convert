@@ -271,7 +271,7 @@ public class ShellUtils {
      * 在SP环境中,启动一个Python进程, 默认使用python3执行
      */
     public static Process saPythonRun(String pythonFilePath, int maxArgc, String... params) throws IOException {
-        String pythonPath = "/home/opsuser/miniconda3/bin/python";
+        String pythonPath = "/root/miniconda3/bin/python";
         String[] command = null;
         if (maxArgc > 0) {
             int realArgc = Math.min(params.length, maxArgc);
@@ -286,9 +286,9 @@ public class ShellUtils {
         // 设置日志文件为追加模式
         File logFile;
         if (pythonFilePath.contains("test")){
-            logFile = new File("/opt/customer-convert/callback/logs/call_test.log");
+            logFile = new File("/data/customer-convert/callback/logs/call_test.log");
         } else {
-            logFile = new File("/opt/customer-convert/callback/logs/call.log");
+            logFile = new File("/data/customer-convert/callback/logs/call.log");
         }
         FileOutputStream fos = new FileOutputStream(logFile, true); // 'true' 表示追加模式
 

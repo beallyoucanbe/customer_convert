@@ -270,13 +270,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
         try {
-            CustomerRelation customerRelation = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
+            CustomerInfo customerInfo = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
                     customerBase.getOwnerId(), customerBase.getActivityId());
-            if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
-                    && customerRelation.getCustomerSigned()) {
+            if (Objects.nonNull(customerInfo) && Objects.nonNull(customerInfo.getCustomerPurchaseStatus())
+                    && customerInfo.getCustomerPurchaseStatus() == 1) {
                 stageStatus.setCompletePurchase(1);
             }
-            customerBase.setIsSend188(customerRelation.getIsSend188());
         } catch (Exception e) {
             log.error("判断确认购买状态失败, ID={}", customerBase.getCustomerId());
         }
@@ -556,23 +555,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             log.error("没有当前的活动，请先配置");
             return;
         }
-        List<CustomerRelation> characterList = customerRelationService.getByActivityAndUpdateTime(activityId,
-                LocalDateTime.of(2024, 1, 1, 12, 0, 0));
-        Map<String, String> activityIdNames = configService.getActivityIdNames();
-        for (CustomerRelation relation : characterList) {
-            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(Long.toString(relation.getCustomerId()), activityId);
+        List<CustomerInfo> characterList = customerRelationService.getByActivity(activityId);
+        for (CustomerInfo info : characterList) {
+            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(Long.toString(info.getCustomerId()), activityId);
             if (Objects.nonNull(customerBase)) {
                 continue;
             }
             customerBase = new CustomerBase();
             customerBase.setId(CommonUtils.generatePrimaryKey());
-            customerBase.setCustomerId(Long.toString(relation.getCustomerId()));
-            customerBase.setOwnerId(relation.getOwnerId());
-            customerBase.setCustomerName(relation.getCustomerName());
-            customerBase.setOwnerName(relation.getOwnerName());
+            customerBase.setCustomerId(Long.toString(info.getCustomerId()));
+            customerBase.setOwnerId(Long.toString(info.getSalesId()));
+            customerBase.setCustomerName(info.getCustomerName());
+            customerBase.setOwnerName(info.getSalesName());
             customerBase.setActivityId(activityId);
-            customerBase.setActivityName(activityIdNames.get(activityId));
+            customerBase.setActivityName(info.getActivityName());
             customerBase.setUpdateTimeTelephone(LocalDateTime.now());
+            customerBase.setPurchaseTime(info.getPurchaseTime());
             customerBaseMapper.insert(customerBase);
         }
     }

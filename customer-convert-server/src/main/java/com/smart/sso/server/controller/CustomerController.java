@@ -14,11 +14,9 @@ import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerBaseListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummary;
-import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.service.EventService;
-import com.smart.sso.server.service.MessageService;
-import com.smart.sso.server.service.TelephoneRecordService;
+import com.smart.sso.server.service.*;
 import com.smart.sso.server.util.CommonUtils;
+import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -52,9 +50,8 @@ public class CustomerController {
     private TelephoneRecordService recordService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
     @Autowired
-    private EventService eventService;
+    private CommunicationService communicationService;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -135,7 +132,7 @@ public class CustomerController {
             log.error("source id:{} 已存在， 跳过不处理, staff id: {}, customer id: {}", sourceId, staffId, customerId);
         } else {
             log.error("开始调用python脚本：source id:{}, staff id: {}, customer id: {}", sourceId, staffId, customerId);
-//            customerInfoService.callback(sourceId);
+            customerInfoService.callback(sourceId);/**/
         }
         return ResultUtils.success(null);
     }
@@ -265,8 +262,17 @@ public class CustomerController {
     @ApiOperation(value = "企微的回调接口")
     @PostMapping("/customer/communication_sync/wecom")
     public BaseResponse<Void> communicationSyncWecom(@RequestBody Map<String, Object> message) {
-        String filePath = "/data/customer-convert/callback/wecom/message.txt";
+        String userId = message.get("user_id").toString();
+        String customerId = message.get("customer_id").toString();
+        log.error("收到企微回调，user id: {}, customer id: {}", userId, customerId);
+        String dateTimeStr = DateUtil.getCurrentDateTime();
+        String dateStr = dateTimeStr.split(" ")[0];
+        String timeStr = dateTimeStr.split(" ")[1].replace(":", "_");
+
+        String filePath = "/data/customer-convert/callback/wecom/" + dateStr + "/" + userId + "_" + customerId + "_" + timeStr;
+        log.error("存储路径:{}", filePath);
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
+        communicationService.wecomCallBack(filePath);
         return ResultUtils.success(null);
     }
 
@@ -275,6 +281,7 @@ public class CustomerController {
     public BaseResponse<Void> communicationSyncTelephone(@RequestBody Map<String, Object> message) {
         String filePath = "/data/customer-convert/callback/telephone/message.txt";
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
+        communicationService.telephoneCallBack(JsonUtil.serialize(message));
         return ResultUtils.success(null);
     }
 
