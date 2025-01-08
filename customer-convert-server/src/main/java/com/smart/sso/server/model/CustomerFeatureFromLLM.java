@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -27,11 +29,11 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent introduceService_4;
     private CommunicationContent introduceService_5;
 
-    private CommunicationContent remindService_1;
-    private CommunicationContent remindService_2;
-    private CommunicationContent remindService_3;
-    private CommunicationContent remindService_4;
-    private CommunicationContent remindService_5;
+    private List<CommunicationContent> remindService_1 = new ArrayList<>();
+    private List<CommunicationContent> remindService_2 = new ArrayList<>();
+    private List<CommunicationContent> remindService_3 = new ArrayList<>();
+    private List<CommunicationContent> remindService_4 = new ArrayList<>();
+    private List<CommunicationContent> remindService_5 = new ArrayList<>();
 
     private CommunicationContent currentStocks;
     private CommunicationContent tradingStyle;

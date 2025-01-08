@@ -34,6 +34,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,6 +69,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Autowired
     @Lazy
     private MessageService messageService;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
@@ -172,7 +176,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setSummary(getProcessSummary(customerFeature, customerBase, stageStatus, summaryResponse));
         }
         setIntroduceService(featureFromLLM, customerFeature);
-        setIntroduceService(featureFromLLM, customerFeature);
+        setRemindService(featureFromLLM, customerFeature);
+        setTeacherRemind(featureFromLLM, customerFeature);
         if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())){
@@ -731,7 +736,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private TradeMethodFeature convertTradeMethodFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type) {
-        return new TradeMethodFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type, false));
+        TradeMethodFeature tradeMethodFeature = new TradeMethodFeature(convertFeatureByOverwrite(featureContentByModel, featureContentBySales, enumClass, type, false));
+        CustomerProcessSummary.ProcessInfoExplanationContent explanationContent =
+                new CustomerProcessSummary.ProcessInfoExplanationContent();
+        explanationContent.setResult(Boolean.FALSE);
+        if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getExplanation()) &&
+                !featureContentByModel.getExplanation().trim().equals("无") &&
+                !featureContentByModel.getExplanation().trim().equals("null")) {
+            explanationContent.setResult(Boolean.TRUE);
+            explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                    StringUtils.isEmpty(featureContentByModel.getQuestionCallId()) ? featureContentByModel.getCallId() : featureContentByModel.getQuestionCallId(),
+                    featureContentByModel.getExplanation()));
+        }
+        tradeMethodFeature.setStandardAction(explanationContent);
+        return tradeMethodFeature;
     }
 
     private Feature convertFeatureByOverwrite(CommunicationContent featureContentByModel, FeatureContentSales featureContentBySales, Class<? extends Enum<?>> enumClass, Class type, boolean isTag) {
@@ -1181,55 +1199,121 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private void setRemindService(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature){
         // 提醒查看盘中直播：
-        if(Objects.nonNull(featureFromLLM.getRemindService_1()) &&
-                Objects.nonNull(featureFromLLM.getRemindService_2()) &&
-                !StringUtils.isEmpty(featureFromLLM.getRemindService_1().getAnswerText()) &&
-                !StringUtils.isEmpty(featureFromLLM.getRemindService_2().getAnswerText())){
-            customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(Boolean.TRUE);
-        }
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "维度名"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "会话时间"));
         columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
         recordContent.setColumns(columns);
 
         List<Map<String, Object>> data = new ArrayList<>();
-        //1、盘中直播"沙场点兵"、回放位置
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_1()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())){
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "盘中直播\"沙场点兵\"、回放位置");
-            item.put("event_content", featureFromLLM.getIntroduceService_1().getAnswerText());
-            data.add(item);
+        List<String> allTimeStr = new ArrayList<>();
+        int count = 0;
+        //1、销售提醒客户查看"盘中直播"的语句
+        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_1())){
+            for (CommunicationContent one : featureFromLLM.getRemindService_1()){
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_type", one.getTs());
+                item.put("event_content", one.getAnswerText());
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
         }
-        //2、"智能投教圈"、提醒客户查收老师信息
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_2()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())){
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "\"智能投教圈\"、提醒客户查收老师信息");
-            item.put("event_content", featureFromLLM.getIntroduceService_2().getAnswerText());
-            data.add(item);
-        }
-        //3、老师相关课程位置
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_3()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())){
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "老师相关课程位置");
-            item.put("event_content", featureFromLLM.getIntroduceService_3().getAnswerText());
-            data.add(item);
-        }
-        //4、16节交付大课都包含什么内容
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_4()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())){
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "16节交付大课都包含什么内容");
-            item.put("event_content", featureFromLLM.getIntroduceService_4().getAnswerText());
-            data.add(item);
-        }
-        //5、软件功能指标位置
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_5()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "软件功能指标位置");
-            item.put("event_content", featureFromLLM.getIntroduceService_5().getAnswerText());
-            data.add(item);
+        //2、销售提醒客户查看"圈子内容"的语句
+        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())){
+            for (CommunicationContent one : featureFromLLM.getRemindService_2()){
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_type", one.getTs());
+                item.put("event_content", one.getAnswerText());
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
         }
         recordContent.setData(data);
-        customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setRecords(recordContent);
+
+        // 计算频次
+        if (!CollectionUtils.isEmpty(allTimeStr)) {
+            List<String> sortedTime = allTimeStr.stream().sorted().collect(Collectors.toList());
+            int days = calculateDaysDifference(sortedTime.get(0));
+            // 这里计算平均多少天一次
+            double fre = (double) days/count;
+            String formattedResult = String.format("%.1f", fre);
+            customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setValue(Double.parseDouble(formattedResult));
+        }
+
+        customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setRecords(recordContent);
+    }
+
+    public int calculateDaysDifference(String timeStr) {
+        try {
+            long diffInMillies = Math.abs(new Date().getTime() - sdf.parse(timeStr).getTime()); // 计算两个时间的毫秒差
+            long diffInDays = diffInMillies / (24 * 60 * 60 * 1000); // 将毫秒差转换为天数
+            // 如果有不足一天的部分，则天数加1
+            if (diffInMillies % (24 * 60 * 60 * 1000) > 0) {
+                diffInDays++;
+            }
+            return (int) diffInDays;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return -1; // 解析时间字符串失败时返回-1
+        }
+    }
+
+    private void setTeacherRemind(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature){
+        // 直播/圈子内容传递频次（区分三个老师的姓名）
+        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "会话时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
+        recordContent.setColumns(columns);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        List<String> allTimeStr = new ArrayList<>();
+        int count = 0;
+        //1、销售提到"周昭老师"的语句
+        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_3())){
+            for (CommunicationContent one : featureFromLLM.getRemindService_3()){
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_type", one.getTs());
+                item.put("event_content", one.getAnswerText());
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
+        }
+        //2、销售提到"韩珂老师"的语句
+        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_4())){
+            for (CommunicationContent one : featureFromLLM.getRemindService_4()){
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_type", one.getTs());
+                item.put("event_content", one.getAnswerText());
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
+        }
+        //2、销售提到"荀利老师"的语句
+        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_5())){
+            for (CommunicationContent one : featureFromLLM.getRemindService_5()){
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_type", one.getTs());
+                item.put("event_content", one.getAnswerText());
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
+        }
+        recordContent.setData(data);
+        // 计算频次
+        if (!CollectionUtils.isEmpty(allTimeStr)) {
+            List<String> sortedTime = allTimeStr.stream().sorted().collect(Collectors.toList());
+            int days = calculateDaysDifference(sortedTime.get(0));
+            // 这里计算平均多少天一次
+            double fre = (double) days/count;
+            String formattedResult = String.format("%.1f", fre);
+            customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setValue(Double.parseDouble(formattedResult));
+        }
+        customerFeature.getHandoverPeriod().getBasic().getTransFreq().setRecords(recordContent);
     }
 }
