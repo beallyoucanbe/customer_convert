@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -85,19 +87,19 @@ public class EventServiceImpl implements EventService {
         return recordContent;
     }
 
-    private List<EventDTO> convertEventDTOFromEvent(List<Events> events){
+    private List<Map<String, Object>> convertEventDTOFromEvent(List<Events> events){
         if (CollectionUtils.isEmpty(events)){
             return null;
         }
-        List<EventDTO> result = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<>();
         for (Events item : events){
-            EventDTO dto = new EventDTO();
-            dto.setClient(item.getClassType());
-            dto.setEventType(item.getEventName());
-            dto.setEventTime(DateUtil.getFormatTime(item.getEventTime()));
-            dto.setEventDuration(item.getEventDuration());
-            dto.setActionSection(item.getActionType());
-            dto.setActionContent(item.getActionContent());
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("client", item.getClassType());
+            dto.put("event_type", item.getEventName());
+            dto.put("event_time", DateUtil.getFormatTime(item.getEventTime()));
+            dto.put("event_duration", item.getEventDuration());
+            dto.put("action_section", item.getActionType());
+            dto.put("action_content", item.getActionContent());
             result.add(dto);
         }
         return result;

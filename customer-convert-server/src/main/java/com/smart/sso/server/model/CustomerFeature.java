@@ -21,6 +21,8 @@ public class CustomerFeature implements Serializable {
     private FeatureContentSales fundsVolumeSales;
     @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
     private FeatureContentSales earningDesireSales;
+    @TableField(exist = false, typeHandler = FeatureContentSalesTypeHandler.class)
+    private FeatureContentSales hasTimeSales;
     @TableField(typeHandler = FeatureContentSalesTypeHandler.class)
     private FeatureContentSales currentStocksSales;
     @TableField(typeHandler = FeatureContentSalesTypeHandler.class)

@@ -9,7 +9,7 @@ import lombok.Getter;
  */
 @Getter
 public enum CommunicationTypeEnum {
-    WECHAT("work_wechat", 0),
+    WECHAT("wechat", 0),
     PHONE("phone", 1);
 
     @EnumValue

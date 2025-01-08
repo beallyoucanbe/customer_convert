@@ -4,6 +4,7 @@ import com.smart.sso.server.model.EventDTO;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class CustomerFeatureResponse {
@@ -11,8 +12,8 @@ public class CustomerFeatureResponse {
     private ProcessSummary summary;
     private Basic basic;
     private CustomerProcessSummary.TradingMethod tradingMethod;
-    private Warmth warmth;
-    private HandoverPeriod handoverPeriod;
+    private Warmth warmth = new Warmth();
+    private HandoverPeriod handoverPeriod = new HandoverPeriod();
 
 
     @Getter
@@ -31,6 +32,7 @@ public class CustomerFeatureResponse {
     public static class Basic {
         private BaseFeature fundsVolume;
         private BaseFeature earningDesire;
+        private BaseFeature hasTime;
         private BaseFeature softwareFunctionClarity;
         private BaseFeature stockSelectionMethod;
         private BaseFeature selfIssueRecognition;
@@ -112,7 +114,7 @@ public class CustomerFeatureResponse {
     @Setter
     @NoArgsConstructor
     public static class HandoverPeriod{
-        private HandoverPeriodBasic basic;
+        private HandoverPeriodBasic basic = new HandoverPeriodBasic();
         private TradeMethodFeature currentStocks;
         private TradeMethodFeature tradingStyle;
         private TradeMethodFeature stockMarketAge;
@@ -123,9 +125,9 @@ public class CustomerFeatureResponse {
     @Setter
     @NoArgsConstructor
     public static class HandoverPeriodBasic{
-        private FrequencyContent completeIntro;
-        private FrequencyContent remindFreq;
-        private FrequencyContent transFreq;
+        private FrequencyContent completeIntro = new FrequencyContent();
+        private FrequencyContent remindFreq = new FrequencyContent();
+        private FrequencyContent transFreq = new FrequencyContent();;
     }
 
     @Getter
@@ -133,12 +135,13 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class RecordContent{
         private List<RecordTitle> columns;
-        private List<EventDTO> data;
+        private List<Map<String, Object>> data;
     }
 
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class RecordTitle{
         private String key;
         private String label;

@@ -841,6 +841,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 chatHistoryVO.setId(record.getCallId());
                 chatHistoryVO.setCommunicationTime(record.getCommunicationTime());
                 chatHistoryVO.setCommunicationDuration(record.getCommunicationDuration());
+                chatHistoryVO.setType(record.getCommunicationType());
                 ChatHistoryVO.ChatHistoryInfo basic = new ChatHistoryVO.ChatHistoryInfo();
                 // 软件功能清晰度
                 if (!CollectionUtils.isEmpty(record.getSoftwareFunctionClarity())) {
@@ -977,14 +978,6 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             customerBase.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
             customerBase.setUpdateTimeTelephone(LocalDateTime.now());
             customerBaseMapper.insert(customerBase);
-        } else {
-            // info 表存在记录，需要同步名称等关键信息
-            customerBase.setCustomerName(telephoneRecord.getCustomerName());
-            customerBase.setOwnerName(telephoneRecord.getOwnerName());
-            customerBase.setOwnerId(telephoneRecord.getOwnerId());
-            customerBase.setActivityName(activityIdNames.containsKey(telephoneRecord.getActivityId()) ? activityIdNames.get(telephoneRecord.getActivityId()) : telephoneRecord.getActivityId());
-            customerBase.setUpdateTimeTelephone(LocalDateTime.now());
-            customerBaseMapper.updateById(customerBase);
         }
         return customerBase;
     }
