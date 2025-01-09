@@ -911,4 +911,10 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         }
         return customerBase;
     }
+
+    @Override
+    public boolean existId(String id) {
+        TelephoneRecord telephoneRecord = telephoneRecordMapper.selectById(id);
+        return Objects.nonNull(telephoneRecord);
+    }
 }

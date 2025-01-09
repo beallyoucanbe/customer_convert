@@ -181,10 +181,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())){
-            CustomerFeatureResponse.ChatContent fundsVolume = new CustomerFeatureResponse.ChatContent();
-            fundsVolume.setValue(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord().toString());
-            fundsVolume.setOriginChat(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getOriginChat());
-            customerFeature.getWarmth().setFundsVolume(fundsVolume);
+            customerFeature.getWarmth().setFundsVolume(customerFeature.getBasic().getFundsVolume().getCustomerConclusion());
         }
         if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
                 Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
@@ -208,6 +205,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // -较低：资金体量=“小于5万”
         // -未完成判断：资金体量=空
         String result = "incomplete";
+        if (true) {
+            return result;
+        }
         if (Objects.isNull(customerFeature) || Objects.isNull(customerFeature.getBasic())
                 || Objects.isNull(customerFeature.getBasic().getFundsVolume())
                 || Objects.isNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion())) {
@@ -234,33 +234,40 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = new CustomerStageStatus();
-        // 客户匹配度判断 值不为“未完成判断”
-        if (!"incomplete".equals(getConversionRate(customerFeature))) {
-            stageStatus.setMatchingJudgment(1);
-        }
 
         if (Objects.nonNull(customerFeature)) {
-            // 客户交易风格了解 相关字段全部有值——“客户当前持仓或关注的股票”、“客户为什么买这些股票”、“客户怎么决定的买卖这些股票的时机”、“客户的交易风格”.这4项的“客户结论”都有值
+            // 客户信息收集:“客户的资金体量”有值 and“客户是否有时间听课”有值
+            CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
+            try {
+                if (Objects.nonNull(basic.getFundsVolume().getCustomerConclusion().getCompareValue()) &&
+                        !basic.getFundsVolume().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !basic.getFundsVolume().getCustomerConclusion().getCompareValue().equals("null") &&
+                        Objects.nonNull(basic.getHasTime().getCustomerConclusion().getCompareValue()) &&
+                        !basic.getHasTime().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !basic.getHasTime().getCustomerConclusion().getCompareValue().equals("null")) {
+                    stageStatus.setMatchingJudgment(1);
+                }
+            } catch (Exception e) {
+                // 有异常就不变
+            }
+            // 客户交易风格了解-“客户自己的股票”、“客户的炒股风格”、“客户的股龄”，这3项的“客户结论”都有值
             CustomerProcessSummary.TradingMethod tradingMethod = summaryResponse.getTradingMethod();
             try {
                 if (Objects.nonNull(tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue()) &&
                         !tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue().equals("无") &&
                         !tradingMethod.getCurrentStocks().getCustomerConclusion().getCompareValue().equals("null") &&
-                        Objects.nonNull(tradingMethod.getStockPurchaseReason().getCustomerConclusion().getCompareValue()) &&
-                        !tradingMethod.getStockPurchaseReason().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !tradingMethod.getStockPurchaseReason().getCustomerConclusion().getCompareValue().equals("null") &&
-                        Objects.nonNull(tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue()) &&
-                        !tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !tradingMethod.getTradeTimingDecision().getCustomerConclusion().getCompareValue().equals("null") &&
                         Objects.nonNull(tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue()) &&
                         !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("null")) {
+                        !tradingMethod.getTradingStyle().getCustomerConclusion().getCompareValue().equals("null") &&
+                        Objects.nonNull(tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue()) &&
+                        !tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue().equals("无") &&
+                        !tradingMethod.getStockMarketAge().getCustomerConclusion().getCompareValue().equals("null")) {
                     stageStatus.setTransactionStyle(1);
                 }
             } catch (Exception e) {
                 // 有异常就不变
             }
-            // 客户确认价值 相关字段的值全部为“是”——“客户对软件功能的清晰度”、“客户对销售讲的选股方法的认可度”、“客户对自身问题及影响的认可度”、“客户对软件价值的认可度”
+            // 客户认可老师:“客户对老师的认可度”的值为“是”
             try {
                 if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue() &&
                         (Boolean) customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue() &&
@@ -282,7 +289,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
 
         if (Objects.nonNull(summaryResponse) && Objects.nonNull(summaryResponse.getInfoExplanation())) {
-            // 针对性功能介绍 相关字段的值全部为“是”——“痛点量化放大”、“价值量化放大”
+            // 客户认可投入和价值:相关字段的值全部为'是”-“客户认可投入时间”“客户认可自己跟得上”、“客户认可价值”
             CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
             try {
                 if (Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
@@ -295,7 +302,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 // 有异常就不变
             }
         }
-        // 客户完成购买”，规则是看客户提供的字段“成交状态”来直接判定，这个数值从数据库中提取
+        // 客户完成购买”，:CRM取回客户的购买状态值为“是”
         try {
             CustomerInfo customerInfo = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
                     customerBase.getOwnerId(), customerBase.getActivityId());
@@ -379,6 +386,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
                 customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
                         customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+        }
+
+        if (Objects.nonNull(customerFeatureRequest.getWarmth())) {
+            if (Objects.nonNull(customerFeatureRequest.getWarmth().getFundsVolume()) &&
+                    (Objects.nonNull(customerFeatureRequest.getWarmth().getFundsVolume().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getWarmth().getFundsVolume().getSalesManualTag()))) {
+                customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getFundsVolume().getSalesRecord(),
+                        customerFeatureRequest.getWarmth().getFundsVolume().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
         }
         customerFeatureMapper.updateById(customerFeature);
@@ -870,35 +886,55 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         List<String> advantage = new ArrayList<>();
         List<CustomerFeatureResponse.Question> questions = new ArrayList<>();
         try {
-            // 客户客户匹配度判断
-            // 优点：-完成客户匹配度判断：客户匹配度判断的值不为“未完成判断”
-            // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
-            String conversionRate = customerBase.getConversionRate();
-            if (!conversionRate.equals("incomplete")) {
-                advantage.add("完成客户匹配度判断");
-            } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
-                    customerBase.getCommunicationRounds() >= 2) {
-                questions.add(new CustomerFeatureResponse.Question("尚未完成客户匹配度判断，需继续收集客户信息"));
+            // 【交接期】客户信息收集
+            // 优点：-【交接期】完成客户信息收集:里程碑“客户信息收集”的值为“完成”
+            // 缺点：-【交接期】未完成客户信息收集:里程碑“客户信息收集”的值为“未完成”
+            int matchingJudgment = stageStatus.getMatchingJudgment();
+            if (matchingJudgment == 1) {
+                advantage.add("【交接期】完成客户信息收集");
+            } else {
+                questions.add(new CustomerFeatureResponse.Question("【交接期】未完成客户信息收集"));
             }
-            // 客户交易风格了解
-            // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
-            // 缺点：-未完成客户交易风格了解：“客户交易风格了解”的值为“未完成”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
+            // 【交接期】客户交易风格了解
+            // 优点：-【交接期】完成客户交易风格了解:里程碑“客户交易风格了解”的值为“完成
+            // 缺点：-【交接期】未完成客户交易风格了解:里程碑“客户交易风格了解”的值为“未完成’
             int tradingStyle = stageStatus.getTransactionStyle();
             if (tradingStyle == 1) {
-                advantage.add("完成客户交易风格了解");
+                advantage.add("【交接期】完成客户交易风格了解");
             } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
                     customerBase.getCommunicationRounds() >= 2) {
-                questions.add(new CustomerFeatureResponse.Question("尚未完成客户交易风格了解，需继续收集客户信息"));
+                questions.add(new CustomerFeatureResponse.Question("【交接期】未完成客户交易风格了解"));
             }
-            // 跟进的客户
-            // 优点：-跟进对的客户：销售跟进的是客户匹配度判断的值为“较高”或“中等”的客户
-            // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户
-            if (conversionRate.equals("high") || conversionRate.equals("medium")) {
-                advantage.add("跟进对的客户");
-            } else if (conversionRate.equals("low")) {
-                questions.add(new CustomerFeatureResponse.Question("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户"));
+            // 【交接期】完整介绍服务内容
+            // 优点：-【交接期】完整介绍服务内容:字段“是否完整介绍服务内容”的值为“是’
+            // 缺点：-【交接期】未完整介绍服务内容:字段“是否完整介绍服务内容”的值为“否’
+            if ((Boolean) customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) {
+                advantage.add("【交接期】完整介绍服务内容");
+            } else {
+                questions.add(new CustomerFeatureResponse.Question("【交接期】未完整介绍服务内容"));
             }
-
+            // 【交接期】提醒查看盘中直播频次
+            // 优点：-【交接期】提醒查看盘中直播频次较高:字段“提醒查看盘中直播频次”的值为“高”或“中’
+            // 缺点：-【交接期】提醒查看盘中直播频次较低:字段“提醒查看盘中直播频次”的值为“低
+            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue())) {
+                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue();
+                if (fre < 2) {
+                    advantage.add("【交接期】提醒查看盘中直播频次较高");
+                } else {
+                    questions.add(new CustomerFeatureResponse.Question("【交接期】提醒查看盘中直播频次较低"));
+                }
+            }
+            // 【交接期】直播/圈子内容传递频次
+            // 优点：-【交接期】直播/圈子内容传递频次较高:字段“直播/圈子内容传递频次”的值为“高”或“中
+            // 缺点：-【交接期】直播/圈子内容传递频次较低:字段“直播/圈子内容传递频次”的值为“低”
+            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue())) {
+                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue();
+                if (fre < 2) {
+                    advantage.add("【交接期】直播/圈子内容传递频次较高");
+                } else {
+                    questions.add(new CustomerFeatureResponse.Question("【交接期】直播/圈子内容传递频次较低"));
+                }
+            }
             //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
             //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
             if (stageStatus.getMatchingJudgment() == 1 &&
@@ -1150,6 +1186,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText()) &&
                 !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
             customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(Boolean.TRUE);
+        } else {
+            customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(Boolean.FALSE);
         }
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
@@ -1162,35 +1200,60 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if(Objects.nonNull(featureFromLLM.getIntroduceService_1()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())){
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "盘中直播\"沙场点兵\"、回放位置");
-            item.put("event_content", featureFromLLM.getIntroduceService_1().getAnswerText());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_1().getCallId(), featureFromLLM.getIntroduceService_1().getAnswerText()));
+            data.add(item);
+        } else {
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_type", "盘中直播\"沙场点兵\"、回放位置");
+            item.put("event_content", null);
             data.add(item);
         }
         //2、"智能投教圈"、提醒客户查收老师信息
         if(Objects.nonNull(featureFromLLM.getIntroduceService_2()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())){
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "\"智能投教圈\"、提醒客户查收老师信息");
-            item.put("event_content", featureFromLLM.getIntroduceService_2().getAnswerText());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_2().getCallId(), featureFromLLM.getIntroduceService_2().getAnswerText()));
+            data.add(item);
+        } else {
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_type", "\"智能投教圈\"、提醒客户查收老师信息");
+            item.put("event_content", null);
             data.add(item);
         }
         //3、老师相关课程位置
         if(Objects.nonNull(featureFromLLM.getIntroduceService_3()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())){
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "老师相关课程位置");
-            item.put("event_content", featureFromLLM.getIntroduceService_3().getAnswerText());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_3().getCallId(), featureFromLLM.getIntroduceService_3().getAnswerText()));
+            data.add(item);
+        } else {
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_type", "老师相关课程位置");
+            item.put("event_content", null);
             data.add(item);
         }
         //4、16节交付大课都包含什么内容
         if(Objects.nonNull(featureFromLLM.getIntroduceService_4()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())){
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "16节交付大课都包含什么内容");
-            item.put("event_content", featureFromLLM.getIntroduceService_4().getAnswerText());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_4().getCallId(), featureFromLLM.getIntroduceService_4().getAnswerText()));
+            data.add(item);
+        } else {
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_type", "16节交付大课都包含什么内容");
+            item.put("event_content", null);
             data.add(item);
         }
         //5、软件功能指标位置
         if(Objects.nonNull(featureFromLLM.getIntroduceService_5()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "软件功能指标位置");
-            item.put("event_content", featureFromLLM.getIntroduceService_5().getAnswerText());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_5().getCallId(), featureFromLLM.getIntroduceService_5().getAnswerText()));
+            data.add(item);
+        } else {
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_type", "软件功能指标位置");
+            item.put("event_content", null);
             data.add(item);
         }
         recordContent.setData(data);
@@ -1213,7 +1276,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             for (CommunicationContent one : featureFromLLM.getRemindService_1()){
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_type", one.getTs());
-                item.put("event_content", one.getAnswerText());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
                 count++;
@@ -1224,12 +1287,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             for (CommunicationContent one : featureFromLLM.getRemindService_2()){
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_type", one.getTs());
-                item.put("event_content", one.getAnswerText());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
                 count++;
             }
         }
+        Collections.sort(data, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                String eventType1 = (String) o1.get("event_type");
+                String eventType2 = (String) o2.get("event_type");
+                return eventType2.compareTo(eventType1); // 字符串按字典序比较
+            }
+        });
         recordContent.setData(data);
 
         // 计算频次
@@ -1276,7 +1347,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             for (CommunicationContent one : featureFromLLM.getRemindService_3()){
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_type", one.getTs());
-                item.put("event_content", one.getAnswerText());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
                 count++;
@@ -1287,7 +1358,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             for (CommunicationContent one : featureFromLLM.getRemindService_4()){
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_type", one.getTs());
-                item.put("event_content", one.getAnswerText());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
                 count++;
@@ -1298,12 +1369,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             for (CommunicationContent one : featureFromLLM.getRemindService_5()){
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_type", one.getTs());
-                item.put("event_content", one.getAnswerText());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
                 count++;
             }
         }
+        Collections.sort(data, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                String eventType1 = (String) o1.get("event_type");
+                String eventType2 = (String) o2.get("event_type");
+                return eventType2.compareTo(eventType1); // 字符串按字典序比较
+            }
+        });
         recordContent.setData(data);
         // 计算频次
         if (!CollectionUtils.isEmpty(allTimeStr)) {
@@ -1312,7 +1391,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 这里计算平均多少天一次
             double fre = (double) days/count;
             String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setValue(Double.parseDouble(formattedResult));
+            customerFeature.getHandoverPeriod().getBasic().getTransFreq().setValue(Double.parseDouble(formattedResult));
         }
         customerFeature.getHandoverPeriod().getBasic().getTransFreq().setRecords(recordContent);
     }

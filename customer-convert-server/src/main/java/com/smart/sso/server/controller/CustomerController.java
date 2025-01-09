@@ -30,10 +30,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
 
@@ -265,20 +262,25 @@ public class CustomerController {
         String dateTimeStr = DateUtil.getCurrentDateTime();
         String dateStr = dateTimeStr.split(" ")[0];
         String timeStr = dateTimeStr.split(" ")[1].replace(":", "_");
-
-        String filePath = "/data/customer-convert/callback/wecom/" + dateStr + "/" + userId + "_" + customerId + "_" + timeStr;
+        // 生成一个5位的随机数
+        Random random = new Random();
+        int randomComponent = 100 + random.nextInt(900);
+        String filePath = "/data/customer-convert/callback/wecom/" + dateStr + "/" + userId + "_" + customerId + "_" + timeStr + "-" + randomComponent;
         log.error("存储路径:{}", filePath);
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
-        communicationService.wecomCallBack(filePath);
+//        communicationService.wecomCallBack(filePath);
         return ResultUtils.success(null);
     }
 
     @ApiOperation(value = "电话的回调接口")
     @PostMapping("/customer/communication_sync/telephone")
     public BaseResponse<Void> communicationSyncTelephone(@RequestBody Map<String, Object> message) {
-        String filePath = "/data/customer-convert/callback/telephone/message.txt";
+        log.error("收到语音回调，message: {}", JsonUtil.serialize(message));
+        String dateTimeStr = DateUtil.getCurrentDateTime();
+        String dateStr = dateTimeStr.split(" ")[0];
+        String filePath = "/data/customer-convert/callback/telephone/" + dateStr + "_message.txt";
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
-        communicationService.telephoneCallBack(JsonUtil.serialize(message));
+//        communicationService.telephoneCallBack(JsonUtil.serialize(message));
         return ResultUtils.success(null);
     }
 

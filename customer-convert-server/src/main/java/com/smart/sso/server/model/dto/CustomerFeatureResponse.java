@@ -80,7 +80,7 @@ public class CustomerFeatureResponse {
         // 功能指标使用频次
         private FrequencyContent functionFreq;
         // 客户资金体量
-        private ChatContent fundsVolume;
+        private Feature.CustomerConclusion fundsVolume;
         // 是否有时间听课
         private ChatContent customerCourse;
     }

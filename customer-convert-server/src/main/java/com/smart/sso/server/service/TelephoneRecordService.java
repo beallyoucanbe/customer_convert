@@ -38,4 +38,7 @@ public interface TelephoneRecordService {
     TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
 
     CustomerBase syncCustomerInfoFromRecord(String customerId, String activityId);
+
+    // 检查主键id是否存在
+    boolean existId(String id);
 }

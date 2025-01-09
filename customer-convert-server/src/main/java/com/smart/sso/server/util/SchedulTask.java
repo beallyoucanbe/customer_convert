@@ -8,22 +8,24 @@ import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.primary.mapper.ScheduledTasksMapper;
 import com.smart.sso.server.model.*;
-import com.smart.sso.server.service.ConfigService;
-import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.service.CustomerRelationService;
-import com.smart.sso.server.service.MessageService;
-import com.smart.sso.server.service.TelephoneRecordService;
+import com.smart.sso.server.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.*;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 @Component
@@ -47,7 +49,10 @@ public class SchedulTask {
     @Autowired
     private TelephoneRecordService recordService;
 
-//    @Scheduled(cron = "0 */15 * * * ?")
+    @Autowired
+    private CommunicationService communicationService;
+
+    //    @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
         // 是否有任务再执行
         log.error("开始执行客户匹配度刷新任务！");
@@ -144,7 +149,7 @@ public class SchedulTask {
             log.error("没有当前的活动，请先配置");
             return;
         }
-        List<CustomerInfo> customerRelationList= customerRelationService.getByActivityAndSigned(activityId);
+        List<CustomerInfo> customerRelationList = customerRelationService.getByActivityAndSigned(activityId);
         // 对每一个支付定金的客户，检查销售记录值是否正确
         if (CollectionUtils.isEmpty(customerRelationList)) {
             return;
@@ -155,7 +160,7 @@ public class SchedulTask {
                 queryWrapper2.eq("owner_id", item.getSalesId().toString());
                 queryWrapper2.eq("customer_id", item.getCustomerId().toString());
                 CustomerBase customerBase = customerBaseMapper.selectOne(queryWrapper2);
-                if (Objects.isNull(customerBase)){
+                if (Objects.isNull(customerBase)) {
                     continue;
                 }
                 // 检查info表中是否有购买时间，如果有，代表已购买，跳过不处理，如果没有，就记录首次探测到购买的时间
@@ -163,11 +168,12 @@ public class SchedulTask {
                     customerBaseMapper.updatePurchaseTimeById(customerBase.getId(), item.getPurchaseTime());
                 }
                 CustomerFeature customerFeature = customerFeatureMapper.selectById(customerBase.getId());
-                if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())){
+                if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())) {
                     Map<String, Object> tag =
                             JsonUtil.readValue(JsonUtil.serialize(customerFeature.getSoftwarePurchaseAttitudeSales()),
-                                    new TypeReference<Map<String, Object>>() {});
-                    if (Objects.nonNull(tag.get("tag")) && (Boolean)tag.get("tag")) {
+                                    new TypeReference<Map<String, Object>>() {
+                                    });
+                    if (Objects.nonNull(tag.get("tag")) && (Boolean) tag.get("tag")) {
                         continue;
                     }
                     tag.put("tag", true);
@@ -179,7 +185,7 @@ public class SchedulTask {
                     tag.put("updateTime", DateUtil.getCurrentDateTime());
                     customerFeatureMapper.updateSoftwarePurchaseAttitudeSalesById(customerFeature.getId(), JsonUtil.serialize(tag));
                 } else {
-                    CustomerFeature feature= new CustomerFeature();
+                    CustomerFeature feature = new CustomerFeature();
                     feature.setId(customerBase.getId());
                     FeatureContentSales featureContent = new FeatureContentSales();
                     featureContent.setTag(true);
@@ -297,14 +303,70 @@ public class SchedulTask {
         if (size < 1) {
             return;
         }
-        while (!AppConstant.messageNeedSend.isEmpty()){
+        while (!AppConstant.messageNeedSend.isEmpty()) {
             MessageSendVO vo = AppConstant.messageNeedSend.poll();
-            if (StringUtils.isEmpty(vo.getSendUrl())){
+            if (StringUtils.isEmpty(vo.getSendUrl())) {
                 messageService.sendMessageToChat(vo.getTextMessage());
             } else {
                 messageService.sendMessageToChat(vo.getSendUrl(), vo.getTextMessage());
             }
         }
         log.error("延迟消息发送任务执行完成");
+    }
+
+    /**
+     * 定时检查是否有需要处理的通话
+     */
+    @Scheduled(cron = "0 */50 * * * ?")
+    public void processCommunication() {
+        log.error("开始检查是否有需要处理的通话");
+        // 检查微信
+        String dateTimeStr = DateUtil.getCurrentDateTime();
+        String dateStr = dateTimeStr.split(" ")[0];
+//        Path folderPath = Paths.get("/data/customer-convert/callback/wecom/" + dateStr);
+        Path folderPath = Paths.get("/Users/shuoyizhao");
+        // 获取文件夹下面的所有文件
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath)) {
+            for (Path entry : stream) {
+                try {
+                    String fileName = entry.getFileName().toString();
+                    if (!recordService.existId(fileName)) {
+                        Thread.sleep(3000L);
+                        log.error("开始执行python脚本处理微信对话，{}", entry);
+                        communicationService.wecomCallBack(entry.toString());
+                    }
+                } catch (Exception e) {
+                    log.error("微信记录处理失败，文件路径为：{}", entry.toString(), e);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 检查语音通话
+        Path teleFilePath = Paths.get("/data/customer-convert/callback/telephone/" + dateStr + "_message.txt");
+        try (Stream<String> lines = Files.lines(teleFilePath)) {
+            // 逐行处理文件内容
+            lines.forEach(item -> {
+                        try {
+                            Map<String, Object> one = JsonUtil.readValue(item, new TypeReference<Map<String, Object>>() {
+                            });
+                            String taskId = one.get("task_id").toString();
+                            if (!recordService.existId(taskId)) {
+                                Thread.sleep(3000L);
+                                log.error("开始执行python脚本处理语音对话，task_id : {}", taskId);
+                                communicationService.telephoneCallBack(item);
+                            }
+                        } catch (Exception e) {
+                            log.error("语音记录处理失败，task_id：{}", item, e);
+                        }
+                    }
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        configService.refreshCustomerConfig();
+        log.error("客户配置同步任务执行完成");
     }
 }
