@@ -323,8 +323,7 @@ public class SchedulTask {
         // 检查微信
         String dateTimeStr = DateUtil.getCurrentDateTime();
         String dateStr = dateTimeStr.split(" ")[0];
-//        Path folderPath = Paths.get("/data/customer-convert/callback/wecom/" + dateStr);
-        Path folderPath = Paths.get("/Users/shuoyizhao");
+        Path folderPath = Paths.get("/data/customer-convert/callback/wecom/" + dateStr);
         // 获取文件夹下面的所有文件
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath)) {
             for (Path entry : stream) {
