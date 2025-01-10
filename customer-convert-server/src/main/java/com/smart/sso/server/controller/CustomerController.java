@@ -268,7 +268,6 @@ public class CustomerController {
         String filePath = "/data/customer-convert/callback/wecom/" + dateStr + "/" + userId + "_" + customerId + "_" + timeStr + "-" + randomComponent;
         log.error("存储路径:{}", filePath);
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
-//        communicationService.wecomCallBack(filePath);
         return ResultUtils.success(null);
     }
 
@@ -280,7 +279,6 @@ public class CustomerController {
         String dateStr = dateTimeStr.split(" ")[0];
         String filePath = "/data/customer-convert/callback/telephone/" + dateStr + "_message.txt";
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
-//        communicationService.telephoneCallBack(JsonUtil.serialize(message));
         return ResultUtils.success(null);
     }
 
