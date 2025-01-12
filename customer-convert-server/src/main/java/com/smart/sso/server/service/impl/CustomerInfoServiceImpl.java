@@ -906,14 +906,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             int tradingStyle = stageStatus.getTransactionStyle();
             if (tradingStyle == 1) {
                 advantage.add("【交接期】完成客户交易风格了解");
-            } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
-                    customerBase.getCommunicationRounds() >= 2) {
+            } else {
                 questions.add(new CustomerFeatureResponse.Question("【交接期】未完成客户交易风格了解"));
             }
             // 【交接期】完整介绍服务内容
             // 优点：-【交接期】完整介绍服务内容:字段“是否完整介绍服务内容”的值为“是’
             // 缺点：-【交接期】未完整介绍服务内容:字段“是否完整介绍服务内容”的值为“否’
-            if ((Boolean) customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) {
+            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) &&
+                    (Boolean) customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) {
                 advantage.add("【交接期】完整介绍服务内容");
             } else {
                 questions.add(new CustomerFeatureResponse.Question("【交接期】未完整介绍服务内容"));
@@ -939,188 +939,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 } else {
                     questions.add(new CustomerFeatureResponse.Question("【交接期】直播/圈子内容传递频次较低"));
                 }
-            }
-            //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
-            //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
-            if (stageStatus.getMatchingJudgment() == 1 &&
-                    stageStatus.getTransactionStyle() == 1 &&
-                    stageStatus.getFunctionIntroduction() == 1) {
-                if (((stageStatus.getConfirmValue() == 0 &&
-                        stageStatus.getConfirmPurchase() == 0 &&
-                        stageStatus.getCompletePurchase() == 0)) ||
-                        ((stageStatus.getConfirmValue() == 1 &&
-                                stageStatus.getConfirmPurchase() == 0 &&
-                                stageStatus.getCompletePurchase() == 0)) ||
-                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))) {
-                    advantage.add("SOP执行顺序正确");
-                }
-            }
-            Set<String> questionStatus = new TreeSet<>();
-            if (stageStatus.getMatchingJudgment() == 0 &&
-                    (stageStatus.getTransactionStyle() +
-                            stageStatus.getFunctionIntroduction() +
-                            stageStatus.getConfirmValue() +
-                            stageStatus.getConfirmPurchase() +
-                            stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户匹配度判断");
-            }
-            if (stageStatus.getTransactionStyle() == 0 &&
-                    (stageStatus.getFunctionIntroduction() +
-                            stageStatus.getConfirmValue() +
-                            stageStatus.getConfirmPurchase() +
-                            stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户交易风格了解");
-            }
-            if (stageStatus.getFunctionIntroduction() == 0 &&
-                    (stageStatus.getConfirmValue() +
-                            stageStatus.getConfirmPurchase() +
-                            stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("针对性功能介绍");
-            }
-            if (stageStatus.getConfirmValue() == 0 &&
-                    (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户确认价值");
-            }
-            if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0) {
-                questionStatus.add("客户确认购买");
-            }
-
-            if (!CollectionUtils.isEmpty(questionStatus)) {
-                StringBuilder ttt = new StringBuilder("SOP 执行顺序错误，需完成前序任务（缺失：");
-                for (String status : questionStatus) {
-                    ttt.append(status).append("，");
-                }
-                ttt.deleteCharAt(ttt.length() - 1);
-                ttt.append("）");
-                questions.add(new CustomerFeatureResponse.Question(ttt.toString()));
-            }
-
-            // 痛点和价值量化
-            // 优点：-完成痛点和价值量化放大：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”都为“是”
-            // 缺点：-尚未完成痛点和价值量化放大，需后续完成：字段“业务员有对客户的问题做量化放大”和“业务员有对软件的价值做量化放大”不都为“是”（前提条件是通话次数大于等于3）
-            CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-            try {
-                if (Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
-                        infoExplanation.getCustomerIssuesQuantified().getResult() &&
-                        Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
-                        infoExplanation.getSoftwareValueQuantified().getResult()) {
-                    advantage.add("完成痛点和价值量化放大");
-                } else if (Objects.nonNull(customerBase.getCommunicationRounds()) &&
-                        customerBase.getCommunicationRounds() >= 3) {
-                    questions.add(new CustomerFeatureResponse.Question("尚未完成痛点和价值量化放大，需后续完成"));
-                }
-            } catch (Exception e) {
-                questions.add(new CustomerFeatureResponse.Question("尚未完成痛点和价值量化放大，需后续完成"));
-            }
-
-            // 功能讲解
-            // 优点：-功能讲解让客户理解：“客户对软件功能的清晰度”的值为“是”
-            // 缺点：-功能讲解未让客户理解：“客户对软件功能的清晰度”的值为“否”
-            try {
-                if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) {
-                    advantage.add("客户对软件功能理解清晰");
-                } else {
-                    StringBuilder tempStr = new StringBuilder("客户对软件功能尚未理解清晰，");
-                    CustomerFeatureResponse.Question question = new CustomerFeatureResponse.Question();
-                    if (customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess().equals(100)) {
-                        tempStr.append("业务员已完成标准讲解，");
-                        question.setComplete("业务员已完成标准讲解");
-                    } else {
-                        tempStr.append("业务员未完成标准讲解，");
-                        question.setIncomplete("业务员未完成标准讲解");
-                    }
-                    question.setQuestion((String) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerQuestion().getModelRecord());
-                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerQuestion().getModelRecord()).append("，需根据客户学习能力更白话讲解");
-                    question.setMessage(tempStr.toString());
-                    questions.add(question);
-                }
-            } catch (Exception e) {
-                // 有异常，说明有数据为空，不处理
-            }
-
-            // 选股方法
-            // 优点：-客户认可选股方法：“客户对业务员讲的选股方法的认可度”的值为“是”
-            // 缺点：-客户对选股方法尚未认可，需加强选股成功的真实案例证明：“客户对业务员讲的选股方法的认可度”的值为“否”
-            try {
-                if ((Boolean) customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue()) {
-                    advantage.add("客户认可选股方法");
-                } else {
-                    StringBuilder tempStr = new StringBuilder("客户对选股方法尚未认可，");
-                    CustomerFeatureResponse.Question question = new CustomerFeatureResponse.Question();
-                    if (customerFeature.getBasic().getStockSelectionMethod().getStandardProcess().equals(100)) {
-                        tempStr.append("业务员已完成标准讲解，");
-                        question.setComplete("业务员已完成标准讲解");
-                    } else {
-                        tempStr.append("业务员未完成标准讲解，");
-                        question.setIncomplete("业务员未完成标准讲解");
-                    }
-                    question.setQuestion((String) customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord());
-                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getStockSelectionMethod().getCustomerQuestion().getModelRecord()).append("，需加强选股成功的真实案例证明");
-                    question.setMessage(tempStr.toString());
-                    questions.add(question);
-                }
-            } catch (Exception e) {
-                // 有异常，说明有数据为空，不处理
-            }
-
-            // 自身问题
-            // 优点：-客户认可自身问题：“客户对自身问题及影响的认可度”的值为“是”
-            // 缺点：-客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明：“客户对自身问题及影响的认可度”的值为“否”
-            try {
-                if ((Boolean) customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) {
-                    advantage.add("客户认可自身问题");
-                } else {
-                    StringBuilder tempStr = new StringBuilder("客户对自身问题尚未认可，");
-                    CustomerFeatureResponse.Question question = new CustomerFeatureResponse.Question();
-                    try {
-                        if (customerFeature.getBasic().getQuantified().getCustomerIssuesQuantified().getResult()) {
-                            tempStr.append("业务员已完成痛点量化放大，");
-                            question.setQuantify("业务员已完成痛点量化放大");
-                        } else {
-                            tempStr.append("业务员未完成痛点量化放大，");
-                            question.setInquantify("业务员未完成痛点量化放大");
-                        }
-                    } catch (Exception e) {
-                        tempStr.append("业务员未完成痛点量化放大，");
-                        question.setInquantify("业务员未完成痛点量化放大");
-                    }
-                    question.setQuestion((String) customerFeature.getBasic().getSelfIssueRecognition().getCustomerQuestion().getModelRecord());
-                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSelfIssueRecognition().getCustomerQuestion().getModelRecord()).append("，需列举与客户相近的真实反面案例证明");
-                    question.setMessage(tempStr.toString());
-                    questions.add(question);
-                }
-            } catch (Exception e) {
-                // 有异常，说明有数据为空，不处理
-            }
-
-            // 价值认可
-            // 优点：-客户认可软件价值：字段（不是阶段）“客户对软件价值的认可度”的值为“是”
-            // 缺点：-客户对软件价值尚未认可，需加强使用软件的真实成功案例证明：字段（不是阶段）“客户对软件价值的认可度”的值为“否”
-            try {
-                if ((Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
-                    advantage.add("客户认可软件价值");
-                } else {
-                    StringBuilder tempStr = new StringBuilder("客户对软件价值尚未认可，");
-                    CustomerFeatureResponse.Question question = new CustomerFeatureResponse.Question();
-                    try {
-                        if (customerFeature.getBasic().getQuantified().getSoftwareValueQuantified().getResult()) {
-                            tempStr.append("业务员已完成价值量化放大，");
-                            question.setQuantify("业务员已完成价值量化放大");
-                        } else {
-                            tempStr.append("业务员未完成价值量化放大，");
-                            question.setInquantify("业务员未完成价值量化放大");
-                        }
-                    } catch (Exception e) {
-                        tempStr.append("业务员未完成价值量化放大，");
-                        question.setInquantify("业务员未完成价值量化放大");
-                    }
-                    question.setQuestion((String) customerFeature.getBasic().getSoftwareValueApproval().getCustomerQuestion().getModelRecord());
-                    tempStr.append("客户问题是：").append(customerFeature.getBasic().getSoftwareValueApproval().getCustomerQuestion().getModelRecord()).append("，需加强使用软件的真实成功案例证明");
-                    question.setMessage(tempStr.toString());
-                    questions.add(question);
-                }
-            } catch (Exception e) {
-                // 有异常，说明有数据为空，不处理
             }
 
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
