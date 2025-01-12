@@ -30,4 +30,9 @@ public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
     @Update("UPDATE customer_base SET purchase_time = #{purchase_time}, customer_purchase_status = 1 WHERE id = #{id}")
     int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") LocalDateTime purchase_time);
 
+    @Update("UPDATE customer_base SET owner_id = #{owner_id}, owner_name = #{owner_name} WHERE id = #{id}")
+    int updateSalesById(@Param("id") String id,
+                        @Param("owner_id") String owner_id,
+                        @Param("owner_name") String owner_name);
+
 }

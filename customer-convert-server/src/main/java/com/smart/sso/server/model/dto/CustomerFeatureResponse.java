@@ -72,17 +72,17 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class Warmth{
         // 交付课听课情况
-        private CourseContent deliveryCourse;
+        private CourseContent deliveryCourse = new CourseContent();
         // 营销课听课情况
-        private CourseContent marketingCourse;
+        private CourseContent marketingCourse = new CourseContent();
         // 直播/圈子访问频次
-        private FrequencyContent visitFreq;
+        private FrequencyContent visitFreq = new FrequencyContent();
         // 功能指标使用频次
-        private FrequencyContent functionFreq;
+        private FrequencyContent functionFreq = new FrequencyContent();
         // 客户资金体量
-        private Feature.CustomerConclusion fundsVolume;
+        private Feature.CustomerConclusion fundsVolume = new Feature.CustomerConclusion();
         // 是否有时间听课
-        private ChatContent customerCourse;
+        private ChatContent customerCourse = new ChatContent();
     }
 
     @Getter

@@ -1,12 +1,10 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.model.VO.MessageSendVO;
+import com.smart.sso.server.enums.HasTimeEnum;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.model.*;
@@ -17,7 +15,6 @@ import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
-import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,35 +131,6 @@ public class MessageServiceImpl implements MessageService {
             } else {
                 potentialCustomer = potentialCustomerMap.get(ownerId);
             }
-            // 判断 认可度次数
-            int approvalCount = 0;
-            if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                approvalCount++;
-            }
-            if (Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                approvalCount++;
-            }
-            if (Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                approvalCount++;
-            }
-            if (Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                approvalCount++;
-            }
-            // 资金量≥5万且认可数≥3，购买态度为确认购买
-            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
-                potentialCustomer.getHigh().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
-            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
-                potentialCustomer.getMiddle().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
-            } else if (approvalCount <= 2 &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
-                potentialCustomer.getLow().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
-            }
-            potentialCustomerMap.put(ownerId, potentialCustomer);
         }
         // 给每个业务员发送统计消息
         for (Map.Entry<String, PotentialCustomer> entry : potentialCustomerMap.entrySet()) {
@@ -203,120 +171,6 @@ public class MessageServiceImpl implements MessageService {
                 customerCharacterMapper.updateAllFields(newCustomerCharacter);
             }
         }
-        // 如果判断出"客户对购买软件的态度”有值不为空，则给对应的组长发送消息,客户已经购买的不用再发送
-        if (checkPurchaseAttitude && !newCustomerCharacter.getCompletePurchaseStage()) {
-            // 给该客户当天的通话时间大于30分钟
-            int communicationDurationSum = recordService.getCommunicationTimeCurrentDay(customerId, newCustomerCharacter.getUpdateTime());
-            if (communicationDurationSum < 10) {
-                return;
-            }
-            String purchaseMessageDescribe;
-            if (Objects.nonNull(newCustomerCharacter.getSoftwarePurchaseAttitude())) {
-                purchaseMessageDescribe = Boolean.parseBoolean(newCustomerCharacter.getSoftwarePurchaseAttitude()) ?
-                        "确认购买" : "尚未确认购买";
-            } else {
-                purchaseMessageDescribe = "未提及";
-            }
-            String fundsMessageDescribe = Objects.nonNull(newCustomerCharacter.getFundsVolume()) ? newCustomerCharacter.getFundsVolume() : "未提及";
-            String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
-                    customerBase.getCustomerId(), customerBase.getActivityId());
-            StringBuilder possibleReasonStringBuilder = new StringBuilder();
-            int id = 1;
-            if (!purchaseMessageDescribe.equals("确认购买")) {
-                for (CustomerFeatureResponse.Question question : customerFeature.getSummary().getQuestions()) {
-                    if (question.getMessage().contains("客户对软件功能尚未理解清晰")) {
-                        possibleReasonStringBuilder.append(id++).append(".客户对软件功能尚未理解清晰，");
-                        if (!StringUtils.isEmpty(question.getQuantify())) {
-                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
-                        }
-                        if (!StringUtils.isEmpty(question.getIncomplete())) {
-                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
-                        } else if (!StringUtils.isEmpty(question.getComplete())) {
-                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
-                        }
-                        possibleReasonStringBuilder.append("客户问题是：")
-                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
-                                .append("需根据客户学习能力更白话讲解。\n");
-                    } else if (question.getMessage().contains("客户对选股方法尚未认可")) {
-                        possibleReasonStringBuilder.append(id++).append(".客户对选股方法尚未认可，");
-                        if (!StringUtils.isEmpty(question.getQuantify())) {
-                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
-                        }
-                        if (!StringUtils.isEmpty(question.getIncomplete())) {
-                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
-                        } else if (!StringUtils.isEmpty(question.getComplete())) {
-                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
-                        }
-                        possibleReasonStringBuilder.append("客户问题是：")
-                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
-                                .append("需加强选股成功的真实案例证明。\n");
-                    } else if (question.getMessage().contains("客户对自身问题尚未认可")) {
-                        possibleReasonStringBuilder.append(id++).append(".客户对自身问题尚未认可，");
-                        if (!StringUtils.isEmpty(question.getQuantify())) {
-                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
-                        }
-                        if (!StringUtils.isEmpty(question.getIncomplete())) {
-                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
-                        } else if (!StringUtils.isEmpty(question.getComplete())) {
-                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
-                        }
-                        possibleReasonStringBuilder.append("客户问题是：")
-                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
-                                .append("需列举与客户相近的真实反面案例证明。\n");
-                    } else if (question.getMessage().contains("客户对软件价值尚未认可")) {
-                        possibleReasonStringBuilder.append(id++).append(".客户对软件价值尚未认可，");
-                        if (!StringUtils.isEmpty(question.getQuantify())) {
-                            possibleReasonStringBuilder.append(question.getQuantify()).append("，");
-                        }
-                        if (!StringUtils.isEmpty(question.getIncomplete())) {
-                            possibleReasonStringBuilder.append("<font color=\"info\">").append(question.getIncomplete()).append("</font>，");
-                        } else if (!StringUtils.isEmpty(question.getComplete())) {
-                            possibleReasonStringBuilder.append(question.getComplete()).append("，");
-                        }
-                        possibleReasonStringBuilder.append("客户问题是：")
-                                .append("<font color=\"info\">").append(question.getQuestion()).append("</font>，")
-                                .append("需加强使用软件的真实成功案例证明。\n");
-                    }
-                }
-            }
-            if (possibleReasonStringBuilder.length() > 1) {
-                possibleReasonStringBuilder.insert(0, "客户的顾虑点是：\n");
-            }
-
-            // 发送消息给领导，发送到微信群
-            String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
-                    newCustomerCharacter.getOwnerName(),
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(customerProfile.getLastCommunicationDate()),
-                    newCustomerCharacter.getCustomerName(),
-                    fundsMessageDescribe,
-                    purchaseMessageDescribe,
-                    possibleReasonStringBuilder,
-                    url, url);
-            TextMessage textMessage = new TextMessage();
-            TextMessage.TextContent textContent = new TextMessage.TextContent();
-            textContent.setContent(message);
-            textMessage.setMsgtype("markdown");
-            textMessage.setMarkdown(textContent);
-            if (nightTime()) {
-                MessageSendVO vo = new MessageSendVO(configService.getStaffAreaRobotUrl(customerBase.getOwnerId()), textMessage);
-                AppConstant.messageNeedSend.add(vo);
-            } else {
-                sendMessageToChat(configService.getStaffAreaRobotUrl(customerBase.getOwnerId()), textMessage);
-            }
-
-            // 发送消息给业务员，发送给个人企微
-            String target = "**";
-            int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
-            textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
-            textMessage.setTouser(customerBase.getOwnerId());
-            textMessage.setAgentid(getAgentId(customerBase.getOwnerId()));
-            if (nightTime()) {
-                MessageSendVO vo = new MessageSendVO(null, textMessage);
-                AppConstant.messageNeedSend.add(vo);
-            } else {
-                sendMessageToChat(textMessage);
-            }
-        }
     }
 
     @Override
@@ -353,80 +207,6 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
             sendMessageToChat(textMessage);
-        }
-    }
-
-    @Override
-    public void sendMessageForPerLeader(String userId) {
-        // 获取该领导下的所有员工
-        Map<String, List<String>> staffIdsLeader = configService.getStaffIdsLeader();
-        String activityId = configService.getCurrentActivityId();
-        QueryWrapper<CustomerCharacter> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("activity_id", activityId);
-        List<CustomerCharacter> characterList = customerCharacterMapper.selectList(queryWrapper);
-        Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
-        for (CustomerCharacter character : characterList) {
-            // 完成购买，跳过不统计
-            if (character.getCompletePurchaseStage()) {
-                continue;
-            }
-            String ownerId = character.getOwnerName();
-            PotentialCustomer potentialCustomer;
-            if (!potentialCustomerMap.containsKey(ownerId)) {
-                potentialCustomer = new PotentialCustomer();
-            } else {
-                potentialCustomer = potentialCustomerMap.get(ownerId);
-            }
-            // 判断 认可度次数
-            int approvalCount = 0;
-            if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                approvalCount++;
-            }
-            if (Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                approvalCount++;
-            }
-            if (Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                approvalCount++;
-            }
-            if (Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                approvalCount++;
-            }
-            // 资金量≥5万且认可数≥3，购买态度为确认购买
-            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
-                potentialCustomer.getHigh().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
-            } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
-                potentialCustomer.getMiddle().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
-            } else if (approvalCount <= 2 &&
-                    !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
-                potentialCustomer.getLow().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
-            }
-            potentialCustomerMap.put(ownerId, potentialCustomer);
-        }
-
-        for (Map.Entry<String, List<String>> entry : staffIdsLeader.entrySet()) {
-            String leaderId = entry.getKey();
-            for (String memberName : entry.getValue()) {
-                PotentialCustomer potentialCustomer = potentialCustomerMap.get(memberName);
-                if (Objects.isNull(potentialCustomer)){
-                    continue;
-                }
-                String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE, entry.getKey(),
-                                CommonUtils.convertStringFromList(potentialCustomer.getHigh()),
-                                CommonUtils.convertStringFromList(potentialCustomer.getMiddle()));
-                TextMessage textMessage = new TextMessage();
-                TextMessage.TextContent textContent = new TextMessage.TextContent();
-                textMessage.setTouser(leaderId);
-                textMessage.setAgentid("1000021");
-                textContent.setContent(message);
-                textMessage.setMsgtype("markdown");
-                textMessage.setMarkdown(textContent);
-                sendMessageToChat(textMessage);
-            }
         }
     }
 
@@ -529,210 +309,24 @@ public class MessageServiceImpl implements MessageService {
 
         latestCustomerCharacter.setMatchingJudgmentStage(customerProfile.getCustomerStage().getMatchingJudgment() == 1);
         latestCustomerCharacter.setTransactionStyleStage(customerProfile.getCustomerStage().getTransactionStyle() == 1);
-        latestCustomerCharacter.setFunctionIntroductionStage(customerProfile.getCustomerStage().getFunctionIntroduction() ==
-                1);
+        latestCustomerCharacter.setFunctionIntroductionStage(customerProfile.getCustomerStage().getFunctionIntroduction() == 1);
         latestCustomerCharacter.setConfirmValueStage(customerProfile.getCustomerStage().getConfirmValue() == 1);
         latestCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
         latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue().toString() : null));
-        latestCustomerCharacter.setEarningDesire(EarningDesireEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getEarningDesire().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getEarningDesire().getCustomerConclusion().getCompareValue().toString() : null));
+        latestCustomerCharacter.setHasTime(HasTimeEnum.getTextByValue(
+                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getHasTime().getCustomerConclusion().getCompareValue().toString() : null));
 
-        latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSelfIssueRecognition(Objects.nonNull(customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setSoftwarePurchaseAttitude(
-                Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setCompleteIntro(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) ? customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue().toString() : null);
+        latestCustomerCharacter.setCompleteStockInfo(customerProfile.getCustomerStage().getTransactionStyle() == 1 ? "true" : "false");
+        latestCustomerCharacter.setRemindFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue() : null);
+        latestCustomerCharacter.setTransFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue() : null);
+        latestCustomerCharacter.setVisitFreq(Objects.nonNull(customerFeature.getWarmth().getVisitFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitFreq().getValue() : null);
+        latestCustomerCharacter.setFunctionFreq(Objects.nonNull(customerFeature.getWarmth().getFunctionFreq().getValue()) ? (Double) customerFeature.getWarmth().getFunctionFreq().getValue() : null);
 
-        latestCustomerCharacter.setStandardExplanationCompletion(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess() : 0);
-
-        List<String> advantages = customerFeature.getSummary().getAdvantage();
-        List<CustomerFeatureResponse.Question> questions = customerFeature.getSummary().getQuestions();
-        for (String item : advantages) {
-            if (item.contains("完成客户匹配度判断")) {
-                latestCustomerCharacter.setSummaryMatchJudgment("true");
-            } else if (item.contains("完成客户交易风格了解")) {
-                latestCustomerCharacter.setSummaryTransactionStyle("true");
-            } else if (item.contains("跟进对的客户")) {
-                latestCustomerCharacter.setSummaryFollowCustomer("true");
-            } else if (item.contains("客户对软件功能理解清晰")) {
-                latestCustomerCharacter.setSummaryFunctionIntroduction("true");
-            } else if (item.contains("客户认可软件价值")) {
-                latestCustomerCharacter.setSummaryConfirmValue("true");
-            } else if (item.contains("执行顺序正确")) {
-                latestCustomerCharacter.setSummaryExecuteOrder("true");
-            } else if (item.contains("完成痛点和价值量化放大")) {
-                latestCustomerCharacter.setIssuesValueQuantified("true");
-            }
-        }
-        for (CustomerFeatureResponse.Question question : questions) {
-            String item = question.getMessage();
-            if (item.contains("未完成客户匹配度判断")) {
-                latestCustomerCharacter.setSummaryMatchJudgment("false");
-            } else if (item.contains("未完成客户交易风格了解")) {
-                latestCustomerCharacter.setSummaryTransactionStyle("false");
-            } else if (item.contains("跟进匹配度低的客户")) {
-                latestCustomerCharacter.setSummaryFollowCustomer("false");
-            } else if (item.contains("客户对软件功能尚未理解清晰")) {
-                latestCustomerCharacter.setSummaryFunctionIntroduction("false");
-            } else if (item.contains("客户对软件价值尚未认可")) {
-                latestCustomerCharacter.setSummaryConfirmValue("false");
-            } else if (item.contains("执行顺序错误")) {
-                latestCustomerCharacter.setSummaryExecuteOrder("false");
-            } else if (item.contains("未完成痛点和价值量化放大")) {
-                latestCustomerCharacter.setIssuesValueQuantified("false");
-            }
-        }
-        latestCustomerCharacter.setIsSend188(customerProfile.getIsSend188());
         latestCustomerCharacter.setUpdateTime(
                 customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
-    }
-
-
-    private void execute(List<CustomerCharacter> characterList, Map<String, List<SummaryMessage>> ownerSummaryMessages) {
-        if (CollectionUtils.isEmpty(characterList)) {
-            return;
-        }
-        for (CustomerCharacter character : characterList) {
-            SummaryMessage summaryMessage = new SummaryMessage();
-            try {
-                customerInfoService.updateCharacterCostTime(character.getId());
-            } catch (Exception e) {
-                log.error("更新特征的提取时间失败：" + character.getId());
-            }
-            if (character.getMatchingJudgmentStage()) {
-                summaryMessage.getAdvantages().merge("完成客户匹配度判断", 1, Integer::sum);
-            } else {
-                summaryMessage.getQuestions().merge("尚未完成客户匹配度判断，需继续收集客户信息", 1, Integer::sum);
-            }
-            if (character.getTransactionStyleStage()) {
-                summaryMessage.getAdvantages().merge("完成客户交易风格了解", 1, Integer::sum);
-            } else {
-                summaryMessage.getQuestions().merge("尚未完成客户交易风格了解，需继续收集客户信息", 1, Integer::sum);
-            }
-            if (character.getConfirmPurchaseStage()) {
-                summaryMessage.getAdvantages().merge("客户确认购买", 1, Integer::sum);
-            }
-            if (character.getCompletePurchaseStage()) {
-                summaryMessage.getAdvantages().merge("客户完成购买", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getFundsVolume())) {
-                summaryMessage.getAdvantages().merge("完成客户资金体量收集", 1, Integer::sum);
-            } else {
-                summaryMessage.getQuestions().merge("尚未完成客户资金体量收集，需继续收集客户信息", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getConversionRate())) {
-                if (character.getConversionRate().equals("high") || character.getConversionRate().equals("medium")) {
-                    summaryMessage.getAdvantages().merge("跟进对的客户", 1, Integer::sum);
-                } else if (character.getConversionRate().equals("low")) {
-                    summaryMessage.getQuestions().merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
-                }
-            }
-
-            if (!StringUtils.isEmpty(character.getSummaryExecuteOrder()) &&
-                    Boolean.parseBoolean(character.getSummaryExecuteOrder())) {
-                summaryMessage.getAdvantages().merge("SOP执行顺序正确", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getSummaryExecuteOrder()) &&
-                    !Boolean.parseBoolean(character.getSummaryExecuteOrder())) {
-                summaryMessage.getQuestions().merge("SOP执行顺序错误，需完成前序任务", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getIssuesValueQuantified()) &&
-                    Boolean.parseBoolean(character.getIssuesValueQuantified())) {
-                summaryMessage.getAdvantages().merge("痛点和价值量化放大", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getIssuesValueQuantified()) &&
-                    !Boolean.parseBoolean(character.getIssuesValueQuantified())) {
-                summaryMessage.getQuestions().merge("尚未完成痛点和价值量化放大，需后续完成", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) &&
-                    Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                summaryMessage.getAdvantages().merge("客户对软件功能理解清晰", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getSoftwareFunctionClarity()) &&
-                    !Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
-                summaryMessage.getQuestions().merge("客户对软件功能尚未理解清晰，需根据客户学习能力更白话讲解", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getStockSelectionMethod()) &&
-                    Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                summaryMessage.getAdvantages().merge("客户认可选股方法", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getStockSelectionMethod()) &&
-                    !Boolean.parseBoolean(character.getStockSelectionMethod())) {
-                summaryMessage.getQuestions().merge("客户对选股方法尚未认可，需加强选股成功的真实案例证明", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) &&
-                    Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                summaryMessage.getAdvantages().merge("客户认可自身问题", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getSelfIssueRecognition()) &&
-                    !Boolean.parseBoolean(character.getSelfIssueRecognition())) {
-                summaryMessage.getQuestions().merge("客户对自身问题尚未认可，需列举与客户相近的真实反面案例证明", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) &&
-                    Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                summaryMessage.getAdvantages().merge("客户认可软件价值", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getSoftwareValueApproval()) &&
-                    !Boolean.parseBoolean(character.getSoftwareValueApproval())) {
-                summaryMessage.getQuestions().merge("客户对软件价值尚未认可，需加强使用软件的真实成功案例证明", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getSoftwarePurchaseAttitude()) &&
-                    !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude())) {
-                summaryMessage.getQuestions().merge("客户尚未确认购买，需暂停劝说客户购买，明确客户顾虑点进行针对性化解", 1, Integer::sum);
-            }
-            if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
-                    Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
-                summaryMessage.getAdvantages().merge("跟进对的客户", 1, Integer::sum);
-            } else if (!StringUtils.isEmpty(character.getSummaryFollowCustomer()) &&
-                    !Boolean.parseBoolean(character.getSummaryFollowCustomer())) {
-                summaryMessage.getQuestions().merge("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户", 1, Integer::sum);
-            }
-
-            if (ownerSummaryMessages.containsKey(character.getOwnerName())) {
-                ownerSummaryMessages.get(character.getOwnerName()).add(summaryMessage);
-            } else {
-                List<SummaryMessage> messageList = new ArrayList<>();
-                messageList.add(summaryMessage);
-                ownerSummaryMessages.put(character.getOwnerName(), messageList);
-            }
-        }
-        // 统计个人的消息，发送
-        for (Map.Entry<String, List<SummaryMessage>> entry : ownerSummaryMessages.entrySet()) {
-            SummaryMessage messages = new SummaryMessage();
-            for (SummaryMessage item : entry.getValue()) {
-                for (String key : messages.getAdvantages().keySet()) {
-                    messages.getAdvantages().put(key,
-                            messages.getAdvantages().get(key) + item.getAdvantages().get(key));
-                }
-                for (String key : messages.getQuestions().keySet()) {
-                    messages.getQuestions().put(key,
-                            messages.getQuestions().get(key) + item.getQuestions().get(key));
-                }
-            }
-
-            StringBuilder complete = new StringBuilder();
-            StringBuilder incomplete = new StringBuilder();
-            int i = 1;
-            for (Map.Entry<String, Integer> item : messages.getAdvantages().entrySet()) {
-                if (item.getValue() == 0) {
-                    continue;
-                }
-                complete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
-            }
-            i = 1;
-            for (Map.Entry<String, Integer> item : messages.getQuestions().entrySet()) {
-                if (item.getValue() == 0) {
-                    continue;
-                }
-                incomplete.append(i++).append(". ").append(item.getKey()).append("：过去半日共计").append(item.getValue()).append("个\n");
-            }
-
-            String message = String.format(AppConstant.CUSTOMER_SUMMARY_MARKDOWN_TEMPLATE, DateUtil.getFormatCurrentTime("yyyy-MM-dd HH:mm"), complete, incomplete,
-                    CUSTOMER_DASHBOARD_URL, CUSTOMER_DASHBOARD_URL);
-            TextMessage textMessage = new TextMessage();
-            TextMessage.TextContent textContent = new TextMessage.TextContent();
-            textContent.setContent(message);
-            textMessage.setMsgtype("markdown");
-            textMessage.setMarkdown(textContent);
-            sendMessageToChat(textMessage);
-        }
     }
 }

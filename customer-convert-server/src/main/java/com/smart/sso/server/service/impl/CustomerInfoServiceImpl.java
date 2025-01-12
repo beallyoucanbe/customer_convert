@@ -2,7 +2,6 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.HasTimeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
@@ -36,7 +35,9 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -602,19 +603,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (CustomerInfo info : characterList) {
             CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(Long.toString(info.getCustomerId()), activityId);
             if (Objects.nonNull(customerBase)) {
-                continue;
+                // 判断销售是否发生变更
+                if(!info.getSalesId().toString().equals(customerBase.getOwnerId())){
+                    customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
+                }
+            } else {
+                customerBase = new CustomerBase();
+                customerBase.setId(CommonUtils.generatePrimaryKey());
+                customerBase.setCustomerId(Long.toString(info.getCustomerId()));
+                customerBase.setOwnerId(Long.toString(info.getSalesId()));
+                customerBase.setCustomerName(info.getCustomerName());
+                customerBase.setOwnerName(info.getSalesName());
+                customerBase.setActivityId(activityId);
+                customerBase.setActivityName(info.getActivityName());
+                customerBase.setUpdateTimeTelephone(LocalDateTime.now());
+                customerBase.setPurchaseTime(info.getPurchaseTime());
+                customerBaseMapper.insert(customerBase);
             }
-            customerBase = new CustomerBase();
-            customerBase.setId(CommonUtils.generatePrimaryKey());
-            customerBase.setCustomerId(Long.toString(info.getCustomerId()));
-            customerBase.setOwnerId(Long.toString(info.getSalesId()));
-            customerBase.setCustomerName(info.getCustomerName());
-            customerBase.setOwnerName(info.getSalesName());
-            customerBase.setActivityId(activityId);
-            customerBase.setActivityName(info.getActivityName());
-            customerBase.setUpdateTimeTelephone(LocalDateTime.now());
-            customerBase.setPurchaseTime(info.getPurchaseTime());
-            customerBaseMapper.insert(customerBase);
         }
     }
 
@@ -1282,17 +1287,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 count++;
             }
         }
-        //2、销售提醒客户查看"圈子内容"的语句
-        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())){
-            for (CommunicationContent one : featureFromLLM.getRemindService_2()){
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_type", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
-            }
-        }
         Collections.sort(data, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
@@ -1316,18 +1310,44 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setRecords(recordContent);
     }
 
-    public int calculateDaysDifference(String timeStr) {
-        try {
-            long diffInMillies = Math.abs(new Date().getTime() - sdf.parse(timeStr).getTime()); // 计算两个时间的毫秒差
-            long diffInDays = diffInMillies / (24 * 60 * 60 * 1000); // 将毫秒差转换为天数
-            // 如果有不足一天的部分，则天数加1
-            if (diffInMillies % (24 * 60 * 60 * 1000) > 0) {
-                diffInDays++;
+    public int calculateDaysDifference(String inputTime) {
+        // 定义时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        // 解析输入的时间字符串
+        LocalDateTime startDateTime = LocalDateTime.parse(inputTime, formatter);
+        LocalDateTime now = LocalDateTime.now();
+
+        // 如果输入时间晚于当前时间，抛出异常
+        if (startDateTime.isAfter(now)) {
+            throw new IllegalArgumentException("Input time must be earlier than the current time.");
+        }
+
+        // 转换为LocalDate，忽略时间部分
+        LocalDate startDate = startDateTime.toLocalDate();
+        LocalDate currentDate = now.toLocalDate();
+        int workdays = 0;
+        // 从起始日期开始逐天迭代，计算工作日
+        while (!startDate.isAfter(currentDate)) {
+            if (isWorkday(startDate)) {
+                workdays++;
             }
-            return (int) diffInDays;
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return -1; // 解析时间字符串失败时返回-1
+            startDate = startDate.plusDays(1);
+        }
+        return workdays;
+    }
+
+    // 判断是否为工作日（周一到周五）
+    private boolean isWorkday(LocalDate date) {
+        switch (date.getDayOfWeek()) {
+            case MONDAY:
+            case TUESDAY:
+            case WEDNESDAY:
+            case THURSDAY:
+            case FRIDAY:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -1342,31 +1362,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         List<Map<String, Object>> data = new ArrayList<>();
         List<String> allTimeStr = new ArrayList<>();
         int count = 0;
-        //1、销售提到"周昭老师"的语句
-        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_3())){
-            for (CommunicationContent one : featureFromLLM.getRemindService_3()){
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_type", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
-            }
-        }
-        //2、销售提到"韩珂老师"的语句
-        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_4())){
-            for (CommunicationContent one : featureFromLLM.getRemindService_4()){
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_type", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
-            }
-        }
-        //2、销售提到"荀利老师"的语句
-        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_5())){
-            for (CommunicationContent one : featureFromLLM.getRemindService_5()){
+
+        //1，销售提醒客户查看"圈子内容"的语句
+        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())){
+            for (CommunicationContent one : featureFromLLM.getRemindService_2()){
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_type", one.getTs());
                 item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));

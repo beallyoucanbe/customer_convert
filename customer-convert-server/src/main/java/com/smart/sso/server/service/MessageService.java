@@ -22,7 +22,4 @@ public interface MessageService {
     String getAgentId(String userId);
 
     void sendTestMessageToSales(Map<String, String> message);
-
-    void sendMessageForPerLeader(String userId);
-
 }

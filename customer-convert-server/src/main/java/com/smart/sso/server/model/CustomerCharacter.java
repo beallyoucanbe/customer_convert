@@ -1,7 +1,5 @@
 package com.smart.sso.server.model;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -36,24 +34,13 @@ public class CustomerCharacter implements Serializable {
     private Boolean completePurchaseStage;
 
     private String fundsVolume;
-    private String earningDesire;
-    private String softwareFunctionClarity;
-    private String stockSelectionMethod;
-    private String selfIssueRecognition;
-    private String softwareValueApproval;
-    private String softwarePurchaseAttitude;
-
-    private String summaryMatchJudgment;
-    private String summaryTransactionStyle;
-    private String summaryFollowCustomer;
-    private String summaryFunctionIntroduction;
-    private String summaryConfirmValue;
-    private String summaryExecuteOrder;
-    private String issuesValueQuantified;
-
-    private int standardExplanationCompletion;
-    private Integer isSend188;
-
+    private String hasTime;
+    private String completeIntro;
+    private String completeStockInfo;
+    private Double remindFreq;
+    private Double transFreq;
+    private Double visitFreq;
+    private Double functionFreq;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private LocalDateTime updateTimeTelephone;

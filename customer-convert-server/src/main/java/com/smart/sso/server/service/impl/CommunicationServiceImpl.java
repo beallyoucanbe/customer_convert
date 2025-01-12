@@ -30,7 +30,7 @@ public class CommunicationServiceImpl implements CommunicationService {
     public void telephoneCallBack(String filePath) {
         try {
             // python process_text.py call '{"sales_id":5155,"sales_name":"张鹏","customer_id":3700105,"customer_name":"陈炜鹏","task_id":"02b0711f911f4a72a126eb28d08d02f2","chat_start_time":"2024-12-25T15:37:02+08:00"}'            String[] params = {filePath};
-            String[] params = {"call", "'" + filePath + "'"};
+            String[] params = {"call", filePath};
             Process process = ShellUtils.saPythonRun("/home/csuser/hsw/chat_insight_v2/dads/hezhong/process_text.py", params.length, params);
             // 等待脚本执行完成
             int exitCode = process.waitFor();

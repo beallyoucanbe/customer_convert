@@ -247,7 +247,7 @@ public class SchedulTask {
     /**
      * 执行特征同步到BI的任务
      */
-//    @Scheduled(cron = "0 0 19 * * ?")
+    @Scheduled(cron = "0 30 7 * * ?")
     public void refreshFeatureToBI() {
         log.error("开始执行客户情况特征同步到bi");
         LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
@@ -271,7 +271,6 @@ public class SchedulTask {
     public void sendMessageToLeader() {
         log.error("开始执行发送消息给领导");
         // 获取该领导下的所有员工
-        messageService.sendMessageForPerLeader(null);
     }
 
 
@@ -287,11 +286,19 @@ public class SchedulTask {
 
 
     // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
-//    @Scheduled(cron = "0 30 3 * * ?")
+    @Scheduled(cron = "0 30 3 * * ?")
     public void refreshCommunicationRounds() {
         log.error("开始全量刷新通话次数任务");
         recordService.refreshCommunicationRounds();
         log.error("全量刷新通话次数任务执行完成");
+    }
+
+    // 每天更新一次info到base表的同步
+    @Scheduled(cron = "0 30 7 * * ?")
+    public void refreshCustomerInfos() {
+        log.error("开始刷新客户信息");
+        customerInfoService.syncCustomerInfoFromRelation();
+        log.error("全量刷新客户信息任务执行完成");
     }
 
     // 每天早上8点，判断昨晚有无需要发送的信息
@@ -364,8 +371,5 @@ public class SchedulTask {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        configService.refreshCustomerConfig();
-        log.error("客户配置同步任务执行完成");
     }
 }

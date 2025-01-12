@@ -46,6 +46,7 @@ public class CustomerController {
     private TelephoneRecordService recordService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
     @Autowired
     private CommunicationService communicationService;
 
@@ -249,7 +250,6 @@ public class CustomerController {
     @ApiOperation(value = "给单个领导发送统计信息")
     @PostMapping("/customer/send_message_for_per_leader")
     public BaseResponse<Void> sendMessageForPerLeader(@RequestParam(value = "user_id") String userId) {
-        messageService.sendMessageForPerLeader(userId);
         return ResultUtils.success(null);
     }
 
