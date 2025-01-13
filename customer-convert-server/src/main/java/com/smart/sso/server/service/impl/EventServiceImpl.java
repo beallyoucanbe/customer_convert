@@ -1,17 +1,18 @@
 package com.smart.sso.server.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smart.sso.server.model.EventDTO;
 import com.smart.sso.server.model.Events;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.primary.mapper.EventsMapper;
 import com.smart.sso.server.service.EventService;
+import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,10 +33,12 @@ public class EventServiceImpl implements EventService {
         int total = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), deliveryCourseEvent);
         // 获取听课次数
         int process = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), deliveryCourseEvent);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), deliveryCourseEvent);
+
         CustomerFeatureResponse.CourseContent deliveryCourseListenContent = new CustomerFeatureResponse.CourseContent();
         deliveryCourseListenContent.setTotal(total);
         deliveryCourseListenContent.setProcess(process);
-        deliveryCourseListenContent.setRecords(getRecordContent(userId, deliveryCourseEvent));
+        deliveryCourseListenContent.setRecords(getRecordContent(events));
         return deliveryCourseListenContent;
     }
 
@@ -47,22 +50,34 @@ public class EventServiceImpl implements EventService {
         int total = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), marketingCourseEvent);
         // 获取听课次数
         int process = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), marketingCourseEvent);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), marketingCourseEvent);
+
         CustomerFeatureResponse.CourseContent deliveryCourseListenContent = new CustomerFeatureResponse.CourseContent();
         deliveryCourseListenContent.setTotal(total);
         deliveryCourseListenContent.setProcess(process);
-        deliveryCourseListenContent.setRecords(getRecordContent(userId, marketingCourseEvent));
+        deliveryCourseListenContent.setRecords(getRecordContent(events));
         return deliveryCourseListenContent;
     }
 
     @Override
-    public CustomerFeatureResponse.FrequencyContent getVisitFreqContent(String userId) {
-
+    public CustomerFeatureResponse.FrequencyContent getVisitFreqContent(String userId, LocalDateTime customerCreateTime) {
         // 直播/圈子访问事件
-        String visitEvent = "";
-        // 这里需要计算访问频次，计算规则
+        String visitEvent = "visit";
         CustomerFeatureResponse.FrequencyContent visitFreqContent = new CustomerFeatureResponse.FrequencyContent();
-        visitFreqContent.setValue("");
-        visitFreqContent.setRecords(getRecordContent(userId, visitEvent));
+        // 这里需要计算访问频次，计算规则
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), visitEvent);
+        if (CollectionUtils.isEmpty(events)) {
+            return visitFreqContent;
+        }
+        // 访问总时间(转换为分钟)
+        int eventDurationSum =  events.stream().mapToInt(Events::getEventDuration).sum() / 60;
+        // 计算频次
+        int days = CommonUtils.calculateDaysDifference(customerCreateTime);
+        // 这里计算平均每天多少分钟
+        double fre = (double) eventDurationSum/days;
+        String formattedResult = String.format("%.1f", fre);
+        visitFreqContent.setValue(Double.parseDouble(formattedResult));
+        visitFreqContent.setRecords(getRecordContent(events));
         return visitFreqContent;
     }
 
@@ -71,15 +86,15 @@ public class EventServiceImpl implements EventService {
         // 功能指标使用事件
         String functionEvent = "";
         // 这里需要计算访问频次，计算规则
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), functionEvent);
         CustomerFeatureResponse.FrequencyContent functionFreqContent = new CustomerFeatureResponse.FrequencyContent();
         functionFreqContent.setValue("");
-        functionFreqContent.setRecords(getRecordContent(userId, functionEvent));
+        functionFreqContent.setRecords(getRecordContent(events));
         return functionFreqContent;
     }
 
-    public CustomerFeatureResponse.RecordContent getRecordContent(String userId, String eventName) {
+    public CustomerFeatureResponse.RecordContent getRecordContent(List<Events> events) {
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), eventName);
         List<CustomerFeatureResponse.RecordTitle> columns = JsonUtil.readValue(recordTitle, new TypeReference<List<CustomerFeatureResponse.RecordTitle>>() {
         });
         recordContent.setColumns(columns);

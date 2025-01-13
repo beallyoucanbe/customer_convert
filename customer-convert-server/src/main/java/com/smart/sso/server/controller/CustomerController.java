@@ -4,6 +4,7 @@ import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.model.ActivityInfoWithVersion;
+import com.smart.sso.server.model.Config;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -48,7 +49,7 @@ public class CustomerController {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
-    private CommunicationService communicationService;
+    private ConfigService configService;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -281,5 +282,21 @@ public class CustomerController {
         CommonUtils.appendTextToFile(filePath, JsonUtil.serialize(message));
         return ResultUtils.success(null);
     }
+
+    @ApiOperation(value = "新增配置项")
+    @PostMapping("/customer/add_config")
+    public BaseResponse<Void> addConfig(@RequestBody Config config) {
+        configService.addConfig(config);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "修改配置项")
+    @PostMapping("/customer/modify_config")
+    public BaseResponse<Void> modifyConfig(@RequestBody Config config) {
+        configService.modifyConfig(config);
+        return ResultUtils.success(null);
+    }
+
+
 
 }

@@ -217,4 +217,14 @@ public class ConfigServiceImpl implements ConfigService {
 
     }
 
+    @Override
+    public void addConfig(Config config) {
+        configMapper.insert(config);
+    }
+
+    @Override
+    public void modifyConfig(Config config) {
+        configMapper.updateById(config);
+    }
+
 }

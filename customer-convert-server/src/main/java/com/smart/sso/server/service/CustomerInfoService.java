@@ -5,7 +5,6 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerBaseListResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummary;
 
 import java.util.List;
 

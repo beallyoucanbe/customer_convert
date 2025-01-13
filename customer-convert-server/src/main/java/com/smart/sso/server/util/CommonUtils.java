@@ -10,6 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -151,5 +154,42 @@ public class CommonUtils {
             sb.append(string).append(" \n ");
         }
         return sb.toString();
+    }
+
+    public static int  calculateDaysDifference(LocalDateTime startDateTime) {
+        // 解析输入的时间字符串
+        LocalDateTime now = LocalDateTime.now();
+
+        // 如果输入时间晚于当前时间，抛出异常
+        if (startDateTime.isAfter(now)) {
+            throw new IllegalArgumentException("Input time must be earlier than the current time.");
+        }
+
+        // 转换为LocalDate，忽略时间部分
+        LocalDate startDate = startDateTime.toLocalDate();
+        LocalDate currentDate = now.toLocalDate();
+        int workdays = 0;
+        // 从起始日期开始逐天迭代，计算工作日
+        while (!startDate.isAfter(currentDate)) {
+            if (isWorkday(startDate)) {
+                workdays++;
+            }
+            startDate = startDate.plusDays(1);
+        }
+        return workdays;
+    }
+
+    // 判断是否为工作日（周一到周五）
+    private static boolean isWorkday(LocalDate date) {
+        switch (date.getDayOfWeek()) {
+            case MONDAY:
+            case TUESDAY:
+            case WEDNESDAY:
+            case THURSDAY:
+            case FRIDAY:
+                return true;
+            default:
+                return false;
+        }
     }
 }

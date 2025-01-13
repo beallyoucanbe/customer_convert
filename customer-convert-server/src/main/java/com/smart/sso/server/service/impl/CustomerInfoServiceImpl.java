@@ -13,11 +13,7 @@ import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.*;
-import com.smart.sso.server.service.ConfigService;
-import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.service.CustomerRelationService;
-import com.smart.sso.server.service.MessageService;
-import com.smart.sso.server.service.TelephoneRecordService;
+import com.smart.sso.server.service.*;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
@@ -67,6 +63,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private TelephoneRecordService recordService;
+    @Autowired
+    private EventService eventService;
     @Autowired
     @Lazy
     private MessageService messageService;
@@ -177,8 +175,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setSummary(getProcessSummary(customerFeature, customerBase, stageStatus, summaryResponse));
         }
         setIntroduceService(featureFromLLM, customerFeature);
-        setRemindService(featureFromLLM, customerFeature);
-        setTeacherRemind(featureFromLLM, customerFeature);
+        setRemindService(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        setTeacherRemind(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        customerFeature.getWarmth().setVisitFreq(eventService.getVisitFreqContent(customerId, customerBase.getCreateTime()));
         if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())){
@@ -1083,7 +1082,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setRecords(recordContent);
     }
 
-    private void setRemindService(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature){
+    private void setRemindService(CustomerFeatureFromLLM featureFromLLM,
+                                  CustomerFeatureResponse customerFeature,
+                                  LocalDateTime customerCreateTime){
         // 提醒查看盘中直播：
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
@@ -1117,8 +1118,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         // 计算频次
         if (!CollectionUtils.isEmpty(allTimeStr)) {
-            List<String> sortedTime = allTimeStr.stream().sorted().collect(Collectors.toList());
-            int days = calculateDaysDifference(sortedTime.get(0));
+            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
             // 这里计算平均多少天一次
             double fre = (double) days/count;
             String formattedResult = String.format("%.1f", fre);
@@ -1128,48 +1128,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setRecords(recordContent);
     }
 
-    public int calculateDaysDifference(String inputTime) {
-        // 定义时间格式
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        // 解析输入的时间字符串
-        LocalDateTime startDateTime = LocalDateTime.parse(inputTime, formatter);
-        LocalDateTime now = LocalDateTime.now();
-
-        // 如果输入时间晚于当前时间，抛出异常
-        if (startDateTime.isAfter(now)) {
-            throw new IllegalArgumentException("Input time must be earlier than the current time.");
-        }
-
-        // 转换为LocalDate，忽略时间部分
-        LocalDate startDate = startDateTime.toLocalDate();
-        LocalDate currentDate = now.toLocalDate();
-        int workdays = 0;
-        // 从起始日期开始逐天迭代，计算工作日
-        while (!startDate.isAfter(currentDate)) {
-            if (isWorkday(startDate)) {
-                workdays++;
-            }
-            startDate = startDate.plusDays(1);
-        }
-        return workdays;
-    }
-
-    // 判断是否为工作日（周一到周五）
-    private boolean isWorkday(LocalDate date) {
-        switch (date.getDayOfWeek()) {
-            case MONDAY:
-            case TUESDAY:
-            case WEDNESDAY:
-            case THURSDAY:
-            case FRIDAY:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private void setTeacherRemind(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature){
+    private void setTeacherRemind(CustomerFeatureFromLLM featureFromLLM,
+                                  CustomerFeatureResponse customerFeature,
+                                  LocalDateTime customerCreateTime){
         // 直播/圈子内容传递频次（区分三个老师的姓名）
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
@@ -1203,8 +1165,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         recordContent.setData(data);
         // 计算频次
         if (!CollectionUtils.isEmpty(allTimeStr)) {
-            List<String> sortedTime = allTimeStr.stream().sorted().collect(Collectors.toList());
-            int days = calculateDaysDifference(sortedTime.get(0));
+            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
             // 这里计算平均多少天一次
             double fre = (double) days/count;
             String formattedResult = String.format("%.1f", fre);

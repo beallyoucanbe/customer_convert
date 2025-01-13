@@ -21,7 +21,7 @@ public class Events implements Serializable {
     private Integer userId;
     private String eventName;
     private Date eventTime;
-    private String eventDuration;
+    private Integer eventDuration;
     private String actionType;
     private String actionContent;
     private String classType;

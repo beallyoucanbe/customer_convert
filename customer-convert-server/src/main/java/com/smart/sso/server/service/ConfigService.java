@@ -1,5 +1,6 @@
 package com.smart.sso.server.service;
 
+import com.smart.sso.server.model.Config;
 import com.smart.sso.server.model.QiweiApplicationConfig;
 
 import java.util.List;
@@ -41,5 +42,9 @@ public interface ConfigService {
     Map<String, String> getRobotMessageUrl();
 
     void refreshCustomerConfig();
+
+    void addConfig(Config config);
+
+    void modifyConfig(Config config);
 
 }
