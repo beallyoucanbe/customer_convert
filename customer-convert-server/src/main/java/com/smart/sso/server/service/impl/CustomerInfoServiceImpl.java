@@ -997,20 +997,28 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private void setIntroduceService(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature){
         // 5个维度：
+        int completeInfo = 0;
         if(Objects.nonNull(featureFromLLM.getIntroduceService_1()) &&
-                Objects.nonNull(featureFromLLM.getIntroduceService_2()) &&
-                Objects.nonNull(featureFromLLM.getIntroduceService_3()) &&
-                Objects.nonNull(featureFromLLM.getIntroduceService_4()) &&
-                Objects.nonNull(featureFromLLM.getIntroduceService_5()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
-            customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(Boolean.TRUE);
-        } else {
-            customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(Boolean.FALSE);
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())){
+            completeInfo += 20;
         }
+        if(Objects.nonNull(featureFromLLM.getIntroduceService_2()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())){
+            completeInfo += 20;
+        }
+        if(Objects.nonNull(featureFromLLM.getIntroduceService_3()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())){
+            completeInfo += 20;
+        }
+        if(Objects.nonNull(featureFromLLM.getIntroduceService_4()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())){
+            completeInfo += 20;
+        }
+        if(Objects.nonNull(featureFromLLM.getIntroduceService_5()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
+            completeInfo += 20;
+        }
+        customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(completeInfo);
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
         columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "维度名"));
