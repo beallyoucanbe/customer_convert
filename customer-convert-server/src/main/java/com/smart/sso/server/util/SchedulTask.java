@@ -262,6 +262,7 @@ public class SchedulTask {
                 log.error("更新CustomerCharacter失败，CustomerId={}, activityId={}", item.getCustomerId(), item.getActivityId(), e);
             }
         }
+        log.error("客户情况特征同步到bi执行完成");
     }
 
     /**
