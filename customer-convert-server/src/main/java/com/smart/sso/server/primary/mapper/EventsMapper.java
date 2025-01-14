@@ -9,12 +9,14 @@ import java.util.List;
 
 public interface EventsMapper extends BaseMapper<Events> {
 
-    @Select("select * from events where user_id = #{user_id} and event_name = #{event_name}")
-    List<Events> getEventsByUserIdAndEventName(@Param("user_id") int user_id,
-                                               @Param("event_name") String event_name);
+    @Select("select * from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type}")
+    List<Events> getEventsByUserIdAndEventNameActionType(@Param("user_id") int user_id,
+                                                         @Param("event_name") String event_name,
+                                                         @Param("action_type") String action_type);
 
-    @Select("select count(1) from events where user_id = #{user_id} and event_name = #{event_name}")
-    int getCountByUserIdAndEventName(@Param("user_id") int user_id,
-                                               @Param("event_name") String event_name);
+    @Select("select count(1) from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type}")
+    int getCountByUserIdAndEventNameActionType(@Param("user_id") int user_id,
+                                     @Param("event_name") String event_name,
+                                     @Param("action_type") String action_type);
 
 }

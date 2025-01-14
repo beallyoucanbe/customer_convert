@@ -192,4 +192,32 @@ public class CommonUtils {
                 return false;
         }
     }
+
+    public static String getTimeStringWithChina(int minutes){
+        // 计算小时数和剩余的分钟数
+        int hours = minutes / 60;
+        int remainingMinutes = minutes % 60;
+
+        // 如果小时数大于0，则返回小时和分钟的格式
+        if (hours > 0) {
+            return hours + "小时" + remainingMinutes + "分钟";
+        } else {
+            // 如果小时数为0，则只返回分钟数
+            return remainingMinutes + "分钟";
+        }
+    }
+
+    public static String getTimeStringWithMinute(int seconds){
+        // 计算分钟数和剩余的秒数
+        int minutes = seconds / 60;
+        int remainingSeconds = seconds % 60;
+
+        // 如果小时数大于0，则返回小时和分钟的格式
+        if (minutes > 0) {
+            return minutes + "min" + remainingSeconds + "s";
+        } else {
+            // 如果小时数为0，则只返回分钟数
+            return remainingSeconds + "s";
+        }
+    }
 }

@@ -29,11 +29,12 @@ public class EventServiceImpl implements EventService {
     public CustomerFeatureResponse.CourseContent getDeliveryCourseListenContent(String userId) {
         // 交付课事件
         String deliveryCourseEvent = "";
+        String deliveryCourseActionType = "";
         // 获取听课次数
-        int total = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), deliveryCourseEvent);
+        int total = eventsMapper.getCountByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
         // 获取听课次数
-        int process = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), deliveryCourseEvent);
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), deliveryCourseEvent);
+        int process = eventsMapper.getCountByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
 
         CustomerFeatureResponse.CourseContent deliveryCourseListenContent = new CustomerFeatureResponse.CourseContent();
         deliveryCourseListenContent.setTotal(total);
@@ -46,11 +47,12 @@ public class EventServiceImpl implements EventService {
     public CustomerFeatureResponse.CourseContent getMarketingCourseListenContent(String userId) {
         // 营销课事件
         String marketingCourseEvent = "";
+        String marketingCourseActionType = "";
         // 获取听课次数
-        int total = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), marketingCourseEvent);
+        int total = eventsMapper.getCountByUserIdAndEventNameActionType(Integer.parseInt(userId), marketingCourseEvent, marketingCourseActionType);
         // 获取听课次数
-        int process = eventsMapper.getCountByUserIdAndEventName(Integer.parseInt(userId), marketingCourseEvent);
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), marketingCourseEvent);
+        int process = eventsMapper.getCountByUserIdAndEventNameActionType(Integer.parseInt(userId), marketingCourseEvent, marketingCourseActionType);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), marketingCourseEvent, marketingCourseActionType);
 
         CustomerFeatureResponse.CourseContent deliveryCourseListenContent = new CustomerFeatureResponse.CourseContent();
         deliveryCourseListenContent.setTotal(total);
@@ -63,9 +65,10 @@ public class EventServiceImpl implements EventService {
     public CustomerFeatureResponse.FrequencyContent getVisitFreqContent(String userId, LocalDateTime customerCreateTime) {
         // 直播/圈子访问事件
         String visitEvent = "visit";
+        String visitActionType = "kgs";
         CustomerFeatureResponse.FrequencyContent visitFreqContent = new CustomerFeatureResponse.FrequencyContent();
         // 这里需要计算访问频次，计算规则
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), visitEvent);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), visitEvent, visitActionType);
         if (CollectionUtils.isEmpty(events)) {
             return visitFreqContent;
         }
@@ -85,8 +88,9 @@ public class EventServiceImpl implements EventService {
     public CustomerFeatureResponse.FrequencyContent getFunctionFreqContent(String userId) {
         // 功能指标使用事件
         String functionEvent = "";
+        String functionActionType = "";
         // 这里需要计算访问频次，计算规则
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventName(Integer.parseInt(userId), functionEvent);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), functionEvent, functionActionType);
         CustomerFeatureResponse.FrequencyContent functionFreqContent = new CustomerFeatureResponse.FrequencyContent();
         functionFreqContent.setValue("");
         functionFreqContent.setRecords(getRecordContent(events));
@@ -110,9 +114,10 @@ public class EventServiceImpl implements EventService {
         for (Events item : events){
             Map<String, Object> dto = new HashMap<>();
             dto.put("client", item.getClassType());
-            dto.put("event_type", item.getEventName());
+//            dto.put("event_type", item.getEventName());
+            dto.put("event_type", "浏览");
             dto.put("event_time", DateUtil.getFormatTime(item.getEventTime()));
-            dto.put("event_duration", item.getEventDuration());
+            dto.put("event_duration", CommonUtils.getTimeStringWithMinute(item.getEventDuration()));
             dto.put("action_section", item.getActionType());
             dto.put("action_content", item.getActionContent());
             result.add(dto);
