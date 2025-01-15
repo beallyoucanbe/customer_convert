@@ -247,7 +247,7 @@ public class SchedulTask {
     /**
      * 执行特征同步到BI的任务
      */
-    @Scheduled(cron = "0 30 7 * * ?")
+    @Scheduled(cron = "0 33 7,10,18 * * ?")
     public void refreshFeatureToBI() {
         log.error("开始执行客户情况特征同步到bi");
         LocalDateTime dateTime = LocalDateTime.now().minusDays(14).with(LocalTime.MIN);
