@@ -41,12 +41,8 @@ def is_working_hour():
     return False
 
 def send_customer_log_alarm(data):
-    # 通话量小于5 或者 报错数大于3
-    if data["success"] < 5 or data["error"] > 3:
-        # 判断当前时间
-        if is_working_hour():
-            message = '过去半小时的通话量为：' + str(data["success"]) + '，报错数为：' + str(data["error"])
-            send_dingtalk_message(message)
+    message = '[合众] 昨天的同步信息为：' + json.dumps(data)
+    send_dingtalk_message(message)
 
 def send_nginx_log_alarm(data):
     # {"response_time_result": {"response_time_tp80": 0.051, "response_time_tp99": 0.502, "response_time_average": 0.033, "response_time_tp90": 0.084}, "code_dict": {"200": 39, "502": 1, "500": 5}}
@@ -59,9 +55,9 @@ def send_nginx_log_alarm(data):
             if not (key.startswith('2') or key.startswith('3')):
                 err_request = err_request + value
 
-    if response_time_tp80 > 0.2 or err_request > 10:
+    if response_time_tp80 > 0.9 or err_request > 10:
         # 发送报警信息
-        send_dingtalk_message(json.dumps(data))
+        send_dingtalk_message('[合众]' + json.dumps(data))
 
 if __name__ == '__main__':
     data = {"response_time_result": {"response_time_tp80": 0.051, "response_time_tp99": 0.502, "response_time_average": 0.033, "response_time_tp90": 0.084}, "code_dict": {"200": 39, "502": 1, "500": 5}}

@@ -132,6 +132,11 @@ public class CommonUtils {
             message.setContent(chatContent.substring(timeCurrentEndIndex).trim());
             result.add(message);
         }
+        if (CollectionUtils.isEmpty(result)) {
+            OriginChat.Message message = new OriginChat.Message();
+            message.setContent(chatContent);
+            result.add(message);
+        }
         return result;
     }
 

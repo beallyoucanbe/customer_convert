@@ -131,7 +131,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         CustomerProfile customerProfile = convert2CustomerProfile(customerBase);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerBase, featureFromSale, featureFromLLM));
-        customerProfile.setIsSend188(customerBase.getIsSend188());
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
@@ -175,9 +174,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setSummary(getProcessSummary(customerFeature, customerBase, stageStatus, summaryResponse));
         }
         setIntroduceService(featureFromLLM, customerFeature);
-        setRemindService(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        setTeacherRemind(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        customerFeature.getWarmth().setVisitFreq(eventService.getVisitFreqContent(customerId, customerBase.getCreateTime()));
+        setRemindLive(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        setRemindCommunity(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        customerFeature.getWarmth().setVisitLiveFreq(eventService.getVisitLiveFreqContent(customerId, customerBase.getCreateTime()));
+        customerFeature.getWarmth().setVisitCommunityFreq(eventService.getVisitCommunityFreqContent(customerId, customerBase.getCreateTime()));
+        customerFeature.getWarmth().setFunctionFreq(eventService.getFunctionFreqContent(customerId, customerBase.getCreateTime()));
         if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())){
@@ -920,19 +921,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 【交接期】提醒查看盘中直播频次
             // 优点：-【交接期】提醒查看盘中直播频次较高:字段“提醒查看盘中直播频次”的值为“高”或“中’
             // 缺点：-【交接期】提醒查看盘中直播频次较低:字段“提醒查看盘中直播频次”的值为“低
-            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue())) {
-                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue();
+            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue())) {
+                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue();
                 if (fre < 2) {
                     advantage.add("【交接期】提醒查看盘中直播频次较高");
                 } else {
                     questions.add(new CustomerFeatureResponse.Question("【交接期】提醒查看盘中直播频次较低"));
                 }
             }
-            // 【交接期】直播/圈子内容传递频次
-            // 优点：-【交接期】直播/圈子内容传递频次较高:字段“直播/圈子内容传递频次”的值为“高”或“中
-            // 缺点：-【交接期】直播/圈子内容传递频次较低:字段“直播/圈子内容传递频次”的值为“低”
-            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue())) {
-                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue();
+            // 【交接期】圈子内容传递频次
+            // 优点：-【交接期】提醒查看圈子内容频次较高:字段“提醒查看圈子内容频次”的值为“高”或“中"
+            // 缺点：-【交接期】提醒查看圈子内容频次较低:字段“提醒查看圈子内容频次”的值为“低’
+            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue())) {
+                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue();
                 if (fre < 2) {
                     advantage.add("【交接期】直播/圈子内容传递频次较高");
                 } else {
@@ -1090,7 +1091,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setRecords(recordContent);
     }
 
-    private void setRemindService(CustomerFeatureFromLLM featureFromLLM,
+    private void setRemindLive(CustomerFeatureFromLLM featureFromLLM,
                                   CustomerFeatureResponse customerFeature,
                                   LocalDateTime customerCreateTime){
         // 提醒查看盘中直播：
@@ -1130,14 +1131,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 这里计算平均多少天一次
             double fre = (double) days/count;
             String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setValue(Double.parseDouble(formattedResult));
+            customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
         }
 
-        customerFeature.getHandoverPeriod().getBasic().getRemindFreq().setRecords(recordContent);
+        customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
     }
 
 
-    private void setTeacherRemind(CustomerFeatureFromLLM featureFromLLM,
+    private void setRemindCommunity(CustomerFeatureFromLLM featureFromLLM,
                                   CustomerFeatureResponse customerFeature,
                                   LocalDateTime customerCreateTime){
         // 直播/圈子内容传递频次（区分三个老师的姓名）
@@ -1177,8 +1178,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 这里计算平均多少天一次
             double fre = (double) days/count;
             String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getTransFreq().setValue(Double.parseDouble(formattedResult));
+            customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().setValue(Double.parseDouble(formattedResult));
         }
-        customerFeature.getHandoverPeriod().getBasic().getTransFreq().setRecords(recordContent);
+        customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().setRecords(recordContent);
     }
 }

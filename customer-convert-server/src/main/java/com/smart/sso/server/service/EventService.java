@@ -13,11 +13,14 @@ public interface EventService {
     // 营销课听课情况
     CustomerFeatureResponse.CourseContent getMarketingCourseListenContent(String userId);
 
-    // 直播/圈子访问频次
-    CustomerFeatureResponse.FrequencyContent getVisitFreqContent(String userId, LocalDateTime customerCreateTime);
+    // 直播访问频次
+    CustomerFeatureResponse.FrequencyContent getVisitLiveFreqContent(String userId, LocalDateTime customerCreateTime);
+
+    // 圈子访问频次
+    CustomerFeatureResponse.FrequencyContent getVisitCommunityFreqContent(String userId, LocalDateTime customerCreateTime);
 
     // 功能指标使用频次
-    CustomerFeatureResponse.FrequencyContent getFunctionFreqContent(String userId);
+    CustomerFeatureResponse.FrequencyContent getFunctionFreqContent(String userId,  LocalDateTime customerCreateTime);
 
 
 }

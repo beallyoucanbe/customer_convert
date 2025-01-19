@@ -37,9 +37,10 @@ public class CustomerCharacter implements Serializable {
     private String hasTime;
     private String completeIntro;
     private String completeStockInfo;
-    private Double remindFreq;
-    private Double transFreq;
-    private Double visitFreq;
+    private Double remindCommunityFreq;
+    private Double remindLiveFreq;
+    private Double visitLiveFreq;
+    private Double visitCommunityFreq;
     private Double functionFreq;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

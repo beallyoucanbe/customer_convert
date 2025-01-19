@@ -737,15 +737,30 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         List<ChatDetail.Message> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            String lineTitle = null;
+            while ((line = br.readLine()) != null && line.split(" ").length >= 2 && (line.contains("2024-") || line.contains("2025-"))){
+                lineTitle = line;
+                break;
+            }
+            while (!StringUtils.isEmpty(lineTitle)) {
                 ChatDetail.Message message = new ChatDetail.Message();
-                if (line.split(" ").length >= 2 && (line.contains("2024") || line.contains("2025"))) {
-                    message.setRole(line.substring(0, line.indexOf(" ")));
-                    message.setTime(line.substring(line.indexOf(" ") + 1, line.length()));
-                    if ((line = br.readLine()) != null) {
-                        message.setContent(line);
+                message.setRole(lineTitle.substring(0, lineTitle.indexOf(" ")));
+                message.setTime(lineTitle.substring(lineTitle.indexOf(" ") + 1));
+                lineTitle = null;
+                StringBuilder content = new StringBuilder();
+                while ((line = br.readLine()) != null) {
+                    if (line.split(" ").length >= 2 && (line.contains("2024-") || line.contains("2025-"))){
+                        lineTitle = line;
+                        message.setContent(content.substring(0, content.length() - 1));
                         result.add(message);
+                        break;
+                    } else {
+                        content.append(line).append("\n");
                     }
+                }
+                if (StringUtils.isEmpty(lineTitle)) {
+                    message.setContent(content.substring(0, content.length() - 1));
+                    result.add(message);
                 }
             }
         } catch (IOException e) {

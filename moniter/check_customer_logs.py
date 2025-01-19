@@ -2,118 +2,51 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import datetime
 import pickle
 import logging
 import json
 from logging import handlers
+from pathlib import Path
 
 from alarm import send_customer_log_alarm
 
-log_path = '/opt/customer-convert/callback/logs'
+call_back_file_path = '/data/customer-convert/callback/'
+call_back_file_path_wecom = call_back_file_path + 'wecom/'
+call_back_file_path_telephone = call_back_file_path + 'telephone/'
+log_path = '/data/customer-convert/callback/logs'
 
 LOG_FILE = log_path + '/log.txt'
-POSITION_FILE = log_path + '/moniter/log_position'
 
-RESULT_FILE_SUFFIXE = '.pkl'
-RESULT_FILE = log_path + '/log_result_tmp_{last_end_position}' + RESULT_FILE_SUFFIXE
-RESULT_CACHE_TIME = 10
+def handle_log(logger):
+    today = datetime.date.today()
+    formatted_date = today.strftime('%Y-%m-%d')
+    # 检查有多少个微信文件
+    data = {"weicom": 0, "telephone": 0, "success": 0, "error": 0}
+    wecom_folder = call_back_file_path_wecom + formatted_date
+    folder_path = Path(wecom_folder)
+    if folder_path.is_dir():
+        file_count = 0
+        for item in folder_path.iterdir():
+            # 检查是否为文件
+            if item.is_file():
+                file_count += 1
+        data['weicom'] = file_count
+    # 检查有多少个语音文件
+    file_path = Path(call_back_file_path_telephone + formatted_date + "_message.txt")
+    if file_path.is_file():
+        # 初始化行数计数器
+        line_count = 0
+        # 打开文件并逐行读取
+        with file_path.open('r', encoding='utf-8') as file:
+            for line in file:
+                line_count += 1
+        data['telephone'] = line_count
 
-def get_position(logger):
-    log_file = LOG_FILE
-    position_file = POSITION_FILE
-    # 开始没position文件
-    if not os.path.exists(position_file):
-        logger.info('position_file is not exist')
-        start_position = str(0)
-        end_position = str(os.path.getsize(log_file))
-        with open(position_file, 'w') as fh:
-            fh.write('start_position: %s\n' % start_position)
-            fh.write('end_position: %s\n' % end_position)
-
-    with open(position_file) as fh:
-        se = fh.readlines()
-    for item in se:
-        logger.info(item)
-    # 万一sb了
-    if len(se) != 2:
-        os.remove(position_file)
-        os._exit(1)
-    last_start_position, last_end_position = [item.split(':')[1].strip() for item in se]
-    start_position = last_end_position
-    end_position = str(os.path.getsize(log_file))
-    # 日志轮转发生的情况
-    if int(start_position) > int(end_position):
-        start_position = 0
-
-    return map(int, [start_position, end_position])
-
-
-def backup_position(start_position, end_position):
-    """
-
-    Args:
-        start_position:
-        end_position:
-
-    Returns:
-
-    """
-    position_file = POSITION_FILE
-    fh = open(position_file, 'w')
-    fh.write('start_position: %s\n' % start_position)
-    fh.write('end_position: %s\n' % end_position)
-    fh.close()
-
-
-def clear_monitor_result_log(backup_count=1, file_suffix=RESULT_FILE_SUFFIXE):
-    """ 清理监控cache文件
-
-    Args:
-        backup_count:
-        file_suffix:
-
-    Returns:
-
-    """
-    files = []
-    for f in os.listdir(log_path):
-        _, suffix = os.path.splitext(f)
-        if suffix == file_suffix:
-            file = os.path.join(log_path, f)
-            ctime = os.stat(file).st_ctime
-            files.append((file, ctime))
-
-    files.sort(key=lambda x: x[1], reverse=True)
-    if len(files) > backup_count:
-        for file, _ in files[backup_count:]:
-            os.remove(file)
-
-
-def handle_log(start_position, end_position, logger):
-    result_tmp_file = RESULT_FILE.format(last_end_position=start_position)
-
-    # 取cache信息
-    if os.path.exists(result_tmp_file):
-        ctime = os.stat(result_tmp_file).st_ctime
-        if time.time() - ctime < RESULT_CACHE_TIME:
-            file = open(result_tmp_file, "rb")
-            try:
-                data = pickle.load(file)
-            except Exception:
-                data = {}
-            file.close()
-            os.remove(result_tmp_file)
-            if data:
-                print(data)
-                return
+    # 检查events表中各个event的数量
+    # 检查大模型的处理日志
     log = open(LOG_FILE)
-    log.seek(start_position, 0)
-    data = {"success": 0, "error": 0}
-
     while True:
-        current_position = log.tell()
-        if current_position >= end_position:
-            break
         line = log.readline()
         if not line:
             break
@@ -127,14 +60,9 @@ def handle_log(start_position, end_position, logger):
             continue
 
     if data:
-        result_tmp_file = RESULT_FILE.format(last_end_position=end_position)
-        file = open(result_tmp_file, "wb")
-        pickle.dump(data, file)
-        file.close()
-        logger.info("check nginx metric result :" + json.dumps(data))
-        backup_position(start_position, end_position)
+        logger.info("check data result :" + json.dumps(data))
+        print("check data result :" + json.dumps(data))
 
-    clear_monitor_result_log()
     send_customer_log_alarm(data)
 
 
@@ -163,7 +91,6 @@ if __name__ == '__main__':
     formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fe.setFormatter(formater)
     logger.addHandler(fe)
+
     logger.info('start customer log monitor')
-    start_position, end_position = get_position(logger)
-    print([start_position, end_position])
-    handle_log(start_position, end_position, logger)
+    handle_log(logger)

@@ -1,6 +1,5 @@
 package com.smart.sso.server.model.dto;
 
-import com.smart.sso.server.model.EventDTO;
 import lombok.*;
 
 import java.util.List;
@@ -75,8 +74,10 @@ public class CustomerFeatureResponse {
         private CourseContent deliveryCourse = new CourseContent();
         // 营销课听课情况
         private CourseContent marketingCourse = new CourseContent();
-        // 直播/圈子访问频次
-        private FrequencyContent visitFreq = new FrequencyContent();
+        // 直播访问频次
+        private FrequencyContent visitLiveFreq = new FrequencyContent();
+        // 圈子访问频次
+        private FrequencyContent visitCommunityFreq = new FrequencyContent();
         // 功能指标使用频次
         private FrequencyContent functionFreq = new FrequencyContent();
         // 客户资金体量
@@ -126,8 +127,8 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class HandoverPeriodBasic{
         private FrequencyContent completeIntro = new FrequencyContent();
-        private FrequencyContent remindFreq = new FrequencyContent();
-        private FrequencyContent transFreq = new FrequencyContent();;
+        private FrequencyContent remindLiveFreq  = new FrequencyContent();
+        private FrequencyContent remindCommunityFreq = new FrequencyContent();;
     }
 
     @Getter

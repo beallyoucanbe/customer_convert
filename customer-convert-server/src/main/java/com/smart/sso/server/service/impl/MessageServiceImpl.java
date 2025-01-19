@@ -321,9 +321,11 @@ public class MessageServiceImpl implements MessageService {
 
         latestCustomerCharacter.setCompleteIntro(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) ? customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue().toString() : null);
         latestCustomerCharacter.setCompleteStockInfo(customerProfile.getCustomerStage().getTransactionStyle() == 1 ? "true" : "false");
-        latestCustomerCharacter.setRemindFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getRemindFreq().getValue() : null);
-        latestCustomerCharacter.setTransFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getTransFreq().getValue() : null);
-        latestCustomerCharacter.setVisitFreq(Objects.nonNull(customerFeature.getWarmth().getVisitFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitFreq().getValue() : null);
+
+        latestCustomerCharacter.setRemindLiveFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue() : null);
+        latestCustomerCharacter.setRemindCommunityFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue() : null);
+        latestCustomerCharacter.setVisitLiveFreq(Objects.nonNull(customerFeature.getWarmth().getVisitLiveFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitLiveFreq().getValue() : null);
+        latestCustomerCharacter.setVisitCommunityFreq(Objects.nonNull(customerFeature.getWarmth().getVisitCommunityFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitCommunityFreq().getValue() : null);
         latestCustomerCharacter.setFunctionFreq(Objects.nonNull(customerFeature.getWarmth().getFunctionFreq().getValue()) ? (Double) customerFeature.getWarmth().getFunctionFreq().getValue() : null);
 
         latestCustomerCharacter.setUpdateTime(

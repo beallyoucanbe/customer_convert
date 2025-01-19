@@ -9,14 +9,20 @@ import java.util.List;
 
 public interface EventsMapper extends BaseMapper<Events> {
 
-    @Select("select * from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type}")
+    @Select("select * from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type} order by event_time desc")
     List<Events> getEventsByUserIdAndEventNameActionType(@Param("user_id") int user_id,
                                                          @Param("event_name") String event_name,
                                                          @Param("action_type") String action_type);
 
-    @Select("select count(1) from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type}")
+    @Select("select * from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type} and action_content like concat('%',#{action_content},'%') order by event_time desc")
+    List<Events> getEventsByUserIdAndEventNameActionTypeActionContent(@Param("user_id") int user_id,
+                                                                      @Param("event_name") String event_name,
+                                                                      @Param("action_type") String action_type,
+                                                                      @Param("action_content") String action_content);
+
+    @Select("select count(1) from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type} order by event_time desc")
     int getCountByUserIdAndEventNameActionType(@Param("user_id") int user_id,
-                                     @Param("event_name") String event_name,
-                                     @Param("action_type") String action_type);
+                                               @Param("event_name") String event_name,
+                                               @Param("action_type") String action_type);
 
 }

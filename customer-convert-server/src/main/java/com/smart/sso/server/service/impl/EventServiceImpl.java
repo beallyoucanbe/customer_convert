@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -62,13 +63,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public CustomerFeatureResponse.FrequencyContent getVisitFreqContent(String userId, LocalDateTime customerCreateTime) {
-        // 直播/圈子访问事件
+    public CustomerFeatureResponse.FrequencyContent getVisitLiveFreqContent(String userId, LocalDateTime customerCreateTime) {
+        // 直播访问事件
         String visitEvent = "visit";
-        String visitActionType = "kgs";
+        String visitActionType = "program";
+        String visitActionContent = "沙场点兵";
         CustomerFeatureResponse.FrequencyContent visitFreqContent = new CustomerFeatureResponse.FrequencyContent();
         // 这里需要计算访问频次，计算规则
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), visitEvent, visitActionType);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionTypeActionContent(Integer.parseInt(userId), visitEvent, visitActionType, visitActionContent);
         if (CollectionUtils.isEmpty(events)) {
             return visitFreqContent;
         }
@@ -85,14 +87,53 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public CustomerFeatureResponse.FrequencyContent getFunctionFreqContent(String userId) {
+    public CustomerFeatureResponse.FrequencyContent getVisitCommunityFreqContent(String userId, LocalDateTime customerCreateTime) {
+        // 圈子访问事件
+        String visitEvent = "visit";
+        String visitActionType = "kgs";
+        String visitActionContent = "智能投教圈";
+        CustomerFeatureResponse.FrequencyContent visitFreqContent = new CustomerFeatureResponse.FrequencyContent();
+        // 这里需要计算访问频次，计算规则
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionTypeActionContent(Integer.parseInt(userId), visitEvent, visitActionType, visitActionContent);
+        if (CollectionUtils.isEmpty(events)) {
+            return visitFreqContent;
+        }
+        // 访问总时间(转换为分钟)
+        int eventDurationSum =  events.stream().mapToInt(Events::getEventDuration).sum() / 60;
+        // 计算频次
+        int days = CommonUtils.calculateDaysDifference(customerCreateTime);
+        // 这里计算平均每天多少分钟
+        double fre = (double) eventDurationSum/days;
+        String formattedResult = String.format("%.1f", fre);
+        visitFreqContent.setValue(Double.parseDouble(formattedResult));
+        visitFreqContent.setRecords(getRecordContent(events));
+        return visitFreqContent;
+    }
+
+    @Override
+    public CustomerFeatureResponse.FrequencyContent getFunctionFreqContent(String userId, LocalDateTime customerCreateTime) {
         // 功能指标使用事件
-        String functionEvent = "";
-        String functionActionType = "";
+        String functionEvent = "visit";
+        String functionActionType = "tool";
+        CustomerFeatureResponse.FrequencyContent functionFreqContent = new CustomerFeatureResponse.FrequencyContent();
         // 这里需要计算访问频次，计算规则
         List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), functionEvent, functionActionType);
-        CustomerFeatureResponse.FrequencyContent functionFreqContent = new CustomerFeatureResponse.FrequencyContent();
-        functionFreqContent.setValue("");
+        if (CollectionUtils.isEmpty(events)) {
+            return functionFreqContent;
+        }
+        events = events.stream().filter(item -> item.getActionContent().contains("主力军情") || item.getActionContent().contains("热点狙击"))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(events)) {
+            return functionFreqContent;
+        }
+        // 访问总时间(转换为分钟)
+        int eventDurationSum =  events.stream().mapToInt(Events::getEventDuration).sum() / 60;
+        // 计算频次
+        int days = CommonUtils.calculateDaysDifference(customerCreateTime);
+        // 这里计算平均每天多少分钟
+        double fre = (double) eventDurationSum/days;
+        String formattedResult = String.format("%.1f", fre);
+        functionFreqContent.setValue(Double.parseDouble(formattedResult));
         functionFreqContent.setRecords(getRecordContent(events));
         return functionFreqContent;
     }
@@ -113,7 +154,7 @@ public class EventServiceImpl implements EventService {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Events item : events){
             Map<String, Object> dto = new HashMap<>();
-            dto.put("client", item.getClassType());
+            dto.put("client", item.getExt1());
 //            dto.put("event_type", item.getEventName());
             dto.put("event_type", "浏览");
             dto.put("event_time", DateUtil.getFormatTime(item.getEventTime()));
