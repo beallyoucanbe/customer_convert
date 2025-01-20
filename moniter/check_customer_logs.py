@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import time
-import pickle
 import logging
 import json
 from logging import handlers
@@ -20,8 +18,8 @@ log_path = '/data/customer-convert/callback/logs'
 LOG_FILE = log_path + '/log.txt'
 
 def handle_log(logger):
-    today = datetime.date.today()
-    formatted_date = today.strftime('%Y-%m-%d')
+    now = datetime.now()
+    formatted_date = now.strftime('%Y-%m-%d')
     # 检查有多少个微信文件
     data = {"weicom": 0, "telephone": 0, "success": 0, "error": 0, "event": 0}
     wecom_folder = call_back_file_path_wecom + formatted_date
@@ -81,7 +79,7 @@ def get_event():
     try:
         conn = mysql.connector.connect(host=host, user=user, password=password, port=port)
         # 计算昨天的日期
-        yesterday = datetime.now() - timedelta(days=3)
+        yesterday = datetime.now() - timedelta(days=1)
 
         # 生成昨天的开始时间（00:00:00）
         start_time = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
