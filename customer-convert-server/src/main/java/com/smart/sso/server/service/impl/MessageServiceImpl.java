@@ -362,6 +362,21 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (Exception e) {
         }
-
+        try {
+            if (!CollectionUtils.isEmpty(customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getRecords().getData())) {
+                List<Map<String, Object>> items = customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getRecords().getData();
+                latestCustomerCharacter.setLatestTimeRemindLive(LocalDateTime.parse(items.get(0).get("event_time").toString(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            }
+        } catch (Exception e) {
+        }
+        try {
+            if (!CollectionUtils.isEmpty(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getRecords().getData())) {
+                List<Map<String, Object>> items = customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getRecords().getData();
+                latestCustomerCharacter.setLatestTimeRemindCommunity(LocalDateTime.parse(items.get(0).get("event_time").toString(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            }
+        } catch (Exception e) {
+        }
     }
 }

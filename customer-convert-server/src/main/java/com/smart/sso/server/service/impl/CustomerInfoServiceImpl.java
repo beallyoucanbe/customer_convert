@@ -1102,7 +1102,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 提醒查看盘中直播：
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "会话时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
         columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
         recordContent.setColumns(columns);
 
@@ -1113,7 +1113,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_1())){
             for (CommunicationContent one : featureFromLLM.getRemindService_1()){
                 Map<String, Object> item = new HashMap<>();
-                item.put("event_type", one.getTs());
+                item.put("event_time", one.getTs());
                 item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
@@ -1123,8 +1123,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         Collections.sort(data, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_type");
-                String eventType2 = (String) o2.get("event_type");
+                String eventType1 = (String) o1.get("event_time");
+                String eventType2 = (String) o2.get("event_time");
                 return eventType2.compareTo(eventType1); // 字符串按字典序比较
             }
         });
@@ -1149,7 +1149,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 直播/圈子内容传递频次（区分三个老师的姓名）
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "会话时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
         columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
         recordContent.setColumns(columns);
 
@@ -1161,7 +1161,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())){
             for (CommunicationContent one : featureFromLLM.getRemindService_2()){
                 Map<String, Object> item = new HashMap<>();
-                item.put("event_type", one.getTs());
+                item.put("event_time", one.getTs());
                 item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
                 data.add(item);
                 allTimeStr.add(one.getTs());
@@ -1171,8 +1171,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         Collections.sort(data, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_type");
-                String eventType2 = (String) o2.get("event_type");
+                String eventType1 = (String) o1.get("event_time");
+                String eventType2 = (String) o2.get("event_time");
                 return eventType2.compareTo(eventType1); // 字符串按字典序比较
             }
         });
