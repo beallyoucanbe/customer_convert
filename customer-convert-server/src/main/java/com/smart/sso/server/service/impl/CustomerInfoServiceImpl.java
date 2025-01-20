@@ -607,6 +607,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 if(!info.getSalesId().toString().equals(customerBase.getOwnerId())){
                     customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
                 }
+                if(!Objects.equals(info.getCustomerRefundStatus(), customerBase.getCustomerRefundStatus())){
+                    customerBaseMapper.updateRefundStatusById(customerBase.getId(), info.getCustomerRefundStatus(), info.getRefundTime());
+                }
             } else {
                 customerBase = new CustomerBase();
                 customerBase.setId(CommonUtils.generatePrimaryKey());
@@ -618,6 +621,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerBase.setActivityName(info.getActivityName());
                 customerBase.setUpdateTimeTelephone(LocalDateTime.now());
                 customerBase.setPurchaseTime(info.getPurchaseTime());
+                customerBase.setRefundTime(info.getRefundTime());
+                customerBase.setCustomerRefundStatus(info.getCustomerRefundStatus());
                 customerBaseMapper.insert(customerBase);
             }
         }

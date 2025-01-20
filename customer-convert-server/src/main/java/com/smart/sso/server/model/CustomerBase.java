@@ -49,8 +49,6 @@ public class CustomerBase implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTimeTelephone;
 
-    @TableField(exist = false)
     private Integer customerRefundStatus;
-    @TableField(exist = false)
     private LocalDateTime refundTime;
 }
