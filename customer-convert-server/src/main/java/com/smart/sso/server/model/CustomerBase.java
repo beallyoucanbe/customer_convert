@@ -42,13 +42,15 @@ public class CustomerBase implements Serializable {
     // 最近沟通日期
     @TableField(exist = false)
     private Date lastCommunicationDate;
-    // 是否 188
-    @TableField(exist = false)
-    private Integer isSend188;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
 
     private LocalDateTime purchaseTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTimeTelephone;
+
+    @TableField(exist = false)
+    private Integer customerRefundStatus;
+    @TableField(exist = false)
+    private LocalDateTime refundTime;
 }

@@ -31,9 +31,10 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "has_time=#{hasTime}, ",
             "complete_intro=#{completeIntro}, ",
             "complete_stock_info=#{completeStockInfo}, ",
-            "remind_freq=#{remindFreq}, ",
-            "trans_freq=#{transFreq}, ",
-            "visit_freq=#{visitFreq}, ",
+            "remind_live_freq=#{remindLiveFreq}, ",
+            "remind_community_freq=#{remindCommunityFreq}, ",
+            "visit_live_freq=#{visitLiveFreq}, ",
+            "visit_community_freq=#{visitCommunityFreq}, ",
             "function_freq=#{functionFreq}, ",
             "update_time=#{updateTime} ",
             "WHERE id=#{id}"

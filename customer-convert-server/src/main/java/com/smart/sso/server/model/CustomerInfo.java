@@ -21,6 +21,8 @@ public class CustomerInfo implements Serializable {
     private String activityName;
     private Integer customerPurchaseStatus;
     private LocalDateTime purchaseTime;
+    private Integer customerRefundStatus;
+    private LocalDateTime refundTime;
     private String ext1;
     private String ext2;
 }
