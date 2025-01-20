@@ -30,8 +30,10 @@ import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -330,5 +332,36 @@ public class MessageServiceImpl implements MessageService {
 
         latestCustomerCharacter.setUpdateTime(
                 customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
+
+        latestCustomerCharacter.setRefundTime(customerBase.getRefundTime());
+        latestCustomerCharacter.setCustomerRefundStatus(customerBase.getCustomerRefundStatus());
+        latestCustomerCharacter.setTimeAddCustomer(customerBase.getCreateTime());
+
+        // 设置事件的最新访问时间，如果有异常，就跳过
+        try {
+            if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getVisitLiveFreq().getRecords().getData())) {
+                List<Map<String, Object>> items = customerFeature.getWarmth().getVisitLiveFreq().getRecords().getData();
+                latestCustomerCharacter.setLatestTimeVisitLive(LocalDateTime.parse(items.get(0).get("event_time").toString(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            }
+        } catch (Exception e) {
+        }
+        try {
+            if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getVisitCommunityFreq().getRecords().getData())) {
+                List<Map<String, Object>> items = customerFeature.getWarmth().getVisitCommunityFreq().getRecords().getData();
+                latestCustomerCharacter.setLatestTimeVisitCommunity(LocalDateTime.parse(items.get(0).get("event_time").toString(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            }
+        } catch (Exception e) {
+        }
+        try {
+            if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getFunctionFreq().getRecords().getData())) {
+                List<Map<String, Object>> items = customerFeature.getWarmth().getFunctionFreq().getRecords().getData();
+                latestCustomerCharacter.setLatestTimeUseFunction(LocalDateTime.parse(items.get(0).get("event_time").toString(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            }
+        } catch (Exception e) {
+        }
+
     }
 }

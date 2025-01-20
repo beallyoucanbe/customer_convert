@@ -48,4 +48,11 @@ public class CustomerCharacter implements Serializable {
 
     private Integer customerRefundStatus;
     private LocalDateTime refundTime;
+
+    private LocalDateTime latestTimeVisitLive;
+    private LocalDateTime latestTimeRemindLive;
+    private LocalDateTime latestTimeVisitCommunity;
+    private LocalDateTime latestTimeRemindCommunity;
+    private LocalDateTime latestTimeUseFunction;
+    private LocalDateTime timeAddCustomer;
 }
