@@ -70,15 +70,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setFundsVolume(communicationContent);
                     customerFeatureFromLLM.getFundsVolume().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getFundsVolume().getQuestion()) || customerFeatureFromLLM.getFundsVolume().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getFundsVolume().getQuestion()) ||
+                            customerFeatureFromLLM.getFundsVolume().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getFundsVolume().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getFundsVolume().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getFundsVolume().getAnswerText()) || customerFeatureFromLLM.getFundsVolume().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getFundsVolume().getAnswerText()) ||
+                            customerFeatureFromLLM.getFundsVolume().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getFundsVolume().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getFundsVolume().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getFundsVolume().setDoubtText(communicationContent.getDoubtText());
@@ -94,15 +97,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setHasTime(communicationContent);
                     customerFeatureFromLLM.getHasTime().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getHasTime().getQuestion()) || customerFeatureFromLLM.getHasTime().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getHasTime().getQuestion()) ||
+                            customerFeatureFromLLM.getHasTime().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getHasTime().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getHasTime().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getHasTime().getAnswerText()) || customerFeatureFromLLM.getHasTime().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getHasTime().getAnswerText()) ||
+                            customerFeatureFromLLM.getHasTime().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getHasTime().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getHasTime().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getHasTime().setDoubtText(communicationContent.getDoubtText());
@@ -119,15 +125,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setIntroduceService_1(communicationContent);
                     customerFeatureFromLLM.getIntroduceService_1().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_1().getQuestion()) || customerFeatureFromLLM.getIntroduceService_1().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_1().getQuestion()) ||
+                            customerFeatureFromLLM.getIntroduceService_1().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getIntroduceService_1().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getIntroduceService_1().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_1().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_1().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_1().getAnswerText()) ||
+                            customerFeatureFromLLM.getIntroduceService_1().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getIntroduceService_1().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getIntroduceService_1().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getIntroduceService_1().setDoubtText(communicationContent.getDoubtText());
@@ -143,15 +152,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setIntroduceService_2(communicationContent);
                     customerFeatureFromLLM.getIntroduceService_2().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_2().getQuestion()) || customerFeatureFromLLM.getIntroduceService_2().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_2().getQuestion()) ||
+                            customerFeatureFromLLM.getIntroduceService_2().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getIntroduceService_2().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getIntroduceService_2().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_2().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_2().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_2().getAnswerText()) ||
+                            customerFeatureFromLLM.getIntroduceService_2().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getIntroduceService_2().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getIntroduceService_2().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getIntroduceService_2().setDoubtText(communicationContent.getDoubtText());
@@ -167,15 +179,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setIntroduceService_3(communicationContent);
                     customerFeatureFromLLM.getIntroduceService_3().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_3().getQuestion()) || customerFeatureFromLLM.getIntroduceService_3().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_3().getQuestion()) ||
+                            customerFeatureFromLLM.getIntroduceService_3().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getIntroduceService_3().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getIntroduceService_3().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_3().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_3().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_3().getAnswerText()) ||
+                            customerFeatureFromLLM.getIntroduceService_3().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getIntroduceService_3().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getIntroduceService_3().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getIntroduceService_3().setDoubtText(communicationContent.getDoubtText());
@@ -191,15 +206,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setIntroduceService_4(communicationContent);
                     customerFeatureFromLLM.getIntroduceService_4().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_4().getQuestion()) || customerFeatureFromLLM.getIntroduceService_4().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_4().getQuestion()) ||
+                            customerFeatureFromLLM.getIntroduceService_4().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getIntroduceService_4().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getIntroduceService_4().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_4().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_4().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_4().getAnswerText()) ||
+                            customerFeatureFromLLM.getIntroduceService_4().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getIntroduceService_4().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getIntroduceService_4().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getIntroduceService_4().setDoubtText(communicationContent.getDoubtText());
@@ -215,15 +233,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setIntroduceService_5(communicationContent);
                     customerFeatureFromLLM.getIntroduceService_5().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_5().getQuestion()) || customerFeatureFromLLM.getIntroduceService_5().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_5().getQuestion()) ||
+                            customerFeatureFromLLM.getIntroduceService_5().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getIntroduceService_5().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getIntroduceService_5().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_5().getAnswerText()) || customerFeatureFromLLM.getIntroduceService_5().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIntroduceService_5().getAnswerText()) ||
+                            customerFeatureFromLLM.getIntroduceService_5().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getIntroduceService_5().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getIntroduceService_5().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getIntroduceService_5().setDoubtText(communicationContent.getDoubtText());
@@ -235,7 +256,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //提醒1
             if (!CollectionUtils.isEmpty(record.getRemindService_1())) {
                 CommunicationContent communicationContent = record.getRemindService_1().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                        !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
                     communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                     customerFeatureFromLLM.getRemindService_1().add(communicationContent);
@@ -244,7 +266,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //提醒2
             if (!CollectionUtils.isEmpty(record.getRemindService_2())) {
                 CommunicationContent communicationContent = record.getRemindService_2().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                        !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
                     communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                     customerFeatureFromLLM.getRemindService_2().add(communicationContent);
@@ -253,7 +276,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //提醒3
             if (!CollectionUtils.isEmpty(record.getRemindService_3())) {
                 CommunicationContent communicationContent = record.getRemindService_3().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                        !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
                     communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                     customerFeatureFromLLM.getRemindService_3().add(communicationContent);
@@ -262,7 +286,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //提醒4
             if (!CollectionUtils.isEmpty(record.getRemindService_4())) {
                 CommunicationContent communicationContent = record.getRemindService_4().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                        !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
                     communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                     customerFeatureFromLLM.getRemindService_4().add(communicationContent);
@@ -271,7 +296,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //提醒5
             if (!CollectionUtils.isEmpty(record.getRemindService_5())) {
                 CommunicationContent communicationContent = record.getRemindService_5().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                        !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
                     communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                     customerFeatureFromLLM.getRemindService_5().add(communicationContent);
@@ -284,15 +310,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setEarningDesire(communicationContent);
                     customerFeatureFromLLM.getEarningDesire().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getEarningDesire().getQuestion()) || customerFeatureFromLLM.getEarningDesire().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getEarningDesire().getQuestion()) ||
+                            customerFeatureFromLLM.getEarningDesire().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getEarningDesire().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getEarningDesire().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getEarningDesire().getAnswerText()) || customerFeatureFromLLM.getEarningDesire().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getEarningDesire().getAnswerText()) ||
+                            customerFeatureFromLLM.getEarningDesire().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getEarningDesire().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getEarningDesire().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getEarningDesire().setDoubtText(communicationContent.getDoubtText());
@@ -308,15 +337,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setSoftwareFunctionClarity(communicationContent);
                     customerFeatureFromLLM.getSoftwareFunctionClarity().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareFunctionClarity().getQuestion()) || customerFeatureFromLLM.getSoftwareFunctionClarity().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareFunctionClarity().getQuestion()) ||
+                            customerFeatureFromLLM.getSoftwareFunctionClarity().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareFunctionClarity().getAnswerText()) || customerFeatureFromLLM.getSoftwareFunctionClarity().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareFunctionClarity().getAnswerText()) ||
+                            customerFeatureFromLLM.getSoftwareFunctionClarity().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setDoubtText(communicationContent.getDoubtText());
@@ -332,15 +364,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setStockSelectionMethod(communicationContent);
                     customerFeatureFromLLM.getStockSelectionMethod().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockSelectionMethod().getQuestion()) || customerFeatureFromLLM.getStockSelectionMethod().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockSelectionMethod().getQuestion()) ||
+                            customerFeatureFromLLM.getStockSelectionMethod().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getStockSelectionMethod().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getStockSelectionMethod().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockSelectionMethod().getAnswerText()) || customerFeatureFromLLM.getStockSelectionMethod().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockSelectionMethod().getAnswerText()) ||
+                            customerFeatureFromLLM.getStockSelectionMethod().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getStockSelectionMethod().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getStockSelectionMethod().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getStockSelectionMethod().setDoubtText(communicationContent.getDoubtText());
@@ -356,15 +391,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setSelfIssueRecognition(communicationContent);
                     customerFeatureFromLLM.getSelfIssueRecognition().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSelfIssueRecognition().getQuestion()) || customerFeatureFromLLM.getSelfIssueRecognition().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSelfIssueRecognition().getQuestion()) ||
+                            customerFeatureFromLLM.getSelfIssueRecognition().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getSelfIssueRecognition().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getSelfIssueRecognition().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSelfIssueRecognition().getAnswerText()) || customerFeatureFromLLM.getSelfIssueRecognition().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSelfIssueRecognition().getAnswerText()) ||
+                            customerFeatureFromLLM.getSelfIssueRecognition().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getSelfIssueRecognition().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getSelfIssueRecognition().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getSelfIssueRecognition().setDoubtText(communicationContent.getDoubtText());
@@ -380,15 +418,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setSoftwareValueApproval(communicationContent);
                     customerFeatureFromLLM.getSoftwareValueApproval().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueApproval().getQuestion()) || customerFeatureFromLLM.getSoftwareValueApproval().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueApproval().getQuestion()) ||
+                            customerFeatureFromLLM.getSoftwareValueApproval().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getSoftwareValueApproval().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getSoftwareValueApproval().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueApproval().getAnswerText()) || customerFeatureFromLLM.getSoftwareValueApproval().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueApproval().getAnswerText()) ||
+                            customerFeatureFromLLM.getSoftwareValueApproval().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getSoftwareValueApproval().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getSoftwareValueApproval().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getSoftwareValueApproval().setDoubtText(communicationContent.getDoubtText());
@@ -404,15 +445,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setSoftwarePurchaseAttitude(communicationContent);
                     customerFeatureFromLLM.getSoftwarePurchaseAttitude().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwarePurchaseAttitude().getQuestion()) || customerFeatureFromLLM.getSoftwarePurchaseAttitude().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwarePurchaseAttitude().getQuestion()) ||
+                            customerFeatureFromLLM.getSoftwarePurchaseAttitude().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getSoftwarePurchaseAttitude().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getSoftwarePurchaseAttitude().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwarePurchaseAttitude().getAnswerText()) || customerFeatureFromLLM.getSoftwarePurchaseAttitude().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwarePurchaseAttitude().getAnswerText()) ||
+                            customerFeatureFromLLM.getSoftwarePurchaseAttitude().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getSoftwarePurchaseAttitude().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getSoftwarePurchaseAttitude().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getSoftwarePurchaseAttitude().setDoubtText(communicationContent.getDoubtText());
@@ -428,15 +472,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setCurrentStocks(communicationContent);
                     customerFeatureFromLLM.getCurrentStocks().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCurrentStocks().getQuestion()) || customerFeatureFromLLM.getCurrentStocks().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCurrentStocks().getQuestion()) ||
+                            customerFeatureFromLLM.getCurrentStocks().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getCurrentStocks().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getCurrentStocks().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCurrentStocks().getAnswerText()) || customerFeatureFromLLM.getCurrentStocks().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCurrentStocks().getAnswerText()) ||
+                            customerFeatureFromLLM.getCurrentStocks().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getCurrentStocks().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getCurrentStocks().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getCurrentStocks().setDoubtText(communicationContent.getDoubtText());
@@ -453,15 +500,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setStockPurchaseReason(communicationContent);
                     customerFeatureFromLLM.getStockPurchaseReason().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPurchaseReason().getQuestion()) || customerFeatureFromLLM.getStockPurchaseReason().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPurchaseReason().getQuestion()) ||
+                            customerFeatureFromLLM.getStockPurchaseReason().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getStockPurchaseReason().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getStockPurchaseReason().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPurchaseReason().getAnswerText()) || customerFeatureFromLLM.getStockPurchaseReason().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPurchaseReason().getAnswerText()) ||
+                            customerFeatureFromLLM.getStockPurchaseReason().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getStockPurchaseReason().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getStockPurchaseReason().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getStockPurchaseReason().setDoubtText(communicationContent.getDoubtText());
@@ -477,15 +527,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setTradeTimingDecision(communicationContent);
                     customerFeatureFromLLM.getTradeTimingDecision().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeTimingDecision().getQuestion()) || customerFeatureFromLLM.getTradeTimingDecision().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeTimingDecision().getQuestion()) ||
+                            customerFeatureFromLLM.getTradeTimingDecision().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getTradeTimingDecision().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getTradeTimingDecision().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeTimingDecision().getAnswerText()) || customerFeatureFromLLM.getTradeTimingDecision().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeTimingDecision().getAnswerText()) ||
+                            customerFeatureFromLLM.getTradeTimingDecision().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getTradeTimingDecision().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getTradeTimingDecision().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getTradeTimingDecision().setDoubtText(communicationContent.getDoubtText());
@@ -501,15 +554,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setTradingStyle(communicationContent);
                     customerFeatureFromLLM.getTradingStyle().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradingStyle().getQuestion()) || customerFeatureFromLLM.getTradingStyle().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradingStyle().getQuestion()) ||
+                            customerFeatureFromLLM.getTradingStyle().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getTradingStyle().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getTradingStyle().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradingStyle().getAnswerText()) || customerFeatureFromLLM.getTradingStyle().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradingStyle().getAnswerText()) ||
+                            customerFeatureFromLLM.getTradingStyle().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getTradingStyle().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getTradingStyle().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getTradingStyle().setDoubtText(communicationContent.getDoubtText());
@@ -526,15 +582,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setStockMarketAge(communicationContent);
                     customerFeatureFromLLM.getStockMarketAge().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockMarketAge().getQuestion()) || customerFeatureFromLLM.getStockMarketAge().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockMarketAge().getQuestion()) ||
+                            customerFeatureFromLLM.getStockMarketAge().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getStockMarketAge().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getStockMarketAge().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockMarketAge().getAnswerText()) || customerFeatureFromLLM.getStockMarketAge().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockMarketAge().getAnswerText()) ||
+                            customerFeatureFromLLM.getStockMarketAge().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getStockMarketAge().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getStockMarketAge().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getStockMarketAge().setDoubtText(communicationContent.getDoubtText());
@@ -551,15 +610,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setLearningAbility(communicationContent);
                     customerFeatureFromLLM.getLearningAbility().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getLearningAbility().getQuestion()) || customerFeatureFromLLM.getLearningAbility().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getLearningAbility().getQuestion()) ||
+                            customerFeatureFromLLM.getLearningAbility().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getLearningAbility().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getLearningAbility().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getLearningAbility().getAnswerText()) || customerFeatureFromLLM.getLearningAbility().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getLearningAbility().getAnswerText()) ||
+                            customerFeatureFromLLM.getLearningAbility().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getLearningAbility().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getLearningAbility().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getLearningAbility().setDoubtText(communicationContent.getDoubtText());
@@ -575,15 +637,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setIllustrateBasedStock(communicationContent);
                     customerFeatureFromLLM.getIllustrateBasedStock().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIllustrateBasedStock().getQuestion()) || customerFeatureFromLLM.getIllustrateBasedStock().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIllustrateBasedStock().getQuestion()) ||
+                            customerFeatureFromLLM.getIllustrateBasedStock().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getIllustrateBasedStock().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getIllustrateBasedStock().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIllustrateBasedStock().getAnswerText()) || customerFeatureFromLLM.getIllustrateBasedStock().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getIllustrateBasedStock().getAnswerText()) ||
+                            customerFeatureFromLLM.getIllustrateBasedStock().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getIllustrateBasedStock().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getIllustrateBasedStock().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getIllustrateBasedStock().setDoubtText(communicationContent.getDoubtText());
@@ -599,15 +664,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setTradeStyleIntroduce(communicationContent);
                     customerFeatureFromLLM.getTradeStyleIntroduce().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeStyleIntroduce().getQuestion()) || customerFeatureFromLLM.getTradeStyleIntroduce().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeStyleIntroduce().getQuestion()) ||
+                            customerFeatureFromLLM.getTradeStyleIntroduce().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getTradeStyleIntroduce().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getTradeStyleIntroduce().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeStyleIntroduce().getAnswerText()) || customerFeatureFromLLM.getTradeStyleIntroduce().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getTradeStyleIntroduce().getAnswerText()) ||
+                            customerFeatureFromLLM.getTradeStyleIntroduce().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getTradeStyleIntroduce().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getTradeStyleIntroduce().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getTradeStyleIntroduce().setDoubtText(communicationContent.getDoubtText());
@@ -623,15 +691,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setStockPickMethodReview(communicationContent);
                     customerFeatureFromLLM.getStockPickMethodReview().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickMethodReview().getQuestion()) || customerFeatureFromLLM.getStockPickMethodReview().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickMethodReview().getQuestion()) ||
+                            customerFeatureFromLLM.getStockPickMethodReview().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getStockPickMethodReview().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getStockPickMethodReview().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickMethodReview().getAnswerText()) || customerFeatureFromLLM.getStockPickMethodReview().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickMethodReview().getAnswerText()) ||
+                            customerFeatureFromLLM.getStockPickMethodReview().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getStockPickMethodReview().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getStockPickMethodReview().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getStockPickMethodReview().setDoubtText(communicationContent.getDoubtText());
@@ -647,15 +718,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setStockPickTimingReview(communicationContent);
                     customerFeatureFromLLM.getStockPickTimingReview().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickTimingReview().getQuestion()) || customerFeatureFromLLM.getStockPickTimingReview().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickTimingReview().getQuestion()) ||
+                            customerFeatureFromLLM.getStockPickTimingReview().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getStockPickTimingReview().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getStockPickTimingReview().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickTimingReview().getAnswerText()) || customerFeatureFromLLM.getStockPickTimingReview().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getStockPickTimingReview().getAnswerText()) ||
+                            customerFeatureFromLLM.getStockPickTimingReview().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getStockPickTimingReview().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getStockPickTimingReview().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getStockPickTimingReview().setDoubtText(communicationContent.getDoubtText());
@@ -671,15 +745,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setCustomerIssuesQuantified(communicationContent);
                     customerFeatureFromLLM.getCustomerIssuesQuantified().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion()) || customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion()) ||
+                            customerFeatureFromLLM.getCustomerIssuesQuantified().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getCustomerIssuesQuantified().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getCustomerIssuesQuantified().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerIssuesQuantified().getAnswerText()) || customerFeatureFromLLM.getCustomerIssuesQuantified().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerIssuesQuantified().getAnswerText()) ||
+                            customerFeatureFromLLM.getCustomerIssuesQuantified().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getCustomerIssuesQuantified().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getCustomerIssuesQuantified().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getCustomerIssuesQuantified().setDoubtText(communicationContent.getDoubtText());
@@ -695,15 +772,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     customerFeatureFromLLM.setSoftwareValueQuantified(communicationContent);
                     customerFeatureFromLLM.getSoftwareValueQuantified().setCallId(record.getCallId());
                 } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueQuantified().getQuestion()) || customerFeatureFromLLM.getSoftwareValueQuantified().getQuestion().equals("无")) &&
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueQuantified().getQuestion()) ||
+                            customerFeatureFromLLM.getSoftwareValueQuantified().getQuestion().equals("无")) &&
                             !StringUtils.isEmpty(communicationContent.getQuestion()) &&
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getSoftwareValueQuantified().setQuestion(communicationContent.getQuestion());
                         customerFeatureFromLLM.getSoftwareValueQuantified().setQuestionCallId(record.getCallId());
                     }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueQuantified().getAnswerText()) || customerFeatureFromLLM.getSoftwareValueQuantified().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueQuantified().getAnswerText()) ||
+                            customerFeatureFromLLM.getSoftwareValueQuantified().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
                         customerFeatureFromLLM.getSoftwareValueQuantified().setAnswerText(communicationContent.getAnswerText());
                         customerFeatureFromLLM.getSoftwareValueQuantified().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getSoftwareValueQuantified().setDoubtText(communicationContent.getDoubtText());
@@ -738,7 +818,9 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             String lineTitle = null;
-            while ((line = br.readLine()) != null && line.split(" ").length >= 2 && (line.contains("2024-") || line.contains("2025-"))){
+            while ((line = br.readLine()) != null &&
+                    line.split(" ").length >= 2 &&
+                    (line.contains("2024-") || line.contains("2025-"))) {
                 lineTitle = line;
                 break;
             }
@@ -749,7 +831,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 lineTitle = null;
                 StringBuilder content = new StringBuilder();
                 while ((line = br.readLine()) != null) {
-                    if (line.split(" ").length >= 2 && (line.contains("2024-") || line.contains("2025-"))){
+                    if (line.split(" ").length >= 2 && (line.contains("2024-") || line.contains("2025-"))) {
                         lineTitle = line;
                         message.setContent(content.substring(0, content.length() - 1));
                         result.add(message);
@@ -792,9 +874,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getSoftwareFunctionClarity())) {
                     CommunicationContent communicationContent = record.getSoftwareFunctionClarity().get(0);
                     String answerTag = communicationContent.getAnswerTag();
-                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                    if (!StringUtils.isEmpty(answerTag) &&
+                            (("是".equals(answerTag) ||
+                                    "有购买意向".equals(answerTag) ||
+                                    "认可".equals(answerTag) ||
+                                    "清晰".equals(answerTag)))) {
                         basic.setSoftwareFunctionClarity(Boolean.TRUE);
-                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                    } else if (!StringUtils.isEmpty(answerTag) &&
+                            (("否".equals(answerTag) ||
+                                    "无购买意向".equals(answerTag) ||
+                                    "不认可".equals(answerTag) ||
+                                    "不清晰".equals(answerTag)))) {
                         basic.setSoftwareFunctionClarity(Boolean.FALSE);
                     }
                 }
@@ -802,9 +892,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getStockSelectionMethod())) {
                     CommunicationContent communicationContent = record.getStockSelectionMethod().get(0);
                     String answerTag = communicationContent.getAnswerTag();
-                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                    if (!StringUtils.isEmpty(answerTag) &&
+                            (("是".equals(answerTag) ||
+                                    "有购买意向".equals(answerTag) ||
+                                    "认可".equals(answerTag) ||
+                                    "清晰".equals(answerTag)))) {
                         basic.setStockSelectionMethod(Boolean.TRUE);
-                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                    } else if (!StringUtils.isEmpty(answerTag) &&
+                            (("否".equals(answerTag) ||
+                                    "无购买意向".equals(answerTag) ||
+                                    "不认可".equals(answerTag) ||
+                                    "不清晰".equals(answerTag)))) {
                         basic.setStockSelectionMethod(Boolean.FALSE);
                     }
                 }
@@ -812,9 +910,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getSelfIssueRecognition())) {
                     CommunicationContent communicationContent = record.getSelfIssueRecognition().get(0);
                     String answerTag = communicationContent.getAnswerTag();
-                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                    if (!StringUtils.isEmpty(answerTag) &&
+                            (("是".equals(answerTag) ||
+                                    "有购买意向".equals(answerTag) ||
+                                    "认可".equals(answerTag) ||
+                                    "清晰".equals(answerTag)))) {
                         basic.setSelfIssueRecognition(Boolean.TRUE);
-                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                    } else if (!StringUtils.isEmpty(answerTag) &&
+                            (("否".equals(answerTag) ||
+                                    "无购买意向".equals(answerTag) ||
+                                    "不认可".equals(answerTag) ||
+                                    "不清晰".equals(answerTag)))) {
                         basic.setSelfIssueRecognition(Boolean.FALSE);
                     }
                 }
@@ -822,9 +928,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getSoftwareValueApproval())) {
                     CommunicationContent communicationContent = record.getSoftwareValueApproval().get(0);
                     String answerTag = communicationContent.getAnswerTag();
-                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                    if (!StringUtils.isEmpty(answerTag) &&
+                            (("是".equals(answerTag) ||
+                                    "有购买意向".equals(answerTag) ||
+                                    "认可".equals(answerTag) ||
+                                    "清晰".equals(answerTag)))) {
                         basic.setSoftwareValueApproval(Boolean.TRUE);
-                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                    } else if (!StringUtils.isEmpty(answerTag) &&
+                            (("否".equals(answerTag) ||
+                                    "无购买意向".equals(answerTag) ||
+                                    "不认可".equals(answerTag) ||
+                                    "不清晰".equals(answerTag)))) {
                         basic.setSoftwareValueApproval(Boolean.FALSE);
                     }
                 }
@@ -832,9 +946,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getSoftwarePurchaseAttitude())) {
                     CommunicationContent communicationContent = record.getSoftwarePurchaseAttitude().get(0);
                     String answerTag = communicationContent.getAnswerTag();
-                    if (!StringUtils.isEmpty(answerTag) && (("是".equals(answerTag) || "有购买意向".equals(answerTag) || "认可".equals(answerTag) || "清晰".equals(answerTag)))) {
+                    if (!StringUtils.isEmpty(answerTag) &&
+                            (("是".equals(answerTag) ||
+                                    "有购买意向".equals(answerTag) ||
+                                    "认可".equals(answerTag) ||
+                                    "清晰".equals(answerTag)))) {
                         basic.setSoftwarePurchaseAttitude(Boolean.TRUE);
-                    } else if (!StringUtils.isEmpty(answerTag) && (("否".equals(answerTag) || "无购买意向".equals(answerTag) || "不认可".equals(answerTag) || "不清晰".equals(answerTag)))) {
+                    } else if (!StringUtils.isEmpty(answerTag) &&
+                            (("否".equals(answerTag) ||
+                                    "无购买意向".equals(answerTag) ||
+                                    "不认可".equals(answerTag) ||
+                                    "不清晰".equals(answerTag)))) {
                         basic.setSoftwarePurchaseAttitude(Boolean.FALSE);
                     }
                 }
@@ -853,7 +975,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         if (CollectionUtils.isEmpty(customerRecordList)) {
             return Boolean.TRUE;
         }
-        for (TelephoneRecordStatics record : customerRecordList){
+        for (TelephoneRecordStatics record : customerRecordList) {
             syncCustomerInfoFromRecord(record.getCustomerId(), record.getActivityId());
         }
         return Boolean.TRUE;
@@ -867,20 +989,25 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return;
         }
         for (TelephoneRecordStatics item : customerIdList) {
-            customerBaseMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
+            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(item.getCustomerId(), item.getActivityId());
+            if (item.getFirstCommunicationTime().isBefore(customerBase.getCreateTime())) {
+                customerBaseMapper.updateCommunicationRoundsCreatetime(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime(), item.getFirstCommunicationTime());
+            } else {
+                customerBaseMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
+            }
         }
     }
 
     @Override
     public int getCommunicationTimeCurrentDay(String customerId, LocalDateTime communicationTime) {
         QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
-        LocalDateTime startOfDay =  communicationTime.toLocalDate().atStartOfDay();
+        LocalDateTime startOfDay = communicationTime.toLocalDate().atStartOfDay();
         queryWrapperInfo.eq("customer_id", customerId);
         queryWrapperInfo.gt("communication_time", startOfDay);
         // 查看该客户当天的通话时间长度
         List<TelephoneRecord> telephoneRecordList = telephoneRecordMapper.selectList(queryWrapperInfo);
         int communicationDurationSum = 0;
-        if (!CollectionUtils.isEmpty(telephoneRecordList)){
+        if (!CollectionUtils.isEmpty(telephoneRecordList)) {
             for (TelephoneRecord item : telephoneRecordList) {
                 communicationDurationSum += item.getCommunicationDuration();
             }
@@ -912,7 +1039,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return null;
         }
         // info 表不存在记录，新建一条
-        if (Objects.isNull(customerBase)){
+        if (Objects.isNull(customerBase)) {
             customerBase = new CustomerBase();
             customerBase.setId(CommonUtils.generatePrimaryKey());
             customerBase.setCustomerName(telephoneRecord.getCustomerName());

@@ -25,7 +25,15 @@ public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
     int updateCommunicationRounds(@Param("customer_id") String customer_id,
                                   @Param("activity_id") String activity_id,
                                   @Param("communication_rounds") Integer communication_rounds,
-                                  @Param("update_time") Timestamp update_time);
+                                  @Param("update_time") LocalDateTime update_time);
+
+    @Update("UPDATE customer_base SET communication_rounds = #{communication_rounds}, update_time = #{update_time}, create_time = #{create_time} WHERE customer_id = #{customer_id} and activity_id = #{activity_id}")
+    int updateCommunicationRoundsCreatetime(@Param("customer_id") String customer_id,
+                                            @Param("activity_id") String activity_id,
+                                            @Param("communication_rounds") Integer communication_rounds,
+                                            @Param("update_time") LocalDateTime update_time,
+                                            @Param("create_time") LocalDateTime create_time);
+
 
     @Update("UPDATE customer_base SET purchase_time = #{purchase_time}, customer_purchase_status = 1 WHERE id = #{id}")
     int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") LocalDateTime purchase_time);
@@ -37,7 +45,7 @@ public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
 
     @Update("UPDATE customer_base SET customer_purchase_status = #{customer_purchase_status}, purchase_time = #{purchase_time} WHERE id = #{id}")
     int updateRefundStatusById(@Param("id") String id,
-                        @Param("customer_purchase_status") Integer customer_purchase_status,
-                        @Param("purchase_time") LocalDateTime purchase_time);
+                               @Param("customer_purchase_status") Integer customer_purchase_status,
+                               @Param("purchase_time") LocalDateTime purchase_time);
 
 }

@@ -29,11 +29,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,9 +64,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Autowired
     @Lazy
     private MessageService messageService;
-
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 
     @Override
     public CustomerBaseListResponse queryCustomerInfoList(CustomerInfoListRequest params) {

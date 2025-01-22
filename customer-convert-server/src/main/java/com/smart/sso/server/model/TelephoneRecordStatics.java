@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,5 +14,6 @@ public class TelephoneRecordStatics {
     private String customerId ;
     private String activityId;
     private Integer totalCalls;
-    private Timestamp LatestCommunicationTime;
+    private LocalDateTime latestCommunicationTime;
+    private LocalDateTime firstCommunicationTime;
 }
