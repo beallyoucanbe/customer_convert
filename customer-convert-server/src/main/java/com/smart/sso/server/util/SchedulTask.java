@@ -286,8 +286,8 @@ public class SchedulTask {
     }
 
 
-    // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
-    @Scheduled(cron = "0 30 3 * * ?")
+    // 通话次数刷新规则
+    @Scheduled(cron = "0 40 7,17 * * ?")
     public void refreshCommunicationRounds() {
         log.error("开始全量刷新通话次数任务");
         recordService.refreshCommunicationRounds();
