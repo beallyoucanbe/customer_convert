@@ -23,4 +23,6 @@ public class CustomerProfile {
     private Long totalDuration ;
     private CustomerStageStatus customerStage ;
     private String conversionRate ;
+    private Integer classeAttendTimes;
+    private Integer classeAttendDuration;
 }

@@ -26,6 +26,9 @@ public class CustomerFeatureResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Basic {
+        private Integer classAttendTimes;
+        private Integer classAttendDuration;
+        private Integer approveCount;
         private BaseFeature fundsVolume;
         private BaseFeature earningDesire;
         private BaseFeature softwareFunctionClarity;
