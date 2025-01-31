@@ -3,6 +3,7 @@ package com.smart.sso.server.model.dto;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class CustomerFeatureResponse {
@@ -26,11 +27,23 @@ public class CustomerFeatureResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Basic {
+        // 客户听课次数
         private Integer classAttendTimes;
+        // 客户听课时长
         private Integer classAttendDuration;
+        // 客户认可数
         private Integer approveCount;
+        // 客户学习请教频次
+        private FrequencyContent customerLearningFreq = new FrequencyContent();
+        // 业务员互动频次
+        private FrequencyContent ownerInteractionFreq = new FrequencyContent();
+        // 客户是否愿意继续沟通
+        private BaseFeature customerContinueCommunicate;
+        // 业务员正确包装系列课
+        private BaseFeature ownerPackagingCourse;
+        // 业务员正确包装功能
+        private BaseFeature ownerPackagingFunction;
         private BaseFeature fundsVolume;
-        private BaseFeature earningDesire;
         private BaseFeature softwareFunctionClarity;
         private BaseFeature stockSelectionMethod;
         private BaseFeature selfIssueRecognition;
@@ -60,6 +73,31 @@ public class CustomerFeatureResponse {
         public Question(String message){
             this.message = message;
         }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class FrequencyContent{
+        private Object value;
+        private RecordContent records;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class RecordContent{
+        private List<RecordTitle> columns;
+        private List<Map<String, Object>> data;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RecordTitle{
+        private String key;
+        private String label;
     }
 
 }
