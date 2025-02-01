@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.HasTimeEnum;
-import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
@@ -163,7 +162,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         if (Objects.nonNull(customerFeature)) {
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
-            getStandardExplanationCompletion(customerFeature);
             customerFeature.setSummary(getProcessSummary(customerFeature, customerBase, stageStatus, summaryResponse));
         }
         setIntroduceService(featureFromLLM, customerFeature);
@@ -174,12 +172,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getWarmth().setFunctionFreq(eventService.getFunctionFreqContent(customerId, customerBase.getCreateTime()));
         if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
                 Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())){
+                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())) {
             customerFeature.getWarmth().setFundsVolume(customerFeature.getBasic().getFundsVolume().getCustomerConclusion());
         }
         if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
                 Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())){
+                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())) {
             CustomerFeatureResponse.ChatContent hasTime = new CustomerFeatureResponse.ChatContent();
             hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
             hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
@@ -188,6 +186,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getHandoverPeriod().setCurrentStocks(customerFeature.getTradingMethod().getCurrentStocks());
         customerFeature.getHandoverPeriod().setTradingStyle(customerFeature.getTradingMethod().getTradingStyle());
         customerFeature.getHandoverPeriod().setStockMarketAge(customerFeature.getTradingMethod().getStockMarketAge());
+
+        setDeliveryPeriod(customerBase, featureFromLLM, customerFeature, customerBase.getCreateTime());
+
+
         return customerFeature;
     }
 
@@ -261,17 +263,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             } catch (Exception e) {
                 // 有异常就不变
             }
-            // 客户认可老师:“客户对老师的认可度”的值为“是”
-            try {
-                if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue() &&
-                        (Boolean) customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue() &&
-                        (Boolean) customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue() &&
-                        (Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
-                    stageStatus.setConfirmValue(1);
-                }
-            } catch (Exception e) {
-                // 有异常就不变
-            }
+
             // 客户确认购买 客户对购买软件的态度”的值为“是”
             try {
                 if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
@@ -337,49 +329,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()))) {
                 customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord(),
                         customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setSelfIssueRecognitionSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setSoftwareFunctionClaritySales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setStockSelectionMethodSales(new FeatureContentSales(customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getStockSelectionMethod().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
         }
 
@@ -460,62 +409,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         Integer.parseInt(telephoneRecord.getFundsVolume().get(0).getTs()));
                 characterCostTime.setCommunicationRoundFundsVolume(communicationRound);
             }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getEarningDesire()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getEarningDesire().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundEarningDesire())) {
-                characterCostTime.setCommunicationDurationFearningDesire(communicationTime +
-                        Integer.parseInt(telephoneRecord.getEarningDesire().get(0).getTs()));
-                characterCostTime.setCommunicationRoundEarningDesire(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareFunctionClarity()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getSoftwareFunctionClarity().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwareFunctionClarity())) {
-                characterCostTime.setCommunicationDurationSoftwareFunctionClarity(communicationTime +
-                        Integer.parseInt(telephoneRecord.getSoftwareFunctionClarity().get(0).getTs()));
-                characterCostTime.setCommunicationRoundSoftwareFunctionClarity(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getStockSelectionMethod()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getStockSelectionMethod().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundStockSelectionMethod())) {
-                characterCostTime.setCommunicationDurationStockSelectionMethod(communicationTime +
-                        Integer.parseInt(telephoneRecord.getStockSelectionMethod().get(0).getTs()));
-                characterCostTime.setCommunicationRoundStockSelectionMethod(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getSelfIssueRecognition()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getSelfIssueRecognition().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundSelfIssueRecognition())) {
-                characterCostTime.setCommunicationDurationSelfIssueRecognition(communicationTime +
-                        Integer.parseInt(telephoneRecord.getSelfIssueRecognition().get(0).getTs()));
-                characterCostTime.setCommunicationRoundSelfIssueRecognition(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareValueApproval()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getSoftwareValueApproval().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwareValueApproval())) {
-                characterCostTime.setCommunicationDurationSoftwareValueApproval(communicationTime +
-                        Integer.parseInt(telephoneRecord.getSoftwareValueApproval().get(0).getTs()));
-                characterCostTime.setCommunicationRoundSoftwareValueApproval(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwarePurchaseAttitude()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getSoftwarePurchaseAttitude().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwarePurchaseAttitude())) {
-                characterCostTime.setCommunicationDurationSoftwarePurchaseAttitude(communicationTime +
-                        Integer.parseInt(telephoneRecord.getSoftwarePurchaseAttitude().get(0).getTs()));
-                characterCostTime.setCommunicationRoundSoftwarePurchaseAttitude(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getCustomerIssuesQuantified()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getCustomerIssuesQuantified().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundCustomerIssuesQuantified())) {
-                characterCostTime.setCommunicationDurationCustomerIssuesQuantified(communicationTime +
-                        Integer.parseInt(telephoneRecord.getCustomerIssuesQuantified().get(0).getTs()));
-                characterCostTime.setCommunicationRoundCustomerIssuesQuantified(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareValueQuantified()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getSoftwareValueQuantified().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundSoftwareValueQuantified())) {
-                characterCostTime.setCommunicationDurationSoftwareValueQuantified(communicationTime +
-                        Integer.parseInt(telephoneRecord.getSoftwareValueQuantified().get(0).getTs()));
-                characterCostTime.setCommunicationRoundSoftwareValueQuantified(communicationRound);
-            }
             communicationRound++;
             communicationTime += telephoneRecord.getCommunicationDuration();
         }
@@ -531,7 +424,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
     }
-
 
 
     @Override
@@ -551,31 +443,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getBasic().getEarningDesire())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getBasic().getSoftwareFunctionClarity())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getBasic().getStockSelectionMethod())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getBasic().getSelfIssueRecognition())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getBasic().getSoftwareValueApproval())) {
-                tttt = false;
-                featureNum++;
-            }
-            if (!equal(featureProfile.getBasic().getSoftwarePurchaseAttitude())) {
-                tttt = false;
-                featureNum++;
-            }
-
             if (!tttt) {
                 customerNum++;
                 result.add(customerBase.getId());
@@ -597,10 +464,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(Long.toString(info.getCustomerId()), activityId);
             if (Objects.nonNull(customerBase)) {
                 // 判断销售是否发生变更
-                if(!info.getSalesId().toString().equals(customerBase.getOwnerId())){
+                if (!info.getSalesId().toString().equals(customerBase.getOwnerId())) {
                     customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
                 }
-                if(!Objects.equals(info.getCustomerRefundStatus(), customerBase.getCustomerRefundStatus())){
+                if (!Objects.equals(info.getCustomerRefundStatus(), customerBase.getCustomerRefundStatus())) {
                     customerBaseMapper.updateRefundStatusById(customerBase.getId(), info.getCustomerRefundStatus(), info.getRefundTime());
                 }
             } else {
@@ -692,20 +559,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
-        basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
-
-        // 量化信息
-        CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
-        quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
-        quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
-        basic.setQuantified(quantified);
-
-        basic.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
-        basic.setStockSelectionMethod(convertBaseFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
-        basic.setSelfIssueRecognition(convertBaseFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
-        basic.setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
-        basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
         customerFeatureResponse.setBasic(basic);
         return customerFeatureResponse;
     }
@@ -716,21 +570,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerProcessSummary customerSummaryResponse = new CustomerProcessSummary();
         CustomerProcessSummary.ProcessInfoExplanation infoExplanation = new CustomerProcessSummary.ProcessInfoExplanation();
-        infoExplanation.setStock(convertSummaryByOverwrite(featureFromLLM.getIllustrateBasedStock()));
-        infoExplanation.setTradeBasedIntro(convertSummaryByOverwrite(featureFromLLM.getTradeStyleIntroduce()));
-        infoExplanation.setStockPickReview(convertSummaryByOverwrite(featureFromLLM.getStockPickMethodReview()));
-        infoExplanation.setStockTimingReview(convertSummaryByOverwrite(featureFromLLM.getStockPickTimingReview()));
-        infoExplanation.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
-        infoExplanation.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
         customerSummaryResponse.setInfoExplanation(infoExplanation);
 
         CustomerProcessSummary.TradingMethod tradingMethod = new CustomerProcessSummary.TradingMethod();
         tradingMethod.setCurrentStocks(convertTradeMethodFeatureByOverwrite(featureFromLLM.getCurrentStocks(), Objects.isNull(featureFromSale) ? null : featureFromSale.getCurrentStocksSales(), null, String.class));
-        tradingMethod.setStockPurchaseReason(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockPurchaseReason(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockPurchaseReasonSales(), null, String.class));
-        tradingMethod.setTradeTimingDecision(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradeTimingDecision(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradeTimingDecisionSales(), null, String.class));
         tradingMethod.setTradingStyle(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
         tradingMethod.setStockMarketAge(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
-        tradingMethod.setLearningAbility(convertTradeMethodFeatureByOverwrite(featureFromLLM.getLearningAbility(), Objects.isNull(featureFromSale) ? null : featureFromSale.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
 
         tradingMethod.getCurrentStocks().setStandardAction(infoExplanation.getStock());
         tradingMethod.getStockPurchaseReason().setStandardAction(infoExplanation.getStockPickReview());
@@ -967,24 +812,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return processSummary;
     }
 
-    private void getStandardExplanationCompletion(CustomerFeatureResponse customerFeature) {
-        int completion = 0;
-        if (determineTradingMethod(customerFeature.getTradingMethod().getCurrentStocks())) {
-            completion += 25;
-        }
-        if (determineTradingMethod(customerFeature.getTradingMethod().getStockPurchaseReason())) {
-            completion += 25;
-        }
-        if (determineTradingMethod(customerFeature.getTradingMethod().getTradeTimingDecision())) {
-            completion += 25;
-        }
-        if (determineTradingMethod(customerFeature.getTradingMethod().getTradingStyle())) {
-            completion += 25;
-        }
-        customerFeature.getBasic().getSoftwareFunctionClarity().setStandardProcess(completion);
-        customerFeature.getBasic().getStockSelectionMethod().setStandardProcess(completion);
-    }
-
     private Boolean determineTradingMethod(TradeMethodFeature tradeMethodFeature) {
         return tradeMethodFeature.getInquired().equals("yes")
                 && Objects.nonNull(tradeMethodFeature.getCustomerConclusion())
@@ -994,27 +821,27 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 && tradeMethodFeature.getStandardAction().getResult();
     }
 
-    private void setIntroduceService(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature){
+    private void setIntroduceService(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature) {
         // 5个维度：
         int completeInfo = 0;
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_1()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_1()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())) {
             completeInfo += 20;
         }
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_2()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_2()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())) {
             completeInfo += 20;
         }
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_3()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_3()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())) {
             completeInfo += 20;
         }
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_4()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_4()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())) {
             completeInfo += 20;
         }
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_5()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_5()) &&
+                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())) {
             completeInfo += 20;
         }
         customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(completeInfo);
@@ -1026,7 +853,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         List<Map<String, Object>> data = new ArrayList<>();
         //1、盘中直播"沙场点兵"、回放位置
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_1()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_1()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())) {
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "盘中直播\"沙场点兵\"、回放位置");
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_1().getCallId(), featureFromLLM.getIntroduceService_1().getAnswerText()));
@@ -1038,7 +865,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             data.add(item);
         }
         //2、"智能投教圈"、提醒客户查收老师信息
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_2()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_2()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())) {
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "\"智能投教圈\"、提醒客户查收老师信息");
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_2().getCallId(), featureFromLLM.getIntroduceService_2().getAnswerText()));
@@ -1050,7 +877,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             data.add(item);
         }
         //3、老师相关课程位置
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_3()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_3()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())) {
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "老师相关课程位置");
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_3().getCallId(), featureFromLLM.getIntroduceService_3().getAnswerText()));
@@ -1062,7 +889,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             data.add(item);
         }
         //4、16节交付大课都包含什么内容
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_4()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_4()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())) {
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "16节交付大课都包含什么内容");
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_4().getCallId(), featureFromLLM.getIntroduceService_4().getAnswerText()));
@@ -1074,7 +901,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             data.add(item);
         }
         //5、软件功能指标位置
-        if(Objects.nonNull(featureFromLLM.getIntroduceService_5()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())){
+        if (Objects.nonNull(featureFromLLM.getIntroduceService_5()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())) {
             Map<String, Object> item = new HashMap<>();
             item.put("event_type", "软件功能指标位置");
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_5().getCallId(), featureFromLLM.getIntroduceService_5().getAnswerText()));
@@ -1090,8 +917,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private void setRemindLive(CustomerFeatureFromLLM featureFromLLM,
-                                  CustomerFeatureResponse customerFeature,
-                                  LocalDateTime customerCreateTime){
+                               CustomerFeatureResponse customerFeature,
+                               LocalDateTime customerCreateTime) {
         // 提醒查看盘中直播：
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
@@ -1103,8 +930,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         List<String> allTimeStr = new ArrayList<>();
         int count = 0;
         //1、销售提醒客户查看"盘中直播"的语句
-        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_1())){
-            for (CommunicationContent one : featureFromLLM.getRemindService_1()){
+        if (!CollectionUtils.isEmpty(featureFromLLM.getRemindService_1())) {
+            for (CommunicationContent one : featureFromLLM.getRemindService_1()) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_time", one.getTs());
                 item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
@@ -1127,7 +954,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!CollectionUtils.isEmpty(allTimeStr)) {
             int days = CommonUtils.calculateDaysDifference(customerCreateTime);
             // 这里计算平均多少天一次
-            double fre = (double) days/count;
+            double fre = (double) days / count;
             String formattedResult = String.format("%.1f", fre);
             customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
         }
@@ -1137,8 +964,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
 
     private void setRemindCommunity(CustomerFeatureFromLLM featureFromLLM,
-                                  CustomerFeatureResponse customerFeature,
-                                  LocalDateTime customerCreateTime){
+                                    CustomerFeatureResponse customerFeature,
+                                    LocalDateTime customerCreateTime) {
         // 直播/圈子内容传递频次（区分三个老师的姓名）
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
@@ -1151,8 +978,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         int count = 0;
 
         //1，销售提醒客户查看"圈子内容"的语句
-        if(!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())){
-            for (CommunicationContent one : featureFromLLM.getRemindService_2()){
+        if (!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())) {
+            for (CommunicationContent one : featureFromLLM.getRemindService_2()) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("event_time", one.getTs());
                 item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
@@ -1174,10 +1001,125 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!CollectionUtils.isEmpty(allTimeStr)) {
             int days = CommonUtils.calculateDaysDifference(customerCreateTime);
             // 这里计算平均多少天一次
-            double fre = (double) days/count;
+            double fre = (double) days / count;
             String formattedResult = String.format("%.1f", fre);
             customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().setValue(Double.parseDouble(formattedResult));
         }
         customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().setRecords(recordContent);
+    }
+
+    private void setDeliveryRemindLive(CustomerFeatureFromLLM featureFromLLM,
+                                       CustomerFeatureResponse customerFeature,
+                                       LocalDateTime customerCreateTime) {
+        // 提醒查看交付课直播：
+        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
+        recordContent.setColumns(columns);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        List<String> allTimeStr = new ArrayList<>();
+        int count = 0;
+        //1、提醒查看交付课直播
+        if (!CollectionUtils.isEmpty(featureFromLLM.getDeliveryRemindLive())) {
+            for (CommunicationContent one : featureFromLLM.getDeliveryRemindLive()) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_time", one.getTs());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
+        }
+        Collections.sort(data, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                String eventType1 = (String) o1.get("event_time");
+                String eventType2 = (String) o2.get("event_time");
+                return eventType2.compareTo(eventType1); // 字符串按字典序比较
+            }
+        });
+        recordContent.setData(data);
+
+        // 计算频次
+        if (!CollectionUtils.isEmpty(allTimeStr)) {
+            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
+            // 这里计算平均多少天一次
+            double fre = (double) days / count;
+            String formattedResult = String.format("%.1f", fre);
+            customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
+        }
+
+        customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
+    }
+
+    private void setDeliveryRemindplayback(CustomerFeatureFromLLM featureFromLLM,
+                                       CustomerFeatureResponse customerFeature,
+                                       LocalDateTime customerCreateTime) {
+        // 提醒查看交付课直播：
+        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
+        recordContent.setColumns(columns);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        List<String> allTimeStr = new ArrayList<>();
+        int count = 0;
+        //1、提醒查看交付课直播
+        if (!CollectionUtils.isEmpty(featureFromLLM.getDeliveryRemindLive())) {
+            for (CommunicationContent one : featureFromLLM.getDeliveryRemindLive()) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("event_time", one.getTs());
+                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
+                data.add(item);
+                allTimeStr.add(one.getTs());
+                count++;
+            }
+        }
+        Collections.sort(data, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                String eventType1 = (String) o1.get("event_time");
+                String eventType2 = (String) o2.get("event_time");
+                return eventType2.compareTo(eventType1); // 字符串按字典序比较
+            }
+        });
+        recordContent.setData(data);
+
+        // 计算频次
+        if (!CollectionUtils.isEmpty(allTimeStr)) {
+            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
+            // 这里计算平均多少天一次
+            double fre = (double) days / count;
+            String formattedResult = String.format("%.1f", fre);
+            customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
+        }
+
+        customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
+    }
+
+    private void setDeliveryPeriod(CustomerBase customerBase,
+                                   CustomerFeatureFromLLM featureFromLLM,
+                                   CustomerFeatureResponse customerFeature,
+                                   LocalDateTime customerCreateTime) {
+        // 设置沟通频次
+        customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(customerBase.getCommunicationRounds());
+        // 交付课直播
+        setDeliveryRemindLive(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        // 交付课回放
+        setDeliveryRemindplayback(featureFromLLM, customerFeature, customerBase.getCreateTime());
+
+        if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
+                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
+                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())) {
+            CustomerFeatureResponse.ChatContent hasTime = new CustomerFeatureResponse.ChatContent();
+            hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
+            hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
+            customerFeature.getWarmth().setCustomerCourse(hasTime);
+        }
+
+
     }
 }

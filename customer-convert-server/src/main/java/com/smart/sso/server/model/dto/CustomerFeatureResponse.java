@@ -13,6 +13,7 @@ public class CustomerFeatureResponse {
     private CustomerProcessSummary.TradingMethod tradingMethod;
     private Warmth warmth = new Warmth();
     private HandoverPeriod handoverPeriod = new HandoverPeriod();
+    private DeliveryPeriod deliveryPeriod = new DeliveryPeriod();
 
 
     @Getter
@@ -30,21 +31,10 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class Basic {
         private BaseFeature fundsVolume;
-        private BaseFeature earningDesire;
         private BaseFeature hasTime;
-        private BaseFeature softwareFunctionClarity;
-        private BaseFeature stockSelectionMethod;
-        private BaseFeature selfIssueRecognition;
-        private BaseFeature softwareValueApproval;
+        private BaseFeature teacherApproval;
         private BaseFeature softwarePurchaseAttitude;
-        private Quantified quantified;
-    }
 
-    @Getter
-    @Setter
-    public static class Quantified {
-        private CustomerProcessSummary.ProcessInfoExplanationContent customerIssuesQuantified;
-        private CustomerProcessSummary.ProcessInfoExplanationContent softwareValueQuantified;
     }
 
     @Getter
@@ -125,10 +115,29 @@ public class CustomerFeatureResponse {
     @Getter
     @Setter
     @NoArgsConstructor
+    public static class DeliveryPeriod{
+        private DeliveryPeriodBasic basic = new DeliveryPeriodBasic();
+        private TradeMethodFeature courseTeacher;
+        private TradeMethodFeature masterCourse;
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
     public static class HandoverPeriodBasic{
         private FrequencyContent completeIntro = new FrequencyContent();
         private FrequencyContent remindLiveFreq  = new FrequencyContent();
         private FrequencyContent remindCommunityFreq = new FrequencyContent();;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class DeliveryPeriodBasic{
+        private FrequencyContent communicationFreq = new FrequencyContent();
+        private FrequencyContent remindLiveFreq  = new FrequencyContent();
+        private FrequencyContent remindPlaybackFreq = new FrequencyContent();;
     }
 
     @Getter

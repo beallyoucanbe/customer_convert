@@ -61,43 +61,31 @@ public class TelephoneRecord {
     private List<CommunicationContent> stockMarketAge;
 
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> earningDesire;
+    private List<CommunicationContent> deliveryRemindLive;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwareFunctionClarity;
+    private List<CommunicationContent> deliveryRemindPlayback;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockSelectionMethod;
+    private List<CommunicationContent> teacherApproval;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> selfIssueRecognition;
+    private List<CommunicationContent> courseMaster_1;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwareValueApproval;
+    private List<CommunicationContent> courseMaster_2;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwarePurchaseAttitude;
+    private List<CommunicationContent> courseMaster_3;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPurchaseReason;
+    private List<CommunicationContent> courseMaster_4;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> tradeTimingDecision;
+    private List<CommunicationContent> courseMaster_5;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> learningAbility;
+    private List<CommunicationContent> courseMaster_6;
     @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> illustrateBasedStock;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> tradeStyleIntroduce;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPickMethodReview;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPickTimingReview;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> customerIssuesQuantified;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> softwareValueQuantified;
+    private List<CommunicationContent> courseMaster_7;
 
     private Integer parsed;
     private String tenantId;
     // 预留属性
     private String reservedInfo;
     private String reservedProperty;
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTime;
 }

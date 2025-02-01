@@ -39,20 +39,16 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent tradingStyle;
     private CommunicationContent stockMarketAge;
 
-    private CommunicationContent earningDesire;
-    private CommunicationContent softwareFunctionClarity;
-    private CommunicationContent stockSelectionMethod;
-    private CommunicationContent selfIssueRecognition;
-    private CommunicationContent softwareValueApproval;
-    private CommunicationContent softwarePurchaseAttitude;
-    private CommunicationContent stockPurchaseReason;
-    private CommunicationContent tradeTimingDecision;
-    private CommunicationContent learningAbility;
-    private CommunicationContent illustrateBasedStock;
-    private CommunicationContent tradeStyleIntroduce;
-    private CommunicationContent stockPickMethodReview;
-    private CommunicationContent stockPickTimingReview;
-    private CommunicationContent customerIssuesQuantified;
-    private CommunicationContent softwareValueQuantified;
-    
+    private List<CommunicationContent> deliveryRemindLive = new ArrayList<>();
+    private List<CommunicationContent> deliveryRemindPlayback = new ArrayList<>();
+    private CommunicationContent teacherApproval;
+
+    private CommunicationContent courseMaster_1;
+    private CommunicationContent courseMaster_2;
+    private CommunicationContent courseMaster_3;
+    private CommunicationContent courseMaster_4;
+    private CommunicationContent courseMaster_5;
+    private CommunicationContent courseMaster_6;
+    private CommunicationContent courseMaster_7;
+
 }
