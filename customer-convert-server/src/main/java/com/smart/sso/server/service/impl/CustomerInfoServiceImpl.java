@@ -162,34 +162,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         if (Objects.nonNull(customerFeature)) {
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
-            customerFeature.setSummary(getProcessSummary(customerFeature, customerBase, stageStatus, summaryResponse));
+            customerFeature.setSummary(getProcessSummary(customerFeature, stageStatus));
         }
-        setIntroduceService(featureFromLLM, customerFeature);
-        setRemindLive(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        setRemindCommunity(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        customerFeature.getWarmth().setVisitLiveFreq(eventService.getVisitLiveFreqContent(customerId, customerBase.getCreateTime()));
-        customerFeature.getWarmth().setVisitCommunityFreq(eventService.getVisitCommunityFreqContent(customerId, customerBase.getCreateTime()));
-        customerFeature.getWarmth().setFunctionFreq(eventService.getFunctionFreqContent(customerId, customerBase.getCreateTime()));
-        if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())) {
-            customerFeature.getWarmth().setFundsVolume(customerFeature.getBasic().getFundsVolume().getCustomerConclusion());
-        }
-        if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())) {
-            CustomerFeatureResponse.ChatContent hasTime = new CustomerFeatureResponse.ChatContent();
-            hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
-            hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
-            customerFeature.getWarmth().setCustomerCourse(hasTime);
-        }
-        customerFeature.getHandoverPeriod().setCurrentStocks(customerFeature.getTradingMethod().getCurrentStocks());
-        customerFeature.getHandoverPeriod().setTradingStyle(customerFeature.getTradingMethod().getTradingStyle());
-        customerFeature.getHandoverPeriod().setStockMarketAge(customerFeature.getTradingMethod().getStockMarketAge());
-
-        setDeliveryPeriod(customerBase, featureFromLLM, customerFeature, customerBase.getCreateTime());
-
-
+        setWarmth(customerBase, customerFeature);
+        setHandoverPeriod(customerBase, featureFromLLM, customerFeature);
+        setDeliveryPeriod(customerBase, featureFromLLM, customerFeature);
         return customerFeature;
     }
 
@@ -274,20 +251,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
         }
 
-        if (Objects.nonNull(summaryResponse) && Objects.nonNull(summaryResponse.getInfoExplanation())) {
-            // 客户认可投入和价值:相关字段的值全部为'是”-“客户认可投入时间”“客户认可自己跟得上”、“客户认可价值”
-            CustomerProcessSummary.ProcessInfoExplanation infoExplanation = summaryResponse.getInfoExplanation();
-            try {
-                if (Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
-                        infoExplanation.getSoftwareValueQuantified().getResult() &&
-                        Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
-                        infoExplanation.getTradeBasedIntro().getResult()) {
-                    stageStatus.setFunctionIntroduction(1);
-                }
-            } catch (Exception e) {
-                // 有异常就不变
-            }
-        }
         // 客户完成购买”，:CRM取回客户的购买状态值为“是”
         try {
             CustomerInfo customerInfo = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
@@ -560,6 +523,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
+        basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
+        basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
+
         customerFeatureResponse.setBasic(basic);
         return customerFeatureResponse;
     }
@@ -569,18 +535,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return null;
         }
         CustomerProcessSummary customerSummaryResponse = new CustomerProcessSummary();
-        CustomerProcessSummary.ProcessInfoExplanation infoExplanation = new CustomerProcessSummary.ProcessInfoExplanation();
-        customerSummaryResponse.setInfoExplanation(infoExplanation);
-
         CustomerProcessSummary.TradingMethod tradingMethod = new CustomerProcessSummary.TradingMethod();
         tradingMethod.setCurrentStocks(convertTradeMethodFeatureByOverwrite(featureFromLLM.getCurrentStocks(), Objects.isNull(featureFromSale) ? null : featureFromSale.getCurrentStocksSales(), null, String.class));
         tradingMethod.setTradingStyle(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
         tradingMethod.setStockMarketAge(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
-
-        tradingMethod.getCurrentStocks().setStandardAction(infoExplanation.getStock());
-        tradingMethod.getStockPurchaseReason().setStandardAction(infoExplanation.getStockPickReview());
-        tradingMethod.getTradeTimingDecision().setStandardAction(infoExplanation.getStockTimingReview());
-        tradingMethod.getTradingStyle().setStandardAction(infoExplanation.getTradeBasedIntro());
 
         customerSummaryResponse.setTradingMethod(tradingMethod);
         return customerSummaryResponse;
@@ -729,7 +687,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return explanationContent;
     }
 
-    private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerBase customerBase, CustomerStageStatus stageStatus, CustomerProcessSummary summaryResponse) {
+    private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerStageStatus stageStatus) {
         CustomerFeatureResponse.ProcessSummary processSummary = new CustomerFeatureResponse.ProcessSummary();
         List<String> advantage = new ArrayList<>();
         List<CustomerFeatureResponse.Question> questions = new ArrayList<>();
@@ -1055,8 +1013,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private void setDeliveryRemindplayback(CustomerFeatureFromLLM featureFromLLM,
-                                       CustomerFeatureResponse customerFeature,
-                                       LocalDateTime customerCreateTime) {
+                                           CustomerFeatureResponse customerFeature,
+                                           LocalDateTime customerCreateTime) {
         // 提醒查看交付课直播：
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
@@ -1100,10 +1058,42 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
     }
 
+    private void setWarmth(CustomerBase customerBase,
+                           CustomerFeatureResponse customerFeature) {
+        customerFeature.getWarmth().setVisitLiveFreq(eventService.getVisitLiveFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
+        customerFeature.getWarmth().setVisitCommunityFreq(eventService.getVisitCommunityFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
+        customerFeature.getWarmth().setFunctionFreq(eventService.getFunctionFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
+        if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
+                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
+                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())) {
+            customerFeature.getWarmth().setFundsVolume(customerFeature.getBasic().getFundsVolume().getCustomerConclusion());
+        }
+        if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
+                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
+                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())) {
+            CustomerFeatureResponse.ChatContent hasTime = new CustomerFeatureResponse.ChatContent();
+            hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
+            hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
+            customerFeature.getWarmth().setCustomerCourse(hasTime);
+        }
+    }
+
+    // 设置交接期属性
+    private void setHandoverPeriod(CustomerBase customerBase,
+                                   CustomerFeatureFromLLM featureFromLLM,
+                                   CustomerFeatureResponse customerFeature) {
+        setIntroduceService(featureFromLLM, customerFeature);
+        setRemindLive(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        setRemindCommunity(featureFromLLM, customerFeature, customerBase.getCreateTime());
+        customerFeature.getHandoverPeriod().setCurrentStocks(customerFeature.getTradingMethod().getCurrentStocks());
+        customerFeature.getHandoverPeriod().setTradingStyle(customerFeature.getTradingMethod().getTradingStyle());
+        customerFeature.getHandoverPeriod().setStockMarketAge(customerFeature.getTradingMethod().getStockMarketAge());
+    }
+
+    // 设置交付期属性
     private void setDeliveryPeriod(CustomerBase customerBase,
                                    CustomerFeatureFromLLM featureFromLLM,
-                                   CustomerFeatureResponse customerFeature,
-                                   LocalDateTime customerCreateTime) {
+                                   CustomerFeatureResponse customerFeature) {
         // 设置沟通频次
         customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(customerBase.getCommunicationRounds());
         // 交付课直播
@@ -1119,7 +1109,5 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
             customerFeature.getWarmth().setCustomerCourse(hasTime);
         }
-
-
     }
 }

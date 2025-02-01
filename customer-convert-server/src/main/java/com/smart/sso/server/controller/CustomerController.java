@@ -13,7 +13,6 @@ import com.smart.sso.server.model.dto.CallBackRequest;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.model.dto.CustomerInfoListRequest;
 import com.smart.sso.server.model.dto.CustomerBaseListResponse;
-import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.service.*;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.DateUtil;
@@ -91,7 +90,7 @@ public class CustomerController {
 
     @ApiOperation(value = "修改客户特征信息")
     @PostMapping("/customer/{customer_id}/activity/{activity_id}/features")
-    public BaseResponse<CustomerProcessSummary> modifyCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
+    public BaseResponse<Void> modifyCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                        @PathVariable(value = "activity_id") String activityId,
                                                                        @RequestBody CustomerFeatureResponse customerFeatureRequest) {
         customerInfoService.modifyCustomerFeatureById(customerId, activityId, customerFeatureRequest);
