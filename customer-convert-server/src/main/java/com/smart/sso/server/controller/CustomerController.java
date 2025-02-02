@@ -77,8 +77,8 @@ public class CustomerController {
     @GetMapping("/customer/{customer_id}/activity/{activity_id}/features")
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                      @PathVariable(value = "activity_id") String activityId) {
-        CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, activityId);
-        return ResultUtils.success(FeatureProfile);
+        CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerId, activityId);
+        return ResultUtils.success(customerFeature);
     }
 
     @ApiOperation(value = "获取客户过程总结")

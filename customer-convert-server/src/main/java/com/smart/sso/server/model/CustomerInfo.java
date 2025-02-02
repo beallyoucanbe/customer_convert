@@ -51,4 +51,11 @@ public class CustomerInfo implements Serializable {
     private LocalDateTime purchaseTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTimeTelephone;
+
+    // 客户听课次数
+    @TableField(exist = false)
+    private Integer classAttendTimes;
+    // 客户听课时长
+    @TableField(exist = false)
+    private Integer classAttendDuration;
 }

@@ -172,6 +172,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
             getStandardExplanationCompletion(customerFeature);
             customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
+            customerFeature.getBasic().setClassAttendTimes(customerInfo.getClassAttendTimes());
+            customerFeature.getBasic().setClassAttendDuration(customerInfo.getClassAttendDuration());
+            customerFeature.getBasic().setApproveCount(getApprovalCount(customerFeature));
         }
         return customerFeature;
     }
@@ -283,11 +286,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         try {
             CustomerRelation customerRelation = customerRelationService.getByActivityAndCustomer(customerInfo.getCustomerId(),
                     customerInfo.getOwnerId(), customerInfo.getActivityId());
+            customerInfo.setClassAttendTimes(customerRelation.getClasseAttendTimes());
+            customerInfo.setClassAttendDuration(customerRelation.getClasseAttendDuration());
+            customerInfo.setIsSend188(customerRelation.getIsSend188());
             if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
                     && customerRelation.getCustomerSigned()) {
                 stageStatus.setCompletePurchase(1);
             }
-            customerInfo.setIsSend188(customerRelation.getIsSend188());
         } catch (Exception e) {
             log.error("判断确认购买状态失败, ID={}", customerInfo.getCustomerId());
         }
@@ -334,13 +339,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()))) {
                 customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord(),
                         customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getEarningDesire().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
 
             if (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition()) &&
@@ -557,10 +555,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 tttt = false;
                 featureNum++;
             }
-            if (!equal(featureProfile.getBasic().getEarningDesire())) {
-                tttt = false;
-                featureNum++;
-            }
             if (!equal(featureProfile.getBasic().getSoftwareFunctionClarity())) {
                 tttt = false;
                 featureNum++;
@@ -704,8 +698,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
-        basic.setEarningDesire(convertBaseFeatureByOverwrite(featureFromLLM.getEarningDesire(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), EarningDesireEnum.class, String.class));
-
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
         quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
@@ -1152,5 +1144,41 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 && Objects.nonNull(tradeMethodFeature.getStandardAction())
                 && Objects.nonNull(tradeMethodFeature.getStandardAction().getResult())
                 && tradeMethodFeature.getStandardAction().getResult();
+    }
+
+    private int getApprovalCount(CustomerFeatureResponse customerFeature){
+        // 判断 认可度次数
+        int approvalCount = 0;
+
+        try {
+            if ((Boolean) customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) {
+                approvalCount++;
+            }
+        } catch (Exception e) {
+        }
+
+        try {
+            if ((Boolean) customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue()) {
+                approvalCount++;
+            }
+        } catch (Exception e) {
+        }
+
+        try {
+            if ((Boolean) customerFeature.getBasic().getSelfIssueRecognition().getCustomerConclusion().getCompareValue()) {
+                approvalCount++;
+            }
+        } catch (Exception e) {
+        }
+
+        try {
+            if ((Boolean) customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) {
+                approvalCount++;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return approvalCount;
     }
 }
