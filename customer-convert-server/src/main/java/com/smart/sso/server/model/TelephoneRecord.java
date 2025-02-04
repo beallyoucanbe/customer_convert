@@ -60,25 +60,25 @@ public class TelephoneRecord {
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> stockMarketAge;
 
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> deliveryRemindLive;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> deliveryRemindPlayback;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> teacherApproval;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_1;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_2;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_3;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_4;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_5;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_6;
-    @TableField(exist = false, typeHandler = CommunicationContentTypeHandler.class)
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> courseMaster_7;
 
     private Integer parsed;

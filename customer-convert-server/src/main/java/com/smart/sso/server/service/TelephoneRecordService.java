@@ -35,6 +35,8 @@ public interface TelephoneRecordService {
 
     List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime);
 
+    int getCommunicationCountFromTime(String customerId, LocalDateTime dateTime);
+
     TelephoneRecordStatics getCommunicationRound(String customerId, String activityId);
 
     CustomerBase syncCustomerInfoFromRecord(String customerId, String activityId);

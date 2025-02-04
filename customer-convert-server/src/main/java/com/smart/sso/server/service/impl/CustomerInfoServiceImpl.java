@@ -524,6 +524,15 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
         basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
+
+        basic.setCourseMaster_1(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_1(),  null, null, Boolean.class));
+        basic.setCourseMaster_2(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_2(),  null, null, Boolean.class));
+        basic.setCourseMaster_3(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_3(),  null, null, Boolean.class));
+        basic.setCourseMaster_4(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_4(),  null, null, Boolean.class));
+        basic.setCourseMaster_5(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_5(),  null, null, Boolean.class));
+        basic.setCourseMaster_6(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_6(),  null, null, Boolean.class));
+        basic.setCourseMaster_7(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_7(),  null, null, Boolean.class));
+
         basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
 
         customerFeatureResponse.setBasic(basic);
@@ -628,11 +637,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     if ("是".equals(resultAnswer) ||
                             "有购买意向".equals(resultAnswer) ||
                             "认可".equals(resultAnswer) ||
+                            "学会".equals(resultAnswer) ||
                             "清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.TRUE);
                     } else if ("否".equals(resultAnswer) ||
                             "无购买意向".equals(resultAnswer) ||
                             "不认可".equals(resultAnswer) ||
+                            "没学会".equals(resultAnswer) ||
                             "不清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.FALSE);
                     } else {
@@ -1095,19 +1106,105 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                                    CustomerFeatureFromLLM featureFromLLM,
                                    CustomerFeatureResponse customerFeature) {
         // 设置沟通频次
-        customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(customerBase.getCommunicationRounds());
-        // 交付课直播
-        setDeliveryRemindLive(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        // 交付课回放
-        setDeliveryRemindplayback(featureFromLLM, customerFeature, customerBase.getCreateTime());
-
-        if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())) {
-            CustomerFeatureResponse.ChatContent hasTime = new CustomerFeatureResponse.ChatContent();
-            hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
-            hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
-            customerFeature.getWarmth().setCustomerCourse(hasTime);
+        LocalDateTime deliveryPeriodStartTime = LocalDateTime.of(2025, 2, 1, 0, 0, 0);
+        int days = CommonUtils.calculateDaysDifference(deliveryPeriodStartTime);
+        int communicationCount = recordService.getCommunicationCountFromTime(customerBase.getCustomerId(), deliveryPeriodStartTime);
+        if (communicationCount > 0) {
+            double fre = (double) days / communicationCount;
+            String formattedResult = String.format("%.1f", fre);
+            customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(fre);
         }
+        // 交付课直播
+        setDeliveryRemindLive(featureFromLLM, customerFeature, deliveryPeriodStartTime);
+        // 交付课回放
+        setDeliveryRemindplayback(featureFromLLM, customerFeature, deliveryPeriodStartTime);
+        CourseTeacherFeature courseTeacherFeature = new CourseTeacherFeature(customerFeature.getBasic().getTeacherApproval());
+        courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
+        customerFeature.getDeliveryPeriod().setCourseTeacher(courseTeacherFeature);
+        setMasterCourse(featureFromLLM, customerFeature, deliveryPeriodStartTime);
     }
+
+    private void setMasterCourse(CustomerFeatureFromLLM featureFromLLM,
+                                       CustomerFeatureResponse customerFeature,
+                                       LocalDateTime customerCreateTime) {
+        // 提醒查看交付课直播：
+        CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
+        int process = 0;
+
+        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
+        recordContent.setColumns(columns);
+        List<Map<String, Object>> data = new ArrayList<>();
+
+        if (basic.getCourseMaster_1().getInquired().equals("yes")){
+            process++;
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_1().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
+                    featureFromLLM.getCourseMaster_1().getQuestion()));
+            data.add(item);
+        }
+        if (basic.getCourseMaster_2().getInquired().equals("yes")){
+            process++;
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_2().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
+                    featureFromLLM.getCourseMaster_2().getQuestion()));
+            data.add(item);
+        }
+        if (basic.getCourseMaster_3().getInquired().equals("yes")){
+            process++;
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_3().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
+                    featureFromLLM.getCourseMaster_3().getQuestion()));
+            data.add(item);
+        }
+        if (basic.getCourseMaster_4().getInquired().equals("yes")){
+            process++;
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_4().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
+                    featureFromLLM.getCourseMaster_4().getQuestion()));
+            data.add(item);
+        }
+        if (basic.getCourseMaster_5().getInquired().equals("yes")){
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_5().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
+                    featureFromLLM.getCourseMaster_5().getQuestion()));
+            data.add(item);
+        }
+        if (basic.getCourseMaster_6().getInquired().equals("yes")){
+            process++;
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_6().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
+                    featureFromLLM.getCourseMaster_6().getQuestion()));
+            data.add(item);
+        }
+        if (basic.getCourseMaster_7().getInquired().equals("yes")){
+            process++;
+            Map<String, Object> item = new HashMap<>();
+            item.put("event_time", featureFromLLM.getCourseMaster_7().getTs());
+            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
+                    featureFromLLM.getCourseMaster_7().getQuestion()));
+            data.add(item);
+        }
+
+        Collections.sort(data, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                String eventType1 = (String) o1.get("event_time");
+                String eventType2 = (String) o2.get("event_time");
+                return eventType2.compareTo(eventType1); // 字符串按字典序比较
+            }
+        });
+        recordContent.setData(data);
+        customerFeature.getDeliveryPeriod().getMasterCourse().setProcess(process);
+        customerFeature.getDeliveryPeriod().getMasterCourse().setRecords(recordContent);
+    }
+
 }

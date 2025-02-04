@@ -25,10 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -436,6 +433,200 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     }
                 }
             }
+
+            //客户对课程的认可度1
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_1())) {
+                CommunicationContent communicationContent = record.getCourseMaster_1().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_1())) {
+                    customerFeatureFromLLM.setCourseMaster_1(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_1().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_1().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_1().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_1().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_1().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_1().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_1().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_1().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_1().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_1().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_1().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_1().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_2())) {
+                CommunicationContent communicationContent = record.getCourseMaster_2().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_2())) {
+                    customerFeatureFromLLM.setCourseMaster_2(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_2().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_2().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_2().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_2().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_2().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_2().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_2().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_2().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_2().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_2().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_2().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_2().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_3())) {
+                CommunicationContent communicationContent = record.getCourseMaster_3().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_3())) {
+                    customerFeatureFromLLM.setCourseMaster_3(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_3().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_3().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_3().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_3().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_3().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_3().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_3().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_3().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_3().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_3().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_3().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_3().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_4())) {
+                CommunicationContent communicationContent = record.getCourseMaster_4().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_4())) {
+                    customerFeatureFromLLM.setCourseMaster_4(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_4().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_4().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_4().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_4().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_4().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_4().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_4().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_4().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_4().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_4().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_4().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_4().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_5())) {
+                CommunicationContent communicationContent = record.getCourseMaster_5().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_5())) {
+                    customerFeatureFromLLM.setCourseMaster_5(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_5().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_5().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_5().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_5().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_5().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_5().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_5().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_5().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_5().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_5().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_5().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_5().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_6())) {
+                CommunicationContent communicationContent = record.getCourseMaster_6().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_6())) {
+                    customerFeatureFromLLM.setCourseMaster_6(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_6().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_6().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_6().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_6().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_6().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_6().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_6().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_6().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_6().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_6().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_6().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_6().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(record.getCourseMaster_7())) {
+                CommunicationContent communicationContent = record.getCourseMaster_7().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_7())) {
+                    customerFeatureFromLLM.setCourseMaster_7(communicationContent);
+                    customerFeatureFromLLM.getCourseMaster_7().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_7().getQuestion()) ||
+                            customerFeatureFromLLM.getCourseMaster_7().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getCourseMaster_7().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getCourseMaster_7().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCourseMaster_7().getAnswerText()) ||
+                            customerFeatureFromLLM.getCourseMaster_7().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCourseMaster_7().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCourseMaster_7().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCourseMaster_7().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getCourseMaster_7().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getCourseMaster_7().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
         }
         return customerFeatureFromLLM;
     }
@@ -572,6 +763,19 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Override
     public List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime) {
         return recordMapper.selectTelephoneRecordStaticsRecent(dateTime);
+    }
+
+    @Override
+    public int getCommunicationCountFromTime(String customerId, LocalDateTime dateTime) {
+        QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
+        queryWrapperInfo.eq("customer_id", customerId);
+        queryWrapperInfo.gt("communication_time", dateTime);
+        List<TelephoneRecord> telephoneRecordList = telephoneRecordMapper.selectList(queryWrapperInfo);
+        if (CollectionUtils.isEmpty(telephoneRecordList)) {
+            return 0;
+        } else {
+            return telephoneRecordList.size();
+        }
     }
 
     @Override

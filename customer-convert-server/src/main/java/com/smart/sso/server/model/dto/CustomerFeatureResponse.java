@@ -34,6 +34,13 @@ public class CustomerFeatureResponse {
         private BaseFeature hasTime;
         private BaseFeature teacherApproval;
         private BaseFeature softwarePurchaseAttitude;
+        private BaseFeature courseMaster_1;
+        private BaseFeature courseMaster_2;
+        private BaseFeature courseMaster_3;
+        private BaseFeature courseMaster_4;
+        private BaseFeature courseMaster_5;
+        private BaseFeature courseMaster_6;
+        private BaseFeature courseMaster_7;
 
     }
 
@@ -117,9 +124,8 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class DeliveryPeriod{
         private DeliveryPeriodBasic basic = new DeliveryPeriodBasic();
-        private TradeMethodFeature courseTeacher;
-        private TradeMethodFeature masterCourse;
-
+        private CourseTeacherFeature courseTeacher;
+        private MasterCourseFeature masterCourse = new MasterCourseFeature();
     }
 
     @Getter
