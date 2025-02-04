@@ -525,13 +525,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
         basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
 
-        basic.setCourseMaster_1(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_1(),  null, null, Boolean.class));
-        basic.setCourseMaster_2(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_2(),  null, null, Boolean.class));
-        basic.setCourseMaster_3(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_3(),  null, null, Boolean.class));
-        basic.setCourseMaster_4(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_4(),  null, null, Boolean.class));
-        basic.setCourseMaster_5(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_5(),  null, null, Boolean.class));
-        basic.setCourseMaster_6(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_6(),  null, null, Boolean.class));
-        basic.setCourseMaster_7(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_7(),  null, null, Boolean.class));
+        basic.setCourseMaster_1(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_1(), null, null, Boolean.class));
+        basic.setCourseMaster_2(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_2(), null, null, Boolean.class));
+        basic.setCourseMaster_3(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_3(), null, null, Boolean.class));
+        basic.setCourseMaster_4(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_4(), null, null, Boolean.class));
+        basic.setCourseMaster_5(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_5(), null, null, Boolean.class));
+        basic.setCourseMaster_6(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_6(), null, null, Boolean.class));
+        basic.setCourseMaster_7(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_7(), null, null, Boolean.class));
 
         basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
 
@@ -1111,7 +1111,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         int communicationCount = recordService.getCommunicationCountFromTime(customerBase.getCustomerId(), deliveryPeriodStartTime);
         if (communicationCount > 0) {
             double fre = (double) days / communicationCount;
-            String formattedResult = String.format("%.1f", fre);
             customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(fre);
         }
         // 交付课直播
@@ -1121,80 +1120,226 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CourseTeacherFeature courseTeacherFeature = new CourseTeacherFeature(customerFeature.getBasic().getTeacherApproval());
         courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
         customerFeature.getDeliveryPeriod().setCourseTeacher(courseTeacherFeature);
-        setMasterCourse(featureFromLLM, customerFeature, deliveryPeriodStartTime);
+        setMasterCourse(featureFromLLM, customerFeature);
     }
 
     private void setMasterCourse(CustomerFeatureFromLLM featureFromLLM,
-                                       CustomerFeatureResponse customerFeature,
-                                       LocalDateTime customerCreateTime) {
-        // 提醒查看交付课直播：
+                                 CustomerFeatureResponse customerFeature) {
         CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
         int process = 0;
-
-        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-        recordContent.setColumns(columns);
-        List<Map<String, Object>> data = new ArrayList<>();
-
-        if (basic.getCourseMaster_1().getInquired().equals("yes")){
+        int correct = 0;
+        List<String> questionTags = new ArrayList<>();
+        List<Map<String, Object>> recordsData = new ArrayList<>();
+        List<Map<String, Object>> correctRecordsData = new ArrayList<>();
+        List<Map<String, Object>> questionRecordsData = new ArrayList<>();
+        if (basic.getCourseMaster_1().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_1().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
                     featureFromLLM.getCourseMaster_1().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+
+            if (Objects.nonNull(basic.getCourseMaster_1().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_1().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_1().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_1().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_1().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_1().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_1().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
+                        featureFromLLM.getCourseMaster_1().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
-        if (basic.getCourseMaster_2().getInquired().equals("yes")){
+        if (basic.getCourseMaster_2().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_2().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
                     featureFromLLM.getCourseMaster_2().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+
+            if (Objects.nonNull(basic.getCourseMaster_2().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_2().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_2().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_2().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_2().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_2().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_2().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
+                        featureFromLLM.getCourseMaster_2().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
-        if (basic.getCourseMaster_3().getInquired().equals("yes")){
+        if (basic.getCourseMaster_3().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_3().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
                     featureFromLLM.getCourseMaster_3().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+
+            if (Objects.nonNull(basic.getCourseMaster_3().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_3().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_3().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_3().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_3().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_3().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_3().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
+                        featureFromLLM.getCourseMaster_3().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
-        if (basic.getCourseMaster_4().getInquired().equals("yes")){
+        if (basic.getCourseMaster_4().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_4().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
                     featureFromLLM.getCourseMaster_4().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+
+            if (Objects.nonNull(basic.getCourseMaster_4().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_4().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_4().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_4().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_4().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_4().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_4().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
+                        featureFromLLM.getCourseMaster_4().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
-        if (basic.getCourseMaster_5().getInquired().equals("yes")){
+        if (basic.getCourseMaster_5().getInquired().equals("yes")) {
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_5().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
                     featureFromLLM.getCourseMaster_5().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+            if (Objects.nonNull(basic.getCourseMaster_5().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_5().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_5().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_5().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_5().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_5().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_5().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
+                        featureFromLLM.getCourseMaster_5().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
-        if (basic.getCourseMaster_6().getInquired().equals("yes")){
+        if (basic.getCourseMaster_6().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_6().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
                     featureFromLLM.getCourseMaster_6().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+            if (Objects.nonNull(basic.getCourseMaster_6().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_6().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_6().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_6().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_6().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_6().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_6().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
+                        featureFromLLM.getCourseMaster_6().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
-        if (basic.getCourseMaster_7().getInquired().equals("yes")){
+        if (basic.getCourseMaster_7().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
             item.put("event_time", featureFromLLM.getCourseMaster_7().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
                     featureFromLLM.getCourseMaster_7().getQuestion()));
-            data.add(item);
+            recordsData.add(item);
+            if (Objects.nonNull(basic.getCourseMaster_7().getCustomerConclusion()) &&
+                    Objects.nonNull(basic.getCourseMaster_7().getCustomerConclusion().getModelRecord()) &&
+                    (Boolean) basic.getCourseMaster_7().getCustomerConclusion().getModelRecord()) {
+                correct++;
+                Map<String, Object> item2 = new HashMap<>();
+                item2.put("question", featureFromLLM.getCourseMaster_7().getQuestion());
+                item2.put("answer", featureFromLLM.getCourseMaster_7().getAnswerText());
+                item2.put("doubt", featureFromLLM.getCourseMaster_7().getDoubtTag());
+                correctRecordsData.add(item2);
+            }
+
+            if (Objects.nonNull(basic.getCourseMaster_7().getCustomerQuestion()) &&
+                    StringUtils.hasText(basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString())) {
+                questionTags.add(basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString());
+                Map<String, Object> item3 = new HashMap<>();
+                item3.put("dim_name", "维度1");
+                item3.put("tag", basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString());
+                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
+                        featureFromLLM.getCourseMaster_7().getDoubtText()));
+                questionRecordsData.add(item3);
+            }
         }
 
-        Collections.sort(data, new Comparator<Map<String, Object>>() {
+        Collections.sort(recordsData, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
                 String eventType1 = (String) o1.get("event_time");
@@ -1202,9 +1347,40 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 return eventType2.compareTo(eventType1); // 字符串按字典序比较
             }
         });
-        recordContent.setData(data);
         customerFeature.getDeliveryPeriod().getMasterCourse().setProcess(process);
-        customerFeature.getDeliveryPeriod().getMasterCourse().setRecords(recordContent);
-    }
+        customerFeature.getDeliveryPeriod().getMasterCourse().setCorrect(correct);
 
+        if (!CollectionUtils.isEmpty(recordsData)) {
+            CustomerFeatureResponse.RecordContent records = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
+            records.setColumns(recordsColumns);
+            records.setData(recordsData);
+            customerFeature.getDeliveryPeriod().getMasterCourse().setRecords(records);
+        }
+
+        if (!CollectionUtils.isEmpty(correctRecordsData)) {
+            CustomerFeatureResponse.RecordContent correctRecords = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("question", "销售问了"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("answer", "客户回答"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("doubt", "客户问题"));
+            correctRecords.setColumns(recordsColumns);
+            correctRecords.setData(correctRecordsData);
+            customerFeature.getDeliveryPeriod().getMasterCourse().setCorrectRecords(correctRecords);
+        }
+
+        if (!CollectionUtils.isEmpty(questionRecordsData)) {
+            CustomerFeatureResponse.RecordContent questionRecords = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("dim_name", "维度名称"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("tag", "问题标签"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("content", "原文摘要"));
+            questionRecords.setColumns(recordsColumns);
+            questionRecords.setData(questionRecordsData);
+            customerFeature.getDeliveryPeriod().getMasterCourse().setQuestionRecords(questionRecords);
+            customerFeature.getDeliveryPeriod().getMasterCourse().setQuestionTags(questionTags);
+        }
+    }
 }
