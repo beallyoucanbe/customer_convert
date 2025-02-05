@@ -18,6 +18,7 @@ public class CommunicationContent {
     private String callId;
     private String questionCallId;
     private String answerCallId;
+    private String buildText;
 
 }
 
