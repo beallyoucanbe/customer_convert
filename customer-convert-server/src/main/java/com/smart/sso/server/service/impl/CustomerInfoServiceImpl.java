@@ -1118,7 +1118,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 交付课回放
         setDeliveryRemindplayback(featureFromLLM, customerFeature, deliveryPeriodStartTime);
         CourseTeacherFeature courseTeacherFeature = new CourseTeacherFeature(customerFeature.getBasic().getTeacherApproval());
-        courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
+        if (Objects.nonNull(featureFromLLM.getTeacherApproval())
+                && StringUtils.hasText(featureFromLLM.getTeacherApproval().getBuildText())) {
+            courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
+        }
         customerFeature.getDeliveryPeriod().setCourseTeacher(courseTeacherFeature);
         setMasterCourse(featureFromLLM, customerFeature);
     }
@@ -1155,7 +1158,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了课上内容");
                 item3.put("tag", basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
                         featureFromLLM.getCourseMaster_1().getDoubtText()));
@@ -1185,7 +1188,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了指标");
                 item3.put("tag", basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
                         featureFromLLM.getCourseMaster_2().getDoubtText()));
@@ -1215,7 +1218,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了短线战法买点");
                 item3.put("tag", basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
                         featureFromLLM.getCourseMaster_3().getDoubtText()));
@@ -1245,7 +1248,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了小蜜蜂止盈法");
                 item3.put("tag", basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
                         featureFromLLM.getCourseMaster_4().getDoubtText()));
@@ -1273,7 +1276,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了预警信号");
                 item3.put("tag", basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
                         featureFromLLM.getCourseMaster_5().getDoubtText()));
@@ -1302,7 +1305,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了低吸信号");
                 item3.put("tag", basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
                         featureFromLLM.getCourseMaster_6().getDoubtText()));
@@ -1331,7 +1334,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "维度1");
+                item3.put("dim_name", "是否学会了使用热点狙击指标");
                 item3.put("tag", basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
                         featureFromLLM.getCourseMaster_7().getDoubtText()));
