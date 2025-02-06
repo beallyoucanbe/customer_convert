@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CourseTeacherFeature extends BaseFeature {
     private Boolean teacherProfession;
+    private OriginChat teacherProfessionChat ;
 
     public CourseTeacherFeature(BaseFeature baseFeature) {
         // 复制父类属性

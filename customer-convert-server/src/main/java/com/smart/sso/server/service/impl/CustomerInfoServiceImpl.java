@@ -241,9 +241,18 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 // 有异常就不变
             }
 
+            // 客户认可老师
+            try {
+                if ((Boolean) basic.getTeacherApproval().getCustomerConclusion().getCompareValue()) {
+                    stageStatus.setFunctionIntroduction(1);
+                }
+            } catch (Exception e) {
+                // 有异常就不变
+            }
+
             // 客户确认购买 客户对购买软件的态度”的值为“是”
             try {
-                if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) basic.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
                     stageStatus.setConfirmPurchase(1);
                 }
             } catch (Exception e) {
@@ -747,10 +756,66 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue())) {
                 Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue();
                 if (fre < 2) {
-                    advantage.add("【交接期】直播/圈子内容传递频次较高");
+                    advantage.add("【交接期】提醒查看圈子内容频次较高");
                 } else {
-                    questions.add(new CustomerFeatureResponse.Question("【交接期】直播/圈子内容传递频次较低"));
+                    questions.add(new CustomerFeatureResponse.Question("【交接期】提醒查看圈子内容频次较低"));
                 }
+            }
+
+            // 【交付期】沟通频次
+            // 优点：-【交付期】沟通频次较高：字段“沟通频次”的值为“高”或“中”
+            // 缺点：-【交付期】沟通频次较低：字段“沟通频次”的值为“低”
+            if (Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue())) {
+                Double fre = (Double) customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue();
+                if (fre < 2) {
+                    advantage.add("【交付期】沟通频次较高");
+                } else {
+                    questions.add(new CustomerFeatureResponse.Question("【交付期】沟通频次较低"));
+                }
+            }
+
+            // 【交付期】提醒查看交付课直播
+            // 优点：-【交付期】提醒查看交付课直播频次较高：字段“提醒查看交付课直播频次”的值为“高”或“中”
+            // 缺点：-【交付期】提醒查看交付课直播频次较低：字段“提醒查看交付课直播频次”的值为“低”
+            if (Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue())) {
+                Double fre = (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue();
+                if (fre < 2) {
+                    advantage.add("【交付期】提醒查看交付课直播频次较高");
+                } else {
+                    questions.add(new CustomerFeatureResponse.Question("【交付期】提醒查看交付课直播频次较低"));
+                }
+            }
+
+            // 【交付期】提醒查看交付课回放
+            // 优点：-【交付期】提醒查看交付课回放频次较高：字段“提醒查看交付课回放频次”的值为“高”或“中”
+            // 缺点：-【交付期】提醒查看交付课回放频次较低：字段“提醒查看交付课回放频次”的值为“低”
+            if (Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue())) {
+                Double fre = (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue();
+                if (fre < 2) {
+                    advantage.add("【交付期】提醒查看交付课回放频次较高");
+                } else {
+                    questions.add(new CustomerFeatureResponse.Question("【交付期】提醒查看交付课回放频次较低"));
+                }
+            }
+
+            // 【交付期】客户认可老师
+            // 优点：-【交付期】客户认可老师：“客户认可老师”的“客户结论”为“认可”
+            // 缺点：-【交付期】客户尚未认可老师：“客户认可老师”的“客户结论”为“尚未认可”
+            int teacherApproval = stageStatus.getFunctionIntroduction();
+            if (teacherApproval == 1) {
+                advantage.add("【交付期】客户认可老师");
+            } else {
+                questions.add(new CustomerFeatureResponse.Question("【交付期】客户尚未认可老师"));
+            }
+
+            // 【交付期】客户对课程的掌握情况
+            // 优点：-【交付期】客户对课程的掌握情况较好：“客户对课程的掌握情况”的“客户结论”大于等于5
+            // 缺点：-【交付期】客户对课程的掌握情况一般：“客户对课程的掌握情况”的“客户结论”小于4
+            int correct = customerFeature.getDeliveryPeriod().getMasterCourse().getCorrect();
+            if (correct >= 5 ) {
+                advantage.add("【交付期】客户对课程的掌握情况较好");
+            } else {
+                questions.add(new CustomerFeatureResponse.Question("【交付期】客户对课程的掌握情况一般"));
             }
 
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
@@ -1121,6 +1186,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.nonNull(featureFromLLM.getTeacherApproval())
                 && StringUtils.hasText(featureFromLLM.getTeacherApproval().getBuildText())) {
             courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
+            CommunicationContent teacher = featureFromLLM.getTeacherApproval();
+            courseTeacherFeature.setTeacherProfessionChat(CommonUtils.getOriginChatFromChatText(StringUtils.isEmpty(teacher.getCallId()) ? featureFromLLM.getCallId() : teacher.getCallId(),
+                    teacher.getBuildText()));
         }
         customerFeature.getDeliveryPeriod().setCourseTeacher(courseTeacherFeature);
         setMasterCourse(featureFromLLM, customerFeature);
@@ -1138,6 +1206,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (basic.getCourseMaster_1().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否学会了课上内容");
             item.put("event_time", featureFromLLM.getCourseMaster_1().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
                     featureFromLLM.getCourseMaster_1().getQuestion()));
@@ -1168,6 +1237,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (basic.getCourseMaster_2().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否会调了指标");
             item.put("event_time", featureFromLLM.getCourseMaster_2().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
                     featureFromLLM.getCourseMaster_2().getQuestion()));
@@ -1188,7 +1258,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     StringUtils.hasText(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString())) {
                 questionTags.add(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
                 Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了指标");
+                item3.put("dim_name", "是否会调了指标");
                 item3.put("tag", basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
                 item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
                         featureFromLLM.getCourseMaster_2().getDoubtText()));
@@ -1198,6 +1268,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (basic.getCourseMaster_3().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否学会了短线战法买点");
             item.put("event_time", featureFromLLM.getCourseMaster_3().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
                     featureFromLLM.getCourseMaster_3().getQuestion()));
@@ -1228,6 +1299,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (basic.getCourseMaster_4().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否学会了小蜜蜂止盈法");
             item.put("event_time", featureFromLLM.getCourseMaster_4().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
                     featureFromLLM.getCourseMaster_4().getQuestion()));
@@ -1257,6 +1329,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         if (basic.getCourseMaster_5().getInquired().equals("yes")) {
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否学会了预警信号");
             item.put("event_time", featureFromLLM.getCourseMaster_5().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
                     featureFromLLM.getCourseMaster_5().getQuestion()));
@@ -1286,6 +1359,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (basic.getCourseMaster_6().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否学会了低吸信号");
             item.put("event_time", featureFromLLM.getCourseMaster_6().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
                     featureFromLLM.getCourseMaster_6().getQuestion()));
@@ -1315,6 +1389,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (basic.getCourseMaster_7().getInquired().equals("yes")) {
             process++;
             Map<String, Object> item = new HashMap<>();
+            item.put("dim_name", "是否学会了使用热点狙击指标");
             item.put("event_time", featureFromLLM.getCourseMaster_7().getTs());
             item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
                     featureFromLLM.getCourseMaster_7().getQuestion()));
@@ -1356,6 +1431,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!CollectionUtils.isEmpty(recordsData)) {
             CustomerFeatureResponse.RecordContent records = new CustomerFeatureResponse.RecordContent();
             List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("dim_name", "维度名称"));
             recordsColumns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
             recordsColumns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
             records.setColumns(recordsColumns);
