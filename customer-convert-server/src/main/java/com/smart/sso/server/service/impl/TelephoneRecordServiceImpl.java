@@ -519,35 +519,38 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     }
                 }
             }
-            //客户学习请教次数
-            CommunicationFreqContent customerLearningFre = customerFeatureFromLLM.getCustomerLearning();
-            customerLearningFre.setCommunicationCount(customerLearningFre.getCommunicationCount() + 1);
-            customerLearningFre.setCommunicationTime(customerLearningFre.getCommunicationTime() + record.getCommunicationDuration());
-            if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
-                CommunicationContent communicationContent = record.getCustomerLearning().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
-                    customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
-                    customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                            customerFeatureFromLLM.getCallId(),
-                            customerFeatureFromLLM.getCommunicationTime(),
-                            Integer.parseInt(communicationContent.getAnswerTag()),
-                            communicationContent.getAnswerText()));
-                }
-            }
 
-            //业务员互动次数
-            CommunicationFreqContent ownerInteractionLearningFre = customerFeatureFromLLM.getOwnerInteraction();
-            ownerInteractionLearningFre.setCommunicationCount(ownerInteractionLearningFre.getCommunicationCount() + 1);
-            ownerInteractionLearningFre.setCommunicationTime(ownerInteractionLearningFre.getCommunicationTime() + record.getCommunicationDuration());
-            if (!CollectionUtils.isEmpty(record.getOwnerInteraction())) {
-                CommunicationContent communicationContent = record.getOwnerInteraction().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
-                    ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
-                    ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                            customerFeatureFromLLM.getCallId(),
-                            customerFeatureFromLLM.getCommunicationTime(),
-                            Integer.parseInt(communicationContent.getAnswerTag()),
-                            communicationContent.getAnswerText()));
+            if (record.getCommunicationDuration() >= 30) {
+                //客户学习请教次数
+                CommunicationFreqContent customerLearningFre = customerFeatureFromLLM.getCustomerLearning();
+                customerLearningFre.setCommunicationCount(customerLearningFre.getCommunicationCount() + 1);
+                customerLearningFre.setCommunicationTime(customerLearningFre.getCommunicationTime() + record.getCommunicationDuration());
+                if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
+                    CommunicationContent communicationContent = record.getCustomerLearning().get(0);
+                    if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
+                        customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                        customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                                customerFeatureFromLLM.getCallId(),
+                                customerFeatureFromLLM.getCommunicationTime(),
+                                Integer.parseInt(communicationContent.getAnswerTag()),
+                                communicationContent.getAnswerText()));
+                    }
+                }
+
+                //业务员互动次数
+                CommunicationFreqContent ownerInteractionLearningFre = customerFeatureFromLLM.getOwnerInteraction();
+                ownerInteractionLearningFre.setCommunicationCount(ownerInteractionLearningFre.getCommunicationCount() + 1);
+                ownerInteractionLearningFre.setCommunicationTime(ownerInteractionLearningFre.getCommunicationTime() + record.getCommunicationDuration());
+                if (!CollectionUtils.isEmpty(record.getOwnerInteraction())) {
+                    CommunicationContent communicationContent = record.getOwnerInteraction().get(0);
+                    if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
+                        ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                        ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                                customerFeatureFromLLM.getCallId(),
+                                customerFeatureFromLLM.getCommunicationTime(),
+                                Integer.parseInt(communicationContent.getAnswerTag()),
+                                communicationContent.getAnswerText()));
+                    }
                 }
             }
 
@@ -766,7 +769,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         if (CollectionUtils.isEmpty(customerRecordList)) {
             return Boolean.TRUE;
         }
-        for (TelephoneRecordStatics record : customerRecordList){
+        for (TelephoneRecordStatics record : customerRecordList) {
             syncCustomerInfoFromRecord(record.getCustomerId(), record.getActivityId());
         }
         return Boolean.TRUE;
@@ -787,13 +790,13 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Override
     public int getCommunicationTimeCurrentDay(String customerId, LocalDateTime communicationTime) {
         QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
-        LocalDateTime startOfDay =  communicationTime.toLocalDate().atStartOfDay();
+        LocalDateTime startOfDay = communicationTime.toLocalDate().atStartOfDay();
         queryWrapperInfo.eq("customer_id", customerId);
         queryWrapperInfo.gt("communication_time", startOfDay);
         // 查看该客户当天的通话时间长度
         List<TelephoneRecord> telephoneRecordList = telephoneRecordMapper.selectList(queryWrapperInfo);
         int communicationDurationSum = 0;
-        if (!CollectionUtils.isEmpty(telephoneRecordList)){
+        if (!CollectionUtils.isEmpty(telephoneRecordList)) {
             for (TelephoneRecord item : telephoneRecordList) {
                 communicationDurationSum += item.getCommunicationDuration();
             }
@@ -825,7 +828,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return null;
         }
         // info 表不存在记录，新建一条
-        if (Objects.isNull(customerInfo)){
+        if (Objects.isNull(customerInfo)) {
             customerInfo = new CustomerInfo();
             customerInfo.setId(CommonUtils.generatePrimaryKey());
             customerInfo.setCustomerName(telephoneRecord.getCustomerName());

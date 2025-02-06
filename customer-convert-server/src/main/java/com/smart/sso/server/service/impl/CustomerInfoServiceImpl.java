@@ -2,7 +2,6 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
@@ -34,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,6 +69,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Autowired
     @Lazy
     private MessageService messageService;
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
@@ -769,8 +771,29 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
         if (communicationFreqContent.getRemindCount() > 0 ) {
             // 频率计算规则 提醒次数/通话次数
-            double fre = communicationFreqContent.getRemindCount() / communicationFreqContent.getCommunicationCount();
+            double fre = (double) communicationFreqContent.getRemindCount() / communicationFreqContent.getCommunicationCount();
             frequencyContent.setValue(fre);
+
+            // 提醒查看交付课直播：
+            CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+            columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("remind_count", "提醒次数"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("content", "原文摘要"));
+            recordContent.setColumns(columns);
+
+            List<Map<String, Object>> data = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
+                for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("communication_time", sdf.format(one.getCommunicationTime()));
+                    item.put("remind_count", one.getCount());
+                    item.put("content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getContent()));
+                    data.add(item);
+                }
+            }
+            recordContent.setData(data);
+            frequencyContent.setRecords(recordContent);
         }
         return frequencyContent;
     }
@@ -1194,7 +1217,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 approvalCount++;
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
         return approvalCount;
