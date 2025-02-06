@@ -41,8 +41,8 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent customerIssuesQuantified;
     private CommunicationContent softwareValueQuantified;
 
-    private CommunicationContent customerLearning;
-    private CommunicationContent ownerInteraction;
+    private CommunicationFreqContent customerLearning = new CommunicationFreqContent();
+    private CommunicationFreqContent ownerInteraction = new CommunicationFreqContent();
     private CommunicationContent customerContinueCommunicate;
     private CommunicationContent ownerPackagingCourse;
     private CommunicationContent ownerPackagingFunction;

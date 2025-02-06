@@ -43,6 +43,8 @@ public class CustomerFeatureResponse {
         private BaseFeature ownerPackagingCourse;
         // 业务员正确包装功能
         private BaseFeature ownerPackagingFunction;
+        // 考察客户
+        private BaseFeature examineCustomer;
         private BaseFeature fundsVolume;
         private BaseFeature softwareFunctionClarity;
         private BaseFeature stockSelectionMethod;
