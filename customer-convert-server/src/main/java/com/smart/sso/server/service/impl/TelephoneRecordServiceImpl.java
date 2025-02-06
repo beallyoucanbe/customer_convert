@@ -518,6 +518,30 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     }
                 }
             }
+            //客户学习请教次数
+            if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
+                CommunicationContent communicationContent = record.getCustomerLearning().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getCustomerLearning())) {
+                    customerFeatureFromLLM.setSoftwareValueQuantified(communicationContent);
+                    customerFeatureFromLLM.getSoftwareValueQuantified().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueQuantified().getQuestion()) || customerFeatureFromLLM.getSoftwareValueQuantified().getQuestion().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setQuestionCallId(record.getCallId());
+                    }
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getSoftwareValueQuantified().getAnswerText()) || customerFeatureFromLLM.getSoftwareValueQuantified().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setDoubtText(communicationContent.getDoubtText());
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getSoftwareValueQuantified().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
         }
         return customerFeatureFromLLM;
     }

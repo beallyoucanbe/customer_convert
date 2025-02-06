@@ -1,9 +1,12 @@
 package com.smart.sso.server.model;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.smart.sso.server.handler.CommunicationContentTypeHandler;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -37,5 +40,12 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent stockPickTimingReview;
     private CommunicationContent customerIssuesQuantified;
     private CommunicationContent softwareValueQuantified;
+
+    private CommunicationContent customerLearning;
+    private CommunicationContent ownerInteraction;
+    private CommunicationContent customerContinueCommunicate;
+    private CommunicationContent ownerPackagingCourse;
+    private CommunicationContent ownerPackagingFunction;
+    private CommunicationContent examineCustomer;
     
 }

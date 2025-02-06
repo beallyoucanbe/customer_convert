@@ -24,6 +24,7 @@ public class TelephoneRecord {
     private Integer communicationDuration;
     private Timestamp communicationTime;
     private String callId;
+    private String communicationType;
 
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> fundsVolume;
@@ -64,6 +65,19 @@ public class TelephoneRecord {
     private List<CommunicationContent> customerIssuesQuantified;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> softwareValueQuantified;
+
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> customerLearning;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerInteraction;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> customerContinueCommunicate;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerPackagingCourse;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerPackagingFunction;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> examineCustomer;
 
     private Integer parsed;
     private String tenantId;
