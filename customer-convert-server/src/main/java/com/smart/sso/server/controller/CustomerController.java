@@ -134,7 +134,7 @@ public class CustomerController {
             log.error("source id:{} 已存在， 跳过不处理, staff id: {}, customer id: {}", sourceId, staffId, customerId);
         } else {
             log.error("开始调用python脚本：source id:{}, staff id: {}, customer id: {}", sourceId, staffId, customerId);
-            customerInfoService.callback(sourceId);
+//            customerInfoService.callback(sourceId);
         }
         return ResultUtils.success(null);
     }
