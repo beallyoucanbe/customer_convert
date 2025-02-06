@@ -527,10 +527,15 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 CommunicationContent communicationContent = record.getCustomerLearning().get(0);
                 if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
                     customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                    customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                            customerFeatureFromLLM.getCallId(),
+                            customerFeatureFromLLM.getCommunicationTime(),
+                            Integer.parseInt(communicationContent.getAnswerTag()),
+                            communicationContent.getAnswerText()));
                 }
             }
 
-            //客户学习请教次数
+            //业务员互动次数
             CommunicationFreqContent ownerInteractionLearningFre = customerFeatureFromLLM.getOwnerInteraction();
             ownerInteractionLearningFre.setCommunicationCount(ownerInteractionLearningFre.getCommunicationCount() + 1);
             ownerInteractionLearningFre.setCommunicationTime(ownerInteractionLearningFre.getCommunicationTime() + record.getCommunicationDuration());
@@ -538,6 +543,11 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 CommunicationContent communicationContent = record.getOwnerInteraction().get(0);
                 if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
                     ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                    ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                            customerFeatureFromLLM.getCallId(),
+                            customerFeatureFromLLM.getCommunicationTime(),
+                            Integer.parseInt(communicationContent.getAnswerTag()),
+                            communicationContent.getAnswerText()));
                 }
             }
 
