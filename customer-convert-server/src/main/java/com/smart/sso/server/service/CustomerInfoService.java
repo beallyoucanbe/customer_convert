@@ -26,7 +26,7 @@ public interface CustomerInfoService {
 
     void callback(String sourceId);
 
-    String getRedirectUrl(String customerId, String activeId, String from, String manager);
+    String getRedirectUrl(String customerId, String activeId, String ownerId, String owner, String from, String manager);
 
     void updateCharacterCostTime(String id);
 

@@ -344,8 +344,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
-    public String getRedirectUrl(String customerId, String activeId, String from, String manager) {
+    public String getRedirectUrl(String customerId, String activeId, String ownerId, String owner, String from, String manager) {
         String urlFormatter = "https://newcmp.emoney.cn/chat/customer?customer_id=%s&activity_id=%s&embed=true";
+        if (!StringUtils.isEmpty(ownerId)) {
+            urlFormatter = urlFormatter + "&owner_id=" + ownerId;
+        }
+        if (!StringUtils.isEmpty(owner)) {
+            urlFormatter = urlFormatter + "&owner=" + owner;
+        }
         if (!StringUtils.isEmpty(from)) {
             urlFormatter = urlFormatter + "&from=" + from;
         }
