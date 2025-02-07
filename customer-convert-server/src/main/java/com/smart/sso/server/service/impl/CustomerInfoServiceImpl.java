@@ -175,7 +175,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             getStandardExplanationCompletion(customerFeature);
             customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
             customerFeature.getBasic().setClassAttendTimes(customerInfo.getClassAttendTimes());
-            customerFeature.getBasic().setClassAttendDuration(customerInfo.getClassAttendDuration());
+            customerFeature.getBasic().setClassAttendDuration(customerInfo.getClassAttendDuration()/60);
             customerFeature.getBasic().setApproveCount(getApprovalCount(customerFeature));
         }
         return customerFeature;
