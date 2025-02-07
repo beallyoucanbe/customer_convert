@@ -168,9 +168,11 @@ public class CustomerController {
     @GetMapping("/customer/redirect")
     public BaseResponse<Void> redirect(@RequestParam(value = "customer_id") String customerId,
                                        @RequestParam(value = "active_id") String activityId,
+                                       @RequestParam(value = "owner_id", required = false) String ownerId,
+                                       @RequestParam(value = "owner", required = false) String owner,
                                        String from, String manager,
                                        HttpServletResponse response) throws IOException {
-        String targetUrl = customerInfoService.getRedirectUrl(customerId, activityId, from, manager);
+        String targetUrl = customerInfoService.getRedirectUrl(customerId, activityId, ownerId, owner, from, manager);
         // 使用HttpServletResponse进行重定向
         response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
         response.setStatus(302);

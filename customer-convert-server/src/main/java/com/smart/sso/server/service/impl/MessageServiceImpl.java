@@ -222,8 +222,8 @@ public class MessageServiceImpl implements MessageService {
             }
             String purchaseMessageDescribe = getPurchaseAttitude(newCustomerCharacter.getSoftwarePurchaseAttitude());
             String fundsMessageDescribe = Objects.nonNull(newCustomerCharacter.getFundsVolume()) ? newCustomerCharacter.getFundsVolume() : "未提及";
-            String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s",
-                    customerInfo.getCustomerId(), customerInfo.getActivityId());
+            String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s&owner_id=%s&owner=%s",
+                    customerInfo.getCustomerId(), customerInfo.getActivityId(), customerInfo.getOwnerId(), customerInfo.getOwnerName());
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
             int id = 1;
             if (!purchaseMessageDescribe.equals("确认购买")) {
