@@ -1217,9 +1217,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_1().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否学会了课上内容");
                 item2.put("question", featureFromLLM.getCourseMaster_1().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_1().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_1().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1248,9 +1248,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_2().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否会调了指标");
                 item2.put("question", featureFromLLM.getCourseMaster_2().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_2().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_2().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1279,9 +1279,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_3().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否学会了短线战法买点");
                 item2.put("question", featureFromLLM.getCourseMaster_3().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_3().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_3().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1310,9 +1310,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_4().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否学会了小蜜蜂止盈法");
                 item2.put("question", featureFromLLM.getCourseMaster_4().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_4().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_4().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1339,9 +1339,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_5().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否学会了预警信号");
                 item2.put("question", featureFromLLM.getCourseMaster_5().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_5().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_5().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1369,9 +1369,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_6().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否学会了低吸信号");
                 item2.put("question", featureFromLLM.getCourseMaster_6().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_6().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_6().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1399,9 +1399,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     (Boolean) basic.getCourseMaster_7().getCustomerConclusion().getModelRecord()) {
                 correct++;
                 Map<String, Object> item2 = new HashMap<>();
+                item2.put("dim_name", "是否学会了使用热点狙击指标");
                 item2.put("question", featureFromLLM.getCourseMaster_7().getQuestion());
                 item2.put("answer", featureFromLLM.getCourseMaster_7().getAnswerText());
-                item2.put("doubt", featureFromLLM.getCourseMaster_7().getDoubtTag());
                 correctRecordsData.add(item2);
             }
 
@@ -1442,9 +1442,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!CollectionUtils.isEmpty(correctRecordsData)) {
             CustomerFeatureResponse.RecordContent correctRecords = new CustomerFeatureResponse.RecordContent();
             List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("question", "销售问了"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("dim_name", "维度名称"));
+            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("question", "销售提问"));
             recordsColumns.add(new CustomerFeatureResponse.RecordTitle("answer", "客户回答"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("doubt", "客户问题"));
             correctRecords.setColumns(recordsColumns);
             correctRecords.setData(correctRecordsData);
             customerFeature.getDeliveryPeriod().getMasterCourse().setCorrectRecords(correctRecords);
