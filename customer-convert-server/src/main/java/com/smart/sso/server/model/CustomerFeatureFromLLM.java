@@ -46,6 +46,4 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent customerContinueCommunicate;
     private CommunicationContent ownerPackagingCourse;
     private CommunicationContent ownerPackagingFunction;
-    private CommunicationContent examineCustomer;
-    
 }

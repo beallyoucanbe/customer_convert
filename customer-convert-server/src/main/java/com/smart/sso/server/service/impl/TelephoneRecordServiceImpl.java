@@ -131,6 +131,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setAnswerTag(communicationContent.getAnswerTag());
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setDoubtText(communicationContent.getDoubtText());
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getSoftwareFunctionClarity().setAsked(communicationContent.getAsked());
                         customerFeatureFromLLM.getSoftwareFunctionClarity().setAnswerCallId(record.getCallId());
                     }
                 }
@@ -573,7 +574,14 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             // 业务员正确包装系列课
             if (!CollectionUtils.isEmpty(record.getOwnerPackagingCourse())) {
                 CommunicationContent communicationContent = record.getOwnerPackagingCourse().get(0);
-                if (Objects.isNull(customerFeatureFromLLM.getOwnerPackagingCourse())) {
+                if (Objects.isNull(customerFeatureFromLLM.getOwnerPackagingCourse()) &&
+                        !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                        !communicationContent.getQuestion().equals("无") &&
+                        !communicationContent.getQuestion().equals("null")) {
+                    communicationContent.setAnswerTag("是");
+                    communicationContent.setAnswerText(communicationContent.getQuestion());
+                    communicationContent.setAnswerCallId(record.getCallId());
+                    communicationContent.setQuestionCallId(record.getCallId());
                     customerFeatureFromLLM.setOwnerPackagingCourse(communicationContent);
                     customerFeatureFromLLM.getOwnerPackagingCourse().setCallId(record.getCallId());
                 } else {
@@ -582,15 +590,10 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getOwnerPackagingCourse().setQuestion(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getOwnerPackagingCourse().setAnswerTag("是");
+                        customerFeatureFromLLM.getOwnerPackagingCourse().setAnswerText(communicationContent.getQuestion());
+                        customerFeatureFromLLM.getOwnerPackagingCourse().setAnswerCallId(communicationContent.getQuestion());
                         customerFeatureFromLLM.getOwnerPackagingCourse().setQuestionCallId(record.getCallId());
-                    }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getOwnerPackagingCourse().getAnswerText()) || customerFeatureFromLLM.getOwnerPackagingCourse().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
-                        customerFeatureFromLLM.getOwnerPackagingCourse().setAnswerText(communicationContent.getAnswerText());
-                        customerFeatureFromLLM.getOwnerPackagingCourse().setAnswerTag(communicationContent.getAnswerTag());
-                        customerFeatureFromLLM.getOwnerPackagingCourse().setDoubtText(communicationContent.getDoubtText());
-                        customerFeatureFromLLM.getOwnerPackagingCourse().setDoubtTag(communicationContent.getDoubtTag());
-                        customerFeatureFromLLM.getOwnerPackagingCourse().setAnswerCallId(record.getCallId());
                     }
                 }
             }
@@ -598,7 +601,14 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             // 业务员正确包装功能
             if (!CollectionUtils.isEmpty(record.getOwnerPackagingFunction())) {
                 CommunicationContent communicationContent = record.getOwnerPackagingFunction().get(0);
-                if (Objects.isNull(customerFeatureFromLLM.getOwnerPackagingFunction())) {
+                if (Objects.isNull(customerFeatureFromLLM.getOwnerPackagingFunction()) &&
+                        !StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                            !communicationContent.getQuestion().equals("无") &&
+                            !communicationContent.getQuestion().equals("null")) {
+                    communicationContent.setAnswerTag("是");
+                    communicationContent.setAnswerText(communicationContent.getQuestion());
+                    communicationContent.setAnswerCallId(record.getCallId());
+                    communicationContent.setQuestionCallId(record.getCallId());
                     customerFeatureFromLLM.setOwnerPackagingFunction(communicationContent);
                     customerFeatureFromLLM.getOwnerPackagingFunction().setCallId(record.getCallId());
                 } else {
@@ -607,40 +617,10 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                             !communicationContent.getQuestion().equals("无") &&
                             !communicationContent.getQuestion().equals("null")) {
                         customerFeatureFromLLM.getOwnerPackagingFunction().setQuestion(communicationContent.getQuestion());
-                        customerFeatureFromLLM.getOwnerPackagingFunction().setQuestionCallId(record.getCallId());
-                    }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getOwnerPackagingFunction().getAnswerText()) || customerFeatureFromLLM.getOwnerPackagingFunction().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
-                        customerFeatureFromLLM.getOwnerPackagingFunction().setAnswerText(communicationContent.getAnswerText());
-                        customerFeatureFromLLM.getOwnerPackagingFunction().setAnswerTag(communicationContent.getAnswerTag());
-                        customerFeatureFromLLM.getOwnerPackagingFunction().setDoubtText(communicationContent.getDoubtText());
-                        customerFeatureFromLLM.getOwnerPackagingFunction().setDoubtTag(communicationContent.getDoubtTag());
+                        customerFeatureFromLLM.getOwnerPackagingFunction().setAnswerTag("是");
+                        customerFeatureFromLLM.getOwnerPackagingFunction().setAnswerText(communicationContent.getQuestion());
                         customerFeatureFromLLM.getOwnerPackagingFunction().setAnswerCallId(record.getCallId());
-                    }
-                }
-            }
-
-            // 业务员考察客户
-            if (!CollectionUtils.isEmpty(record.getExamineCustomer())) {
-                CommunicationContent communicationContent = record.getExamineCustomer().get(0);
-                if (Objects.isNull(customerFeatureFromLLM.getExamineCustomer())) {
-                    customerFeatureFromLLM.setExamineCustomer(communicationContent);
-                    customerFeatureFromLLM.getExamineCustomer().setCallId(record.getCallId());
-                } else {
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getExamineCustomer().getQuestion()) || customerFeatureFromLLM.getExamineCustomer().getQuestion().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getQuestion()) &&
-                            !communicationContent.getQuestion().equals("无") &&
-                            !communicationContent.getQuestion().equals("null")) {
-                        customerFeatureFromLLM.getExamineCustomer().setQuestion(communicationContent.getQuestion());
-                        customerFeatureFromLLM.getExamineCustomer().setQuestionCallId(record.getCallId());
-                    }
-                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getExamineCustomer().getAnswerText()) || customerFeatureFromLLM.getExamineCustomer().getAnswerText().equals("无")) &&
-                            !StringUtils.isEmpty(communicationContent.getAnswerText()) && !communicationContent.getAnswerText().equals("无")) {
-                        customerFeatureFromLLM.getExamineCustomer().setAnswerText(communicationContent.getAnswerText());
-                        customerFeatureFromLLM.getExamineCustomer().setAnswerTag(communicationContent.getAnswerTag());
-                        customerFeatureFromLLM.getExamineCustomer().setDoubtText(communicationContent.getDoubtText());
-                        customerFeatureFromLLM.getExamineCustomer().setDoubtTag(communicationContent.getDoubtTag());
-                        customerFeatureFromLLM.getExamineCustomer().setAnswerCallId(record.getCallId());
+                        customerFeatureFromLLM.getOwnerPackagingFunction().setQuestionCallId(record.getCallId());
                     }
                 }
             }

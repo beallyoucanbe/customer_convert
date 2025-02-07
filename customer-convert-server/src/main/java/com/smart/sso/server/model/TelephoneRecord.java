@@ -76,9 +76,6 @@ public class TelephoneRecord {
     private List<CommunicationContent> ownerPackagingCourse;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> ownerPackagingFunction;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> examineCustomer;
-
     private Integer parsed;
     private String tenantId;
     // 预留属性

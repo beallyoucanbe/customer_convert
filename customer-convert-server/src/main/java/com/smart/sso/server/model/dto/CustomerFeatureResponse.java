@@ -44,7 +44,7 @@ public class CustomerFeatureResponse {
         // 业务员正确包装功能
         private BaseFeature ownerPackagingFunction;
         // 考察客户
-        private BaseFeature examineCustomer;
+        private CustomerProcessSummary.ProcessInfoExplanationContent examineCustomer;
         private BaseFeature fundsVolume;
         private BaseFeature softwareFunctionClarity;
         private BaseFeature stockSelectionMethod;

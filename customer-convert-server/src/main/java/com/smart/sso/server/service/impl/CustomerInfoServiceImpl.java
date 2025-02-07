@@ -706,8 +706,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         // 设置提醒频率
-        basic.setCustomerLearningFreq(getFrequencyContent(featureFromLLM.getCustomerLearning()));
-        basic.setOwnerInteractionFreq(getFrequencyContent(featureFromLLM.getOwnerInteraction()));
+        basic.setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
+        basic.setOwnerInteractionFreq(getOwnerInteractionFrequencyContent(featureFromLLM.getOwnerInteraction()));
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
@@ -718,7 +718,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setCustomerContinueCommunicate(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerContinueCommunicate(), null, null, Boolean.class));
         basic.setOwnerPackagingCourse(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPackagingCourse(), null, null, Boolean.class));
         basic.setOwnerPackagingFunction(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPackagingFunction(), null, null, Boolean.class));
-        basic.setExamineCustomer(convertBaseFeatureByOverwrite(featureFromLLM.getExamineCustomer(), null, null, Boolean.class));
+        basic.setExamineCustomer(getExamineCustomer(featureFromLLM.getSoftwareFunctionClarity()));
 
         basic.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
         basic.setStockSelectionMethod(convertBaseFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
@@ -773,7 +773,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return baseFeature;
     }
 
-    private CustomerFeatureResponse.FrequencyContent getFrequencyContent(CommunicationFreqContent communicationFreqContent){
+    private CustomerFeatureResponse.FrequencyContent getCustomerLearningFrequencyContent(CommunicationFreqContent communicationFreqContent){
         CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
         if (communicationFreqContent.getRemindCount() > 0 ) {
             // 频率计算规则 提醒次数/通话次数
@@ -784,7 +784,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
             List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
             columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
-            columns.add(new CustomerFeatureResponse.RecordTitle("remind_count", "提醒次数"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("remind_count", "请教次数"));
             columns.add(new CustomerFeatureResponse.RecordTitle("content", "原文摘要"));
             recordContent.setColumns(columns);
 
@@ -795,6 +795,35 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                     item.put("communication_time", sdf.format(one.getCommunicationTime()));
                     item.put("remind_count", one.getCount());
                     item.put("content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getContent()));
+                    data.add(item);
+                }
+            }
+            recordContent.setData(data);
+            frequencyContent.setRecords(recordContent);
+        }
+        return frequencyContent;
+    }
+
+    private CustomerFeatureResponse.FrequencyContent getOwnerInteractionFrequencyContent(CommunicationFreqContent communicationFreqContent){
+        CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
+        if (communicationFreqContent.getRemindCount() > 0 ) {
+            // 频率计算规则 提醒次数/通话次数
+            double fre = (double) communicationFreqContent.getRemindCount() / communicationFreqContent.getCommunicationCount();
+            frequencyContent.setValue(fre);
+
+            // 提醒查看交付课直播：
+            CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+            columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("remind_count", "互动次数"));
+            recordContent.setColumns(columns);
+
+            List<Map<String, Object>> data = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
+                for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("communication_time", sdf.format(one.getCommunicationTime()));
+                    item.put("remind_count", one.getCount());
                     data.add(item);
                 }
             }
@@ -917,6 +946,23 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(
                     StringUtils.isEmpty(featureFromLLM.getQuestionCallId()) ? featureFromLLM.getCallId() : featureFromLLM.getQuestionCallId(),
                     featureFromLLM.getQuestion()));
+        }
+        return explanationContent;
+    }
+
+    private CustomerProcessSummary.ProcessInfoExplanationContent getExamineCustomer(CommunicationContent featureFromLLM) {
+        CustomerProcessSummary.ProcessInfoExplanationContent explanationContent =
+                new CustomerProcessSummary.ProcessInfoExplanationContent();
+        explanationContent.setResult(Boolean.FALSE);
+        // 多通电话覆盖+规则加工
+        if (Objects.nonNull(featureFromLLM) &&
+                !StringUtils.isEmpty(featureFromLLM.getAsked()) &&
+                !featureFromLLM.getAsked().trim().equals("无") &&
+                !featureFromLLM.getAsked().trim().equals("null")) {
+            explanationContent.setResult(Boolean.TRUE);
+            explanationContent.setOriginChat(CommonUtils.getOriginChatFromChatText(
+                    StringUtils.isEmpty(featureFromLLM.getAnswerCallId()) ? featureFromLLM.getCallId() : featureFromLLM.getAnswerCallId(),
+                    featureFromLLM.getAsked()));
         }
         return explanationContent;
     }
