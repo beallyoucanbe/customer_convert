@@ -977,10 +977,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 缺点：-未完成客户匹配度判断：客户匹配度判断的值为“未完成判断”，并列出缺具体哪个字段的信息（可以用括号放在后面显示）（前提条件是通话次数大于等于1）
             String conversionRate = customerInfo.getConversionRate();
             if (!conversionRate.equals("incomplete")) {
-                advantage.add("完成客户匹配度判断");
+                advantage.add("完成资金量收集");
             } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                     customerInfo.getCommunicationRounds() >= 2) {
-                questions.add(new CustomerFeatureResponse.Question("尚未完成客户匹配度判断，需继续收集客户信息"));
+                questions.add(new CustomerFeatureResponse.Question("尚未完成资金量收集，需继续收集客户信息"));
             }
             // 客户交易风格了解
             // 优点：-完成客户交易风格了解：“客户交易风格了解”的值为“完成”（如果有了“提前完成客户交易风格了解”，则本条不用再判断）
@@ -991,69 +991,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             } else if (Objects.nonNull(customerInfo.getCommunicationRounds()) &&
                     customerInfo.getCommunicationRounds() >= 2) {
                 questions.add(new CustomerFeatureResponse.Question("尚未完成客户交易风格了解，需继续收集客户信息"));
-            }
-            // 跟进的客户
-            // 优点：-跟进对的客户：销售跟进的是客户匹配度判断的值为“较高”或“中等”的客户
-            // 缺点：-跟进错的客户：销售跟进的是客户匹配度判断的值为“较低”的客户
-            if (conversionRate.equals("high") || conversionRate.equals("medium")) {
-                advantage.add("跟进对的客户");
-            } else if (conversionRate.equals("low")) {
-                questions.add(new CustomerFeatureResponse.Question("跟进匹配度低的客户，需确认匹配度高和中的客户都已跟进完毕再跟进匹配度低的客户"));
-            }
-
-            //-SOP 执行顺序正确：阶段是逐个按顺序完成的,只在1——2——3点亮后才开始判定。也就是只有1不算，只有1——2也不算。
-            //-SOP 执行顺序错误：阶段不是逐个按顺序完成的，并列出哪几个阶段未按顺序完成
-            if (stageStatus.getMatchingJudgment() == 1 &&
-                    stageStatus.getTransactionStyle() == 1 &&
-                    stageStatus.getFunctionIntroduction() == 1) {
-                if (((stageStatus.getConfirmValue() == 0 &&
-                        stageStatus.getConfirmPurchase() == 0 &&
-                        stageStatus.getCompletePurchase() == 0)) ||
-                        ((stageStatus.getConfirmValue() == 1 &&
-                                stageStatus.getConfirmPurchase() == 0 &&
-                                stageStatus.getCompletePurchase() == 0)) ||
-                        ((stageStatus.getConfirmValue() == 1 && stageStatus.getConfirmPurchase() == 1))) {
-                    advantage.add("SOP执行顺序正确");
-                }
-            }
-            Set<String> questionStatus = new TreeSet<>();
-            if (stageStatus.getMatchingJudgment() == 0 &&
-                    (stageStatus.getTransactionStyle() +
-                            stageStatus.getFunctionIntroduction() +
-                            stageStatus.getConfirmValue() +
-                            stageStatus.getConfirmPurchase() +
-                            stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户匹配度判断");
-            }
-            if (stageStatus.getTransactionStyle() == 0 &&
-                    (stageStatus.getFunctionIntroduction() +
-                            stageStatus.getConfirmValue() +
-                            stageStatus.getConfirmPurchase() +
-                            stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户交易风格了解");
-            }
-            if (stageStatus.getFunctionIntroduction() == 0 &&
-                    (stageStatus.getConfirmValue() +
-                            stageStatus.getConfirmPurchase() +
-                            stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("针对性功能介绍");
-            }
-            if (stageStatus.getConfirmValue() == 0 &&
-                    (stageStatus.getConfirmPurchase() + stageStatus.getCompletePurchase()) > 0) {
-                questionStatus.add("客户确认价值");
-            }
-            if (stageStatus.getConfirmPurchase() == 0 && stageStatus.getCompletePurchase() > 0) {
-                questionStatus.add("客户确认购买");
-            }
-
-            if (!CollectionUtils.isEmpty(questionStatus)) {
-                StringBuilder ttt = new StringBuilder("SOP 执行顺序错误，需完成前序任务（缺失：");
-                for (String status : questionStatus) {
-                    ttt.append(status).append("，");
-                }
-                ttt.deleteCharAt(ttt.length() - 1);
-                ttt.append("）");
-                questions.add(new CustomerFeatureResponse.Question(ttt.toString()));
             }
 
             // 痛点和价值量化
