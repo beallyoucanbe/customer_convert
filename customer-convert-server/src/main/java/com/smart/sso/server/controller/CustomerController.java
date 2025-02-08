@@ -275,4 +275,18 @@ public class CustomerController {
         return ResultUtils.success(null);
     }
 
+    @ApiOperation(value = "可推荐的问题列表")
+    @PostMapping("/customer/recommend/questions")
+    public BaseResponse<Void> recommendQuestions(@RequestParam(value = "user_id") String userId) {
+        messageService.sendMessageForPerLeader(userId);
+        return ResultUtils.success(null);
+    }
+
+    @ApiOperation(value = "具体问题的详情")
+    @PostMapping("/customer/recommend/question_detail")
+    public BaseResponse<Void> recommendQuestionDetail(@RequestParam(value = "user_id") String userId) {
+        messageService.sendMessageForPerLeader(userId);
+        return ResultUtils.success(null);
+    }
+
 }
