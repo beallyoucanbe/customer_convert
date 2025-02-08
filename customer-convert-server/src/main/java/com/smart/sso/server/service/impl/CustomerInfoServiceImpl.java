@@ -777,7 +777,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
         if (communicationFreqContent.getRemindCount() > 0 ) {
             // 频率计算规则 提醒次数/通话次数
-            double fre = (double) communicationFreqContent.getRemindCount() / communicationFreqContent.getCommunicationCount();
+            double fre = (double) (communicationFreqContent.getRemindCount() * 60) / communicationFreqContent.getCommunicationTime();
             frequencyContent.setValue(fre);
 
             // 提醒查看交付课直播：
@@ -808,7 +808,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
         if (communicationFreqContent.getRemindCount() > 0 ) {
             // 频率计算规则 提醒次数/通话次数
-            double fre = (double) communicationFreqContent.getRemindCount() / communicationFreqContent.getCommunicationCount();
+            double fre = (double) (communicationFreqContent.getRemindCount() * 60) / communicationFreqContent.getCommunicationTime();
             frequencyContent.setValue(fre);
 
             // 提醒查看交付课直播：

@@ -531,7 +531,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
                         customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
                         customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                                customerFeatureFromLLM.getCallId(),
+                                record.getCallId(),
                                 customerFeatureFromLLM.getCommunicationTime(),
                                 Integer.parseInt(communicationContent.getAnswerTag()),
                                 communicationContent.getAnswerText()));
@@ -547,7 +547,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
                         ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
                         ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                                customerFeatureFromLLM.getCallId(),
+                                record.getCallId(),
                                 customerFeatureFromLLM.getCommunicationTime(),
                                 Integer.parseInt(communicationContent.getAnswerTag()),
                                 communicationContent.getAnswerText()));
