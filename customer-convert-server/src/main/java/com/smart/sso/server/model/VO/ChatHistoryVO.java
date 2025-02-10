@@ -15,6 +15,7 @@ public class ChatHistoryVO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp communicationTime;
     private ChatHistoryInfo basic;
+    private String type;
 
     @Data
     public static class ChatHistoryInfo{

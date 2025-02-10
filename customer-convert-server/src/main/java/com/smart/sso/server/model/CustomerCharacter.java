@@ -1,7 +1,5 @@
 package com.smart.sso.server.model;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -50,6 +48,10 @@ public class CustomerCharacter implements Serializable {
     private String summaryConfirmValue;
     private String summaryExecuteOrder;
     private String issuesValueQuantified;
+
+    private String customerContinueCommunicate;
+    private String ownerPackagingCourse;
+    private String ownerPackagingFunction;
 
     private int standardExplanationCompletion;
     private Integer isSend188;

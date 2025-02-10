@@ -701,40 +701,35 @@ public class MessageServiceImpl implements MessageService {
                 Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
 
         latestCustomerCharacter.setStandardExplanationCompletion(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess() : 0);
+        latestCustomerCharacter.setCustomerContinueCommunicate(Objects.nonNull(customerFeature.getBasic().getCustomerContinueCommunicate().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerContinueCommunicate().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setOwnerPackagingCourse(Objects.nonNull(customerFeature.getBasic().getOwnerPackagingCourse().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getOwnerPackagingCourse().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setOwnerPackagingFunction(Objects.nonNull(customerFeature.getBasic().getOwnerPackagingFunction().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getOwnerPackagingFunction().getCustomerConclusion().getCompareValue().toString() : null);
 
         List<String> advantages = customerFeature.getSummary().getAdvantage();
         List<CustomerFeatureResponse.Question> questions = customerFeature.getSummary().getQuestions();
         for (String item : advantages) {
-            if (item.contains("完成客户匹配度判断")) {
+            if (item.contains("完成资金量收集")) {
                 latestCustomerCharacter.setSummaryMatchJudgment("true");
             } else if (item.contains("完成客户交易风格了解")) {
                 latestCustomerCharacter.setSummaryTransactionStyle("true");
-            } else if (item.contains("跟进对的客户")) {
-                latestCustomerCharacter.setSummaryFollowCustomer("true");
             } else if (item.contains("客户对软件功能理解清晰")) {
                 latestCustomerCharacter.setSummaryFunctionIntroduction("true");
             } else if (item.contains("客户认可软件价值")) {
                 latestCustomerCharacter.setSummaryConfirmValue("true");
-            } else if (item.contains("执行顺序正确")) {
-                latestCustomerCharacter.setSummaryExecuteOrder("true");
             } else if (item.contains("完成痛点和价值量化放大")) {
                 latestCustomerCharacter.setIssuesValueQuantified("true");
             }
         }
         for (CustomerFeatureResponse.Question question : questions) {
             String item = question.getMessage();
-            if (item.contains("未完成客户匹配度判断")) {
+            if (item.contains("未完成资金量收集")) {
                 latestCustomerCharacter.setSummaryMatchJudgment("false");
             } else if (item.contains("未完成客户交易风格了解")) {
                 latestCustomerCharacter.setSummaryTransactionStyle("false");
-            } else if (item.contains("跟进匹配度低的客户")) {
-                latestCustomerCharacter.setSummaryFollowCustomer("false");
             } else if (item.contains("客户对软件功能尚未理解清晰")) {
                 latestCustomerCharacter.setSummaryFunctionIntroduction("false");
             } else if (item.contains("客户对软件价值尚未认可")) {
                 latestCustomerCharacter.setSummaryConfirmValue("false");
-            } else if (item.contains("执行顺序错误")) {
-                latestCustomerCharacter.setSummaryExecuteOrder("false");
             } else if (item.contains("未完成痛点和价值量化放大")) {
                 latestCustomerCharacter.setIssuesValueQuantified("false");
             }

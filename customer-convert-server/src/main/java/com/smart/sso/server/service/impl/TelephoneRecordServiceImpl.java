@@ -644,6 +644,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         chatDetail.setId(record.getId());
         chatDetail.setCommunicationTime(record.getCommunicationTime());
         chatDetail.setCommunicationDuration(record.getCommunicationDuration());
+        chatDetail.setType(record.getCommunicationType());
 
         String filePath = "/opt/customer-convert/callback/files/" + record.getCallId(); // 文件路径
         List<ChatDetail.Message> result = new ArrayList<>();
@@ -683,6 +684,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 chatHistoryVO.setId(record.getCallId());
                 chatHistoryVO.setCommunicationTime(record.getCommunicationTime());
                 chatHistoryVO.setCommunicationDuration(record.getCommunicationDuration());
+                chatHistoryVO.setType(record.getCommunicationType());
                 ChatHistoryVO.ChatHistoryInfo basic = new ChatHistoryVO.ChatHistoryInfo();
                 // 软件功能清晰度
                 if (!CollectionUtils.isEmpty(record.getSoftwareFunctionClarity())) {
