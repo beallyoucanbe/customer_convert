@@ -788,7 +788,8 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
     @Override
     public List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime) {
-        return recordMapper.selectTelephoneRecordStaticsRecent(dateTime);
+        String activityId = configService.getCurrentActivityId();
+        return recordMapper.selectTelephoneRecordStaticsRecent(activityId, dateTime);
     }
 
     @Override
