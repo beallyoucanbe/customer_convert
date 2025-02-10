@@ -395,7 +395,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             String filePath = "/opt/customer-convert/callback/v1/sourceid.txt";
             CommonUtils.appendTextToFile(filePath, sourceId);
             String[] params = {sourceId};
-            Process process = ShellUtils.saPythonRun(" /home/opsuser/hsw/chat_insight_v2/dads/yimeng/process_text.py", params.length, params);
+            Process process = ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight_v2/dads/yimeng/process_text.py", params.length, params);
             // 等待脚本执行完成
             int exitCode = process.waitFor();
             String redisKey = SOURCEID_KEY_PREFIX + sourceId;
