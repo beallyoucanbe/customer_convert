@@ -650,17 +650,32 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         List<ChatDetail.Message> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
+            StringBuffer messageContent = new StringBuffer();
+            String role = null;
+            String timeStr = null;
             while ((line = br.readLine()) != null) {
-                ChatDetail.Message message = new ChatDetail.Message();
-                if (line.split(" ").length >= 2 && (line.contains("2024") || line.contains("2025"))) {
-                    message.setRole(line.substring(0, line.indexOf(" ")));
-                    message.setTime(line.substring(line.indexOf(" ") + 1, line.length()));
-                    if ((line = br.readLine()) != null) {
-                        message.setContent(line);
+                if (line.split(" ").length >= 2 && (line.contains("2024-") || line.contains("2025-"))) {
+                    if (StringUtils.hasText(role)) {
+                        // 插入上一条对话
+                        ChatDetail.Message message = new ChatDetail.Message();
+                        message.setRole(role);
+                        message.setTime(timeStr);
+                        message.setContent(messageContent.toString());
                         result.add(message);
+                        messageContent.setLength(0);
                     }
+                    // 对时间和人员重新赋值
+                    role = line.substring(0, line.indexOf(" "));
+                    timeStr = line.substring(line.indexOf(" ") + 1, line.length());
+                } else {
+                    messageContent.append(line).append("\n");
                 }
             }
+            ChatDetail.Message message = new ChatDetail.Message();
+            message.setRole(role);
+            message.setTime(timeStr);
+            message.setContent(messageContent.toString());
+            result.add(message);
         } catch (IOException e) {
             log.error("读取文件失败：", e);
         }
