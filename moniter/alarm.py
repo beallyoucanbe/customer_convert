@@ -25,7 +25,7 @@ def send_dingtalk_message(message):
         "msg": {
             "msgtype": "text",
             "text": {
-                "content": message
+                "content": '[益盟]' + message
             }
         }
     }
@@ -59,7 +59,7 @@ def send_nginx_log_alarm(data):
             if not (key.startswith('2') or key.startswith('3')):
                 err_request = err_request + value
 
-    if response_time_tp80 > 0.2 or err_request > 10:
+    if response_time_tp80 > 0.9 or err_request > 10:
         # 发送报警信息
         send_dingtalk_message(json.dumps(data))
 
