@@ -41,6 +41,7 @@ public class CustomerFeatureResponse {
         private BaseFeature courseMaster_5;
         private BaseFeature courseMaster_6;
         private BaseFeature courseMaster_7;
+        private BaseFeature customerRequireRefund;
 
     }
 
@@ -81,6 +82,8 @@ public class CustomerFeatureResponse {
         private Feature.CustomerConclusion fundsVolume = new Feature.CustomerConclusion();
         // 是否有时间听课
         private ChatContent customerCourse = new ChatContent();
+        // 客户是否要求退款
+        private Feature.CustomerConclusion customerRequireRefund = new Feature.CustomerConclusion();
     }
 
     @Getter

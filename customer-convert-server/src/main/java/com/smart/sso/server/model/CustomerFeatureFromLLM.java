@@ -51,6 +51,8 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent courseMaster_6;
     private CommunicationContent courseMaster_7;
 
+    private CommunicationContent customerRequireRefund;
+
     private CommunicationContent softwarePurchaseAttitude;
 
 

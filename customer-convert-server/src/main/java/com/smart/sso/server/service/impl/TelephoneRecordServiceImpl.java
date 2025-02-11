@@ -627,6 +627,23 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                     }
                 }
             }
+            // 客户是否要求退款
+            if (!CollectionUtils.isEmpty(record.getCustomerRequireRefund())) {
+                CommunicationContent communicationContent = record.getCustomerRequireRefund().get(0);
+                if (Objects.isNull(customerFeatureFromLLM.getCustomerRequireRefund())) {
+                    customerFeatureFromLLM.setCustomerRequireRefund(communicationContent);
+                    customerFeatureFromLLM.getCustomerRequireRefund().setCallId(record.getCallId());
+                } else {
+                    if ((StringUtils.isEmpty(customerFeatureFromLLM.getCustomerRequireRefund().getAnswerText()) ||
+                            customerFeatureFromLLM.getCustomerRequireRefund().getAnswerText().equals("无")) &&
+                            !StringUtils.isEmpty(communicationContent.getAnswerText()) &&
+                            !communicationContent.getAnswerText().equals("无")) {
+                        customerFeatureFromLLM.getCustomerRequireRefund().setAnswerText(communicationContent.getAnswerText());
+                        customerFeatureFromLLM.getCustomerRequireRefund().setAnswerTag(communicationContent.getAnswerTag());
+                        customerFeatureFromLLM.getCustomerRequireRefund().setAnswerCallId(record.getCallId());
+                    }
+                }
+            }
         }
         return customerFeatureFromLLM;
     }
