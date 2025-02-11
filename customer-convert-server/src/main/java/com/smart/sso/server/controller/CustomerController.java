@@ -196,7 +196,7 @@ public class CustomerController {
     public BaseResponse<Void> sendMessage(@RequestParam(value = "customer_id") String customerId, @RequestParam(value = "activity_id") String activityId) {
         log.error("触发客户的特征更新，id: " + customerId);
         try {
-            messageService.updateCustomerCharacter(customerId, activityId, true);
+            messageService.updateCustomerCharacter(customerId, activityId, false);
         } catch (Exception e) {
             log.error("触发客户的特征更新失败",e);
             return ResultUtils.success(null);

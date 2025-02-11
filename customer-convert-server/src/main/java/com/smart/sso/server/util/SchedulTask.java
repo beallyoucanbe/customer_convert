@@ -234,7 +234,7 @@ public class SchedulTask {
         newTasks.setTaskName(AppConstant.SEND_MESSAGE_STATE);
         newTasks.setStatus("in_progress");
         scheduledTasksMapper.insert(newTasks);
-        messageService.sendPurchaseAttitudeSummary(activityId);
+//        messageService.sendPurchaseAttitudeSummary(activityId);
         // 更新成功，更新任务状态
         scheduledTasksMapper.updateStatusById(newTasks.getId(), "success");
     }
@@ -266,7 +266,7 @@ public class SchedulTask {
     public void sendMessageToLeader() {
         log.error("开始执行发送消息给领导");
         // 获取该领导下的所有员工
-        messageService.sendMessageForPerLeader(null);
+//        messageService.sendMessageForPerLeader(null);
     }
 
 
@@ -301,9 +301,9 @@ public class SchedulTask {
         while (!AppConstant.messageNeedSend.isEmpty()){
             MessageSendVO vo = AppConstant.messageNeedSend.poll();
             if (StringUtils.isEmpty(vo.getSendUrl())){
-                messageService.sendMessageToChat(vo.getTextMessage());
+//                messageService.sendMessageToChat(vo.getTextMessage());
             } else {
-                messageService.sendMessageToChat(vo.getSendUrl(), vo.getTextMessage());
+//                messageService.sendMessageToChat(vo.getSendUrl(), vo.getTextMessage());
             }
         }
         log.error("延迟消息发送任务执行完成");
@@ -319,7 +319,7 @@ public class SchedulTask {
         String activityId = configService.getCurrentActivityId();
         // 获取今天截止到现在有过通话的销售人员名单
         List<String> ownerList = recordService.getOwnerHasTeleToday(activityId);
-        messageService.sendCommunicationSummary(ownerList, activityId, "today");
+//        messageService.sendCommunicationSummary(ownerList, activityId, "today");
         log.error("沟通时长的统计任务执行完成");
     }
 
@@ -330,7 +330,7 @@ public class SchedulTask {
         String activityId = configService.getCurrentActivityId();
         // 获取昨天有过通话的销售人员名单
         List<String> ownerList = recordService.getOwnerHasTeleYesterday(activityId);
-        messageService.sendCommunicationSummary(ownerList, activityId, "yesterday");
+//        messageService.sendCommunicationSummary(ownerList, activityId, "yesterday");
         log.error("沟通时长的统计任务执行完成");
     }
 
