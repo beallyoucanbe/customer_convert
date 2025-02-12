@@ -4,6 +4,8 @@ import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.model.ActivityInfoWithVersion;
+import com.smart.sso.server.model.RecommenderQuestion;
+import com.smart.sso.server.model.RecommenderQuestionDetail;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -281,18 +283,19 @@ public class CustomerController {
 
     @ApiOperation(value = "可推荐的问题列表")
     @PostMapping("/customer/recommend/questions")
-    public BaseResponse<Void> recommendQuestions(@RequestParam(value = "activity_id", required = false) String activityId,
-                                                 @RequestParam(value = "question_type", required = false) String questionType,
-                                                 @RequestParam(value = "start_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
-                                                 @RequestParam(value = "end_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime) {
-        recommenderService.getRecommenderQuestions(activityId, questionType, startTime, endTime);
-        return ResultUtils.success(null);
+    public BaseResponse<RecommenderQuestion> recommendQuestions(@RequestParam(value = "activity_id", required = false) String activityId,
+                                                                @RequestParam(value = "question_type", required = false) String questionType,
+                                                                @RequestParam(value = "start_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+                                                                @RequestParam(value = "end_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime) {
+        RecommenderQuestion result = recommenderService.getRecommenderQuestions(activityId, questionType, startTime, endTime);
+        return ResultUtils.success(result);
     }
 
     @ApiOperation(value = "具体问题的详情")
     @PostMapping("/customer/recommend/question_detail")
-    public BaseResponse<Void> recommendQuestionDetail(@RequestParam(value = "user_id") String userId) {
-        messageService.sendMessageForPerLeader(userId);
+    public BaseResponse<RecommenderQuestionDetail> recommendQuestionDetail(@RequestParam(value = "activity_id") String activityId,
+                                                                           @RequestParam(value = "question") String question) {
+        recommenderService.getRecommenderQuestionDetail(activityId, question);
         return ResultUtils.success(null);
     }
 

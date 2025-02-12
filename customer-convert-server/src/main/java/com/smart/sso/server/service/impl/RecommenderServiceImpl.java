@@ -3,6 +3,7 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.model.CustomerDoubt;
 import com.smart.sso.server.model.RecommenderQuestion;
+import com.smart.sso.server.model.RecommenderQuestionDetail;
 import com.smart.sso.server.primary.mapper.CustomerDoubtMapper;
 import com.smart.sso.server.service.RecommenderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +25,28 @@ public class RecommenderServiceImpl implements RecommenderService {
 
         QueryWrapper<CustomerDoubt> queryWrapper = new QueryWrapper<>();
         if (!StringUtils.isEmpty(activityId)) {
-            queryWrapper.like("customer_name", activityId);
+
         }
         if (!StringUtils.isEmpty(questionType)) {
-            queryWrapper.like("owner_name", questionType);
+            queryWrapper.like("norm_doubt", questionType);
         }
         if (Objects.nonNull(startTime)) {
-            queryWrapper.eq("conversion_rate", startTime);
+            queryWrapper.gt("communication_time", startTime);
         }
         if (Objects.nonNull(endTime)) {
-            queryWrapper.like("activity_name", endTime);
+            queryWrapper.lt("communication_time", endTime);
         }
+        List<CustomerDoubt> resultPage = customerDoubtMapper.selectList(queryWrapper);
+        RecommenderQuestion recommenderQuestion = new RecommenderQuestion();
+
+        return null;
+    }
+
+    @Override
+    public RecommenderQuestionDetail getRecommenderQuestionDetail(String activityId, String question) {
+        QueryWrapper<CustomerDoubt> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("customer_name", activityId);
+        queryWrapper.like("owner_name", questionType);
         List<CustomerDoubt> resultPage = customerDoubtMapper.selectList(queryWrapper);
 
         return null;
