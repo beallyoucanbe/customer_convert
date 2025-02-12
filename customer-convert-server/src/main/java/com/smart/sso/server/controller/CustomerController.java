@@ -281,11 +281,11 @@ public class CustomerController {
 
     @ApiOperation(value = "可推荐的问题列表")
     @PostMapping("/customer/recommend/questions")
-    public BaseResponse<Void> recommendQuestions(@RequestParam(value = "activity_name", required = false) String activityName,
+    public BaseResponse<Void> recommendQuestions(@RequestParam(value = "activity_id", required = false) String activityId,
                                                  @RequestParam(value = "question_type", required = false) String questionType,
                                                  @RequestParam(value = "start_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
                                                  @RequestParam(value = "end_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime) {
-        recommenderService.getRecommenderQuestions(activityName, questionType, startTime, endTime);
+        recommenderService.getRecommenderQuestions(activityId, questionType, startTime, endTime);
         return ResultUtils.success(null);
     }
 

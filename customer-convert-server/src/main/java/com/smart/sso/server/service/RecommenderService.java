@@ -6,5 +6,5 @@ import java.time.LocalDateTime;
 
 public interface RecommenderService {
 
-    RecommenderQuestion getRecommenderQuestions(String activityName, String questionType, LocalDateTime startTime, LocalDateTime endTime);
+    RecommenderQuestion getRecommenderQuestions(String activityId, String questionType, LocalDateTime startTime, LocalDateTime endTime);
 }
