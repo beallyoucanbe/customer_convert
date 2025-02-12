@@ -311,6 +311,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getFundsVolume().getSalesRecord(),
                         customerFeatureRequest.getWarmth().getFundsVolume().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
+
+            if (Objects.nonNull(customerFeatureRequest.getWarmth().getCustomerRequireRefund()) &&
+                    (Objects.nonNull(customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesManualTag()))) {
+                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesRecord(),
+                        customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
         }
         customerFeatureMapper.updateById(customerFeature);
         try {
@@ -539,7 +546,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
         basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
-        basic.setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
+        basic.setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), null, Boolean.class));
 
 
         basic.setCourseMaster_1(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_1(), null, null, Boolean.class));
@@ -1159,6 +1166,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
             hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
             customerFeature.getWarmth().setCustomerCourse(hasTime);
+        }
+
+        if (Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund()) &&
+                Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion()) &&
+                Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getModelRecord())) {
+            customerFeature.getWarmth().setCustomerRequireRefund(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion());
         }
     }
 
