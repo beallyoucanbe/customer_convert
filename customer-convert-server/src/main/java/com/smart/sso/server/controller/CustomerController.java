@@ -15,12 +15,14 @@ import com.smart.sso.server.model.dto.CustomerInfoListResponse;
 import com.smart.sso.server.model.dto.CustomerProcessSummary;
 import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
+import com.smart.sso.server.service.RecommenderService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +49,8 @@ public class CustomerController {
     private MessageService messageService;
     @Autowired
     private TelephoneRecordService recordService;
+    @Autowired
+    private RecommenderService recommenderService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -277,8 +281,11 @@ public class CustomerController {
 
     @ApiOperation(value = "可推荐的问题列表")
     @PostMapping("/customer/recommend/questions")
-    public BaseResponse<Void> recommendQuestions(@RequestParam(value = "user_id") String userId) {
-        messageService.sendMessageForPerLeader(userId);
+    public BaseResponse<Void> recommendQuestions(@RequestParam(value = "activity_name", required = false) String activityName,
+                                                 @RequestParam(value = "question_type", required = false) String questionType,
+                                                 @RequestParam(value = "start_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+                                                 @RequestParam(value = "end_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime) {
+        recommenderService.getRecommenderQuestions(activityName, questionType, startTime, endTime);
         return ResultUtils.success(null);
     }
 
