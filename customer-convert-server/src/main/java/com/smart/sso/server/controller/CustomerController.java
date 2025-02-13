@@ -287,16 +287,14 @@ public class CustomerController {
                                                                 @RequestParam(value = "question_type", required = false) String questionType,
                                                                 @RequestParam(value = "start_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
                                                                 @RequestParam(value = "end_time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime) {
-        RecommenderQuestion result = recommenderService.getRecommenderQuestions(activityId, questionType, startTime, endTime);
-        return ResultUtils.success(result);
+        return ResultUtils.success(recommenderService.getRecommenderQuestions(activityId, questionType, startTime, endTime));
     }
 
     @ApiOperation(value = "具体问题的详情")
     @GetMapping("/customer/recommend/question_detail")
     public BaseResponse<RecommenderQuestionDetail> recommendQuestionDetail(@RequestParam(value = "activity_id") String activityId,
                                                                            @RequestParam(value = "question") String question) {
-        recommenderService.getRecommenderQuestionDetail(activityId, question);
-        return ResultUtils.success(null);
+        return ResultUtils.success(recommenderService.getRecommenderQuestionDetail(activityId, question));
     }
 
 }

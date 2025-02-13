@@ -5,9 +5,11 @@ import com.smart.sso.server.model.CustomerDoubt;
 import com.smart.sso.server.model.RecommenderQuestion;
 import com.smart.sso.server.model.RecommenderQuestionDetail;
 import com.smart.sso.server.model.TelephoneRecord;
+import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.primary.mapper.CustomerDoubtMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.service.RecommenderService;
+import com.smart.sso.server.util.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -15,6 +17,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,12 +79,36 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Override
     public RecommenderQuestionDetail getRecommenderQuestionDetail(String activityId, String question) {
+        RecommenderQuestionDetail result = new RecommenderQuestionDetail();
         QueryWrapper<CustomerDoubt> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("activity_id", activityId);
         queryWrapper.eq("norm_doubt", question);
-        List<CustomerDoubt> resultPage = customerDoubtMapper.selectList(queryWrapper);
+        List<CustomerDoubt> customerDoubtList = customerDoubtMapper.selectList(queryWrapper);
 
-
-        return null;
+        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+        columns.add(new CustomerFeatureResponse.RecordTitle("owner_name", "业务员姓名"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("level", "级别"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("answer", "销售回答话术"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
+        recordContent.setColumns(columns);
+        List<Map<String, Object>> data = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(customerDoubtList)) {
+            for (CustomerDoubt doubt : customerDoubtList) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("owner_name", doubt.getSaleName());
+                item.put("level", doubt.getSaleCategory());
+                item.put("answer", CommonUtils.getOriginChatFromChatText(doubt.getCallId(), doubt.getTalkText()));
+                item.put("communication_time", doubt.getCommunicationTime());
+                item.put("chat_id", doubt.getCallId());
+                item.put("customer_id", doubt.getSaleId());
+                item.put("activity_id", doubt.getActivityId());
+                data.add(item);
+            }
+        }
+        recordContent.setData(data);
+        result.setRecords(recordContent);
+        result.setAiConclusion("测试ai总结");
+        return result;
     }
 }
