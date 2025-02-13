@@ -297,4 +297,11 @@ public class CustomerController {
         return ResultUtils.success(recommenderService.getRecommenderQuestionDetail(activityId, question));
     }
 
+
+    @ApiOperation(value = "获取所有的活动列表")
+    @GetMapping("/customer/activities")
+    public BaseResponse<List<ActivityInfoWithVersion>> getAllActivityInfo() {
+        List<ActivityInfoWithVersion> activityInfoList = customerInfoService.getAllActivityInfo();
+        return ResultUtils.success(activityInfoList);
+    }
 }

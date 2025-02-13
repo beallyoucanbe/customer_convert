@@ -326,6 +326,24 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     @Override
+    public List<ActivityInfoWithVersion> getAllActivityInfo() {
+        List<ActivityInfoWithVersion> result = new ArrayList<>();
+        // 是否有旧活动
+        try {
+            Map<String, String> activityIdNames = configService.getActivityIdNames();
+            for (Map.Entry<String, String> entry : activityIdNames.entrySet()){
+                ActivityInfoWithVersion activityInfoWithVersion = new ActivityInfoWithVersion();
+                activityInfoWithVersion.setActivityId(entry.getKey());
+                activityInfoWithVersion.setActivityName(entry.getValue());
+                result.add(activityInfoWithVersion);
+            }
+        } catch (Exception e) {
+            log.error("获取活动失败，跳过");
+        }
+        return result;
+    }
+
+    @Override
     public void modifyCustomerFeatureById(String customerId, String activityId, CustomerFeatureResponse customerFeatureRequest) {
         CustomerInfo customerInfo = customerInfoMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
         CustomerFeature customerFeature = customerFeatureMapper.selectById(customerInfo.getId());
