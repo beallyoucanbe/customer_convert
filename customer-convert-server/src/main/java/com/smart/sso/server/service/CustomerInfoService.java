@@ -25,7 +25,7 @@ public interface CustomerInfoService {
 
     List<ActivityInfoWithVersion> getActivityInfoByCustomerId(String customerId);
 
-    List<ActivityInfoWithVersion> getAllActivityInfo();
+    List<ActivityInfo> getAllActivityInfo();
 
     void modifyCustomerFeatureById(String customerId, String campaignId, CustomerFeatureResponse customerFeature);
 

@@ -3,6 +3,7 @@ package com.smart.sso.server.controller;
 import com.smart.sso.server.common.BaseResponse;
 import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
+import com.smart.sso.server.model.ActivityInfo;
 import com.smart.sso.server.model.ActivityInfoWithVersion;
 import com.smart.sso.server.model.RecommenderQuestion;
 import com.smart.sso.server.model.RecommenderQuestionDetail;
@@ -300,8 +301,8 @@ public class CustomerController {
 
     @ApiOperation(value = "获取所有的活动列表")
     @GetMapping("/customer/activities")
-    public BaseResponse<List<ActivityInfoWithVersion>> getAllActivityInfo() {
-        List<ActivityInfoWithVersion> activityInfoList = customerInfoService.getAllActivityInfo();
+    public BaseResponse<List<ActivityInfo>> getAllActivityInfo() {
+        List<ActivityInfo> activityInfoList = customerInfoService.getAllActivityInfo();
         return ResultUtils.success(activityInfoList);
     }
 }
