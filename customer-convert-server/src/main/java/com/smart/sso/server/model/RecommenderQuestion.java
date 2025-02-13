@@ -21,6 +21,8 @@ public class RecommenderQuestion {
     private List<QuestionContent> questions;
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class QuestionContent {
         private String questionName;
         private Integer count;

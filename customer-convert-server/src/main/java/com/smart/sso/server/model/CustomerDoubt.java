@@ -20,6 +20,7 @@ public class CustomerDoubt {
     private String talkText;
     private String callId;
     private String sourceId;
+    private String activityId;
     private LocalDateTime communicationTime;
     private Integer score;
     private String ext1;
