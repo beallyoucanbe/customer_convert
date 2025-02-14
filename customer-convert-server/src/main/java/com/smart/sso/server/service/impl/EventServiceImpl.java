@@ -1,6 +1,7 @@
 package com.smart.sso.server.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smart.sso.server.model.CourseListenDetail;
 import com.smart.sso.server.model.Events;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.primary.mapper.EventsMapper;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,21 +28,44 @@ public class EventServiceImpl implements EventService {
     private EventsMapper eventsMapper;
     private static String recordTitle = "[{\"key\":\"client\",\"label\":\"客户端\"},{\"key\":\"event_type\",\"label\":\"行为类型\"},{\"key\":\"event_time\",\"label\":\"访问时间\"},{\"key\":\"action_content\",\"label\":\"访问内容\"},{\"key\":\"action_section\",\"label\":\"访问栏目\"},{\"key\":\"event_duration\",\"label\":\"访问时长\"}]";
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     @Override
     public CustomerFeatureResponse.CourseContent getDeliveryCourseListenContent(String userId) {
         // 交付课事件
-        String deliveryCourseEvent = "";
-        String deliveryCourseActionType = "";
+        String deliveryCourseEvent = " visit";
+        String deliveryCourseActionType = "course_watch";
         // 获取听课次数
-        int total = eventsMapper.getCountByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
-        // 获取听课次数
-        int process = eventsMapper.getCountByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
-
+        int total = 15;
         CustomerFeatureResponse.CourseContent deliveryCourseListenContent = new CustomerFeatureResponse.CourseContent();
         deliveryCourseListenContent.setTotal(total);
-        deliveryCourseListenContent.setProcess(process);
-        deliveryCourseListenContent.setRecords(getRecordContent(events));
+        // 获取听课数据
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
+        if (!CollectionUtils.isEmpty(events)) {
+            Map<String, CourseListenDetail> courseListenDetailMap = new HashMap<>();
+            for (Events item : events) {
+                if (!courseListenDetailMap.containsKey(item.getActionContent())) {
+                    CourseListenDetail one = new CourseListenDetail();
+                    one.setCourseName(item.getActionContent());
+                    one.setPlayAll(item.getExt2().equals("1"));
+                    one.setCourseListenProcess(Integer.parseInt(item.getExt1()));
+                    one.setCourseListenTime(sdf.format(item.getEventTime()));
+                } else {
+                    CourseListenDetail one = courseListenDetailMap.get(item.getActionContent());
+                    int process = Integer.parseInt(item.getExt1()) + one.getCourseListenProcess();
+                    process = Math.min(process, 100);
+                    one.setCourseListenProcess(process);
+                    boolean playAll = one.getPlayAll() || item.getExt2().equals("1");
+                    if (playAll) {
+                        one.setPlayAll(playAll);
+                    } else if (process == 100){
+                        one.setPlayAll(true);
+                    }
+                }
+            }
+            deliveryCourseListenContent.setProcess(courseListenDetailMap.size());
+            deliveryCourseListenContent.setRecords(getRecordContent(courseListenDetailMap));
+        }
         return deliveryCourseListenContent;
     }
 
@@ -144,6 +169,28 @@ public class EventServiceImpl implements EventService {
         });
         recordContent.setColumns(columns);
         recordContent.setData(convertEventDTOFromEvent(events));
+        return recordContent;
+    }
+
+    public CustomerFeatureResponse.RecordContent getRecordContent(Map<String, CourseListenDetail> courseListenDetailMap) {
+        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+        columns.add(new CustomerFeatureResponse.RecordTitle("course_name", "课程名称"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("course_time", "听课时间"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("process", "听课进度"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("play_all", "是否完播"));
+        recordContent.setColumns(columns);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (Map.Entry<String, CourseListenDetail> entry : courseListenDetailMap.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("course_name", entry.getValue().getCourseName());
+            item.put("course_time", entry.getValue().getCourseListenTime());
+            item.put("process", entry.getValue().getCourseListenProcess());
+            item.put("play_all", entry.getValue().getPlayAll());
+            data.add(item);
+        }
+        recordContent.setData(data);
         return recordContent;
     }
 

@@ -548,7 +548,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
         basic.setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), null, Boolean.class));
 
-
         basic.setCourseMaster_1(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_1(), null, null, Boolean.class));
         basic.setCourseMaster_2(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_2(), null, null, Boolean.class));
         basic.setCourseMaster_3(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_3(), null, null, Boolean.class));
