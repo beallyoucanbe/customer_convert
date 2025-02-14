@@ -549,6 +549,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_5())) {
                 CommunicationContent communicationContent = record.getCourseMaster_5().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_5())) {
                     customerFeatureFromLLM.setCourseMaster_5(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_5().setCallId(record.getCallId());
@@ -576,6 +577,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_6())) {
                 CommunicationContent communicationContent = record.getCourseMaster_6().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_6())) {
                     customerFeatureFromLLM.setCourseMaster_6(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_6().setCallId(record.getCallId());
@@ -603,6 +605,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_7())) {
                 CommunicationContent communicationContent = record.getCourseMaster_7().get(0);
+                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_7())) {
                     customerFeatureFromLLM.setCourseMaster_7(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_7().setCallId(record.getCallId());
