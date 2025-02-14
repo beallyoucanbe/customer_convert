@@ -14,6 +14,12 @@ public interface EventsMapper extends BaseMapper<Events> {
                                                          @Param("event_name") String event_name,
                                                          @Param("action_type") String action_type);
 
+    @Select("select * from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type} and class_type = #{class_type} order by event_time desc")
+    List<Events> getEventsByUserIdAndEventNameActionTypeClassType(@Param("user_id") int user_id,
+                                                                  @Param("event_name") String event_name,
+                                                                  @Param("action_type") String action_type,
+                                                                  @Param("class_type") String class_type);
+
     @Select("select * from events where user_id = #{user_id} and event_name = #{event_name} and action_type = #{action_type} and action_content like concat('%',#{action_content},'%') order by event_time desc")
     List<Events> getEventsByUserIdAndEventNameActionTypeActionContent(@Param("user_id") int user_id,
                                                                       @Param("event_name") String event_name,

@@ -1150,6 +1150,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private void setWarmth(CustomerBase customerBase,
                            CustomerFeatureResponse customerFeature) {
+        customerFeature.getWarmth().setDeliveryCourse(eventService.getDeliveryCourseListenContent(customerBase.getCustomerId()));
         customerFeature.getWarmth().setVisitLiveFreq(eventService.getVisitLiveFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
         customerFeature.getWarmth().setVisitCommunityFreq(eventService.getVisitCommunityFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
         customerFeature.getWarmth().setFunctionFreq(eventService.getFunctionFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
@@ -1169,7 +1170,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         if (Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund()) &&
                 Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getModelRecord())) {
+                Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue())) {
             customerFeature.getWarmth().setCustomerRequireRefund(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion());
         }
     }

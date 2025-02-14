@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,16 +34,17 @@ public class EventServiceImpl implements EventService {
     @Override
     public CustomerFeatureResponse.CourseContent getDeliveryCourseListenContent(String userId) {
         // 交付课事件
-        String deliveryCourseEvent = " visit";
+        String deliveryCourseEvent = "visit";
         String deliveryCourseActionType = "course_watch";
+        String deliveryCourseClassType = "服务课";
         // 获取听课次数
         int total = 15;
         CustomerFeatureResponse.CourseContent deliveryCourseListenContent = new CustomerFeatureResponse.CourseContent();
         deliveryCourseListenContent.setTotal(total);
         // 获取听课数据
-        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionTypeClassType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType, deliveryCourseClassType);
         if (!CollectionUtils.isEmpty(events)) {
-            Map<String, CourseListenDetail> courseListenDetailMap = new HashMap<>();
+            Map<String, CourseListenDetail> courseListenDetailMap = new LinkedHashMap<>();
             for (Events item : events) {
                 if (!courseListenDetailMap.containsKey(item.getActionContent())) {
                     CourseListenDetail one = new CourseListenDetail();
@@ -50,6 +52,7 @@ public class EventServiceImpl implements EventService {
                     one.setPlayAll(item.getExt2().equals("1"));
                     one.setCourseListenProcess(Integer.parseInt(item.getExt1()));
                     one.setCourseListenTime(sdf.format(item.getEventTime()));
+                    courseListenDetailMap.put(one.getCourseName(), one);
                 } else {
                     CourseListenDetail one = courseListenDetailMap.get(item.getActionContent());
                     int process = Integer.parseInt(item.getExt1()) + one.getCourseListenProcess();
@@ -63,7 +66,7 @@ public class EventServiceImpl implements EventService {
                     }
                 }
             }
-            deliveryCourseListenContent.setProcess(courseListenDetailMap.size());
+            deliveryCourseListenContent.setProcess((int) courseListenDetailMap.values().stream().filter(CourseListenDetail::getPlayAll).count());
             deliveryCourseListenContent.setRecords(getRecordContent(courseListenDetailMap));
         }
         return deliveryCourseListenContent;
