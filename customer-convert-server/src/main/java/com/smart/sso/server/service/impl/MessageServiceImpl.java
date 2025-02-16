@@ -333,7 +333,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setUpdateTime(
                 customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
 
-        latestCustomerCharacter.setCustomerRefundStatus(Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getHasTime().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setCustomerRefundStatus(Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTimeAddCustomer(customerBase.getCreateTime());
 
         // 设置事件的最新访问时间，如果有异常，就跳过
