@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,8 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Autowired
     private TelephoneRecordMapper recordMapper;
+
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public RecommenderQuestion getRecommenderQuestions(String activityId, String questionType, LocalDateTime startTime, LocalDateTime endTime) {
@@ -89,7 +92,7 @@ public class RecommenderServiceImpl implements RecommenderService {
         List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
         columns.add(new CustomerFeatureResponse.RecordTitle("owner_name", "业务员姓名"));
         columns.add(new CustomerFeatureResponse.RecordTitle("level", "级别"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("answer", "销售回答话术"));
+        columns.add(new CustomerFeatureResponse.RecordTitle("answer", "销售应对过程"));
         columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
         recordContent.setColumns(columns);
         List<Map<String, Object>> data = new ArrayList<>();
@@ -99,7 +102,7 @@ public class RecommenderServiceImpl implements RecommenderService {
                 item.put("owner_name", doubt.getSaleName());
                 item.put("level", doubt.getSaleCategory());
                 item.put("answer", CommonUtils.getOriginChatFromChatText(doubt.getCallId(), doubt.getTalkText()));
-                item.put("communication_time", doubt.getCommunicationTime());
+                item.put("communication_time", doubt.getCommunicationTime().format(formatter));
                 item.put("chat_id", doubt.getCallId());
                 item.put("customer_id", doubt.getSaleId());
                 item.put("activity_id", doubt.getActivityId());
