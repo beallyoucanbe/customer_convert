@@ -46,7 +46,7 @@ public class CustomerCharacter implements Serializable {
     private LocalDateTime updateTime;
     private LocalDateTime updateTimeTelephone;
 
-    private Integer customerRefundStatus;
+    private String customerRefundStatus;
     private LocalDateTime refundTime;
 
     private LocalDateTime latestTimeVisitLive;
