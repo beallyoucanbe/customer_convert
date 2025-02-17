@@ -22,6 +22,8 @@ public class CustomerDoubt {
     private String sourceId;
     private String activityId;
     private LocalDateTime communicationTime;
+    private String customerName;
+    private String customerId;
     private Integer score;
     private String ext1;
     private String ext2;

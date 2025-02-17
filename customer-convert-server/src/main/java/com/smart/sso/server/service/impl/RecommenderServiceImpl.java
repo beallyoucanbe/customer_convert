@@ -109,7 +109,7 @@ public class RecommenderServiceImpl implements RecommenderService {
                 item.put("answer", CommonUtils.getOriginChatFromChatText(doubt.getCallId(), doubt.getTalkText()));
                 item.put("communication_time", doubt.getCommunicationTime().format(formatter));
                 item.put("chat_id", doubt.getCallId());
-                item.put("customer_id", doubt.getSaleId());
+                item.put("customer_id", doubt.getCustomerId());
                 item.put("activity_id", doubt.getActivityId());
                 data.add(item);
             }
@@ -117,7 +117,7 @@ public class RecommenderServiceImpl implements RecommenderService {
         recordContent.setData(data);
         result.setRecords(recordContent);
         QueryWrapper<DoubtInfo> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper.eq("norm_doubt", question);
+        queryWrapper2.eq("norm_doubt", question);
         List<DoubtInfo> doubtInfoList = doubtInfoMapper.selectList(queryWrapper2);
         if (!CollectionUtils.isEmpty(doubtInfoList)){
             result.setAiConclusion(doubtInfoList.get(0).getSummary());
