@@ -15,6 +15,8 @@ public class CourseListenDetail {
     private String courseListenTime;
     // 听课进度
     private int courseListenProcess;
+    // 听课时长
+    private int courseListenDuration;
     // 是否完播
     private Boolean playAll;
 }

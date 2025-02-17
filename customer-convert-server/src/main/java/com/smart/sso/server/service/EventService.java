@@ -1,5 +1,6 @@
 package com.smart.sso.server.service;
 
+import com.smart.sso.server.model.CustomerCharacter;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 
 import java.time.LocalDateTime;
@@ -22,5 +23,6 @@ public interface EventService {
     // 功能指标使用频次
     CustomerFeatureResponse.FrequencyContent getFunctionFreqContent(String userId,  LocalDateTime customerCreateTime);
 
+    void setDeliveryCourseCharacter(String userId, CustomerCharacter customerCharacter);
 
 }

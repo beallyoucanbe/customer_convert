@@ -2,6 +2,7 @@ package com.smart.sso.server.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smart.sso.server.model.CourseListenDetail;
+import com.smart.sso.server.model.CustomerCharacter;
 import com.smart.sso.server.model.Events;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.primary.mapper.EventsMapper;
@@ -49,21 +50,19 @@ public class EventServiceImpl implements EventService {
                 if (!courseListenDetailMap.containsKey(item.getActionContent())) {
                     CourseListenDetail one = new CourseListenDetail();
                     one.setCourseName(item.getActionContent());
-                    one.setPlayAll(item.getExt2().equals("1"));
                     one.setCourseListenProcess(Integer.parseInt(item.getExt1()));
+                    // 听课时长，转化为分钟
+                    one.setCourseListenDuration(item.getEventDuration() / 60);
                     one.setCourseListenTime(sdf.format(item.getEventTime()));
+                    one.setPlayAll(one.getCourseListenDuration() >= 40);
                     courseListenDetailMap.put(one.getCourseName(), one);
                 } else {
                     CourseListenDetail one = courseListenDetailMap.get(item.getActionContent());
+                    one.setCourseListenDuration(one.getCourseListenDuration() + item.getEventDuration() / 60);
                     int process = Integer.parseInt(item.getExt1()) + one.getCourseListenProcess();
                     process = Math.min(process, 100);
                     one.setCourseListenProcess(process);
-                    boolean playAll = one.getPlayAll() || item.getExt2().equals("1");
-                    if (playAll) {
-                        one.setPlayAll(playAll);
-                    } else if (process == 100){
-                        one.setPlayAll(true);
-                    }
+                    one.setPlayAll(one.getCourseListenDuration() >= 40);
                 }
             }
             deliveryCourseListenContent.setProcess((int) courseListenDetailMap.values().stream().filter(CourseListenDetail::getPlayAll).count());
@@ -103,11 +102,11 @@ public class EventServiceImpl implements EventService {
             return visitFreqContent;
         }
         // 访问总时间(转换为分钟)
-        int eventDurationSum =  events.stream().mapToInt(Events::getEventDuration).sum() / 60;
+        int eventDurationSum = events.stream().mapToInt(Events::getEventDuration).sum() / 60;
         // 计算频次
         int days = CommonUtils.calculateDaysDifference(customerCreateTime);
         // 这里计算平均每天多少分钟
-        double fre = (double) eventDurationSum/days;
+        double fre = (double) eventDurationSum / days;
         String formattedResult = String.format("%.1f", fre);
         visitFreqContent.setValue(Double.parseDouble(formattedResult));
         visitFreqContent.setRecords(getRecordContent(events));
@@ -127,11 +126,11 @@ public class EventServiceImpl implements EventService {
             return visitFreqContent;
         }
         // 访问总时间(转换为分钟)
-        int eventDurationSum =  events.stream().mapToInt(Events::getEventDuration).sum() / 60;
+        int eventDurationSum = events.stream().mapToInt(Events::getEventDuration).sum() / 60;
         // 计算频次
         int days = CommonUtils.calculateDaysDifference(customerCreateTime);
         // 这里计算平均每天多少分钟
-        double fre = (double) eventDurationSum/days;
+        double fre = (double) eventDurationSum / days;
         String formattedResult = String.format("%.1f", fre);
         visitFreqContent.setValue(Double.parseDouble(formattedResult));
         visitFreqContent.setRecords(getRecordContent(events));
@@ -149,21 +148,73 @@ public class EventServiceImpl implements EventService {
         if (CollectionUtils.isEmpty(events)) {
             return functionFreqContent;
         }
-        events = events.stream().filter(item -> item.getActionContent().contains("主力军情") || item.getActionContent().contains("热点狙击"))
+        events = events.stream().filter(item -> item.getActionContent().contains("主力军情") ||
+                        item.getActionContent().contains("热点狙击"))
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(events)) {
             return functionFreqContent;
         }
         // 访问总时间(转换为分钟)
-        int eventDurationSum =  events.stream().mapToInt(Events::getEventDuration).sum() / 60;
+        int eventDurationSum = events.stream().mapToInt(Events::getEventDuration).sum() / 60;
         // 计算频次
         int days = CommonUtils.calculateDaysDifference(customerCreateTime);
         // 这里计算平均每天多少分钟
-        double fre = (double) eventDurationSum/days;
+        double fre = (double) eventDurationSum / days;
         String formattedResult = String.format("%.1f", fre);
         functionFreqContent.setValue(Double.parseDouble(formattedResult));
         functionFreqContent.setRecords(getRecordContent(events));
         return functionFreqContent;
+    }
+
+    @Override
+    public void setDeliveryCourseCharacter(String userId, CustomerCharacter customerCharacter) {
+        // 交付课事件
+        String deliveryCourseEvent = "visit";
+        String deliveryCourseActionType = "course_watch";
+        String deliveryCourseClassType = "服务课";
+        // 获取听课数据
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionTypeClassType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType, deliveryCourseClassType);
+        if (CollectionUtils.isEmpty(events)) {
+            return;
+        }
+        Map<String, CourseListenDetail> courseListenDetailMap = new LinkedHashMap<>();
+        for (Events item : events) {
+            if (!courseListenDetailMap.containsKey(item.getActionContent())) {
+                CourseListenDetail one = new CourseListenDetail();
+                one.setCourseName(item.getActionContent());
+                one.setCourseListenProcess(Integer.parseInt(item.getExt1()));
+                // 听课时长，转化为分钟
+                one.setCourseListenDuration(item.getEventDuration() / 60);
+                one.setCourseListenTime(sdf.format(item.getEventTime()));
+                one.setPlayAll(one.getCourseListenDuration() >= 40);
+                courseListenDetailMap.put(one.getCourseName(), one);
+            } else {
+                CourseListenDetail one = courseListenDetailMap.get(item.getActionContent());
+                one.setCourseListenDuration(one.getCourseListenDuration() + item.getEventDuration() / 60);
+                int process = Integer.parseInt(item.getExt1()) + one.getCourseListenProcess();
+                process = Math.min(process, 100);
+                one.setCourseListenProcess(process);
+                one.setPlayAll(one.getCourseListenDuration() >= 40);
+            }
+        }
+
+        for (Map.Entry<String, CourseListenDetail> entry : courseListenDetailMap.entrySet()) {
+            String courseName = entry.getKey().trim();
+            int courseStatus = 0;
+            int courseListenDuration = entry.getValue().getCourseListenDuration();
+            if (courseListenDuration > 40) {
+                courseStatus = 2;
+            } else if (courseListenDuration > 5) {
+                courseStatus = 1;
+            }
+            if (courseName.contains("巧用“中线操盘”看多空")) {
+                customerCharacter.setCourse1(courseStatus);
+            } else if (courseName.contains("巧用“趋势柱线”辨强弱")) {
+                customerCharacter.setCourse2(courseStatus);
+            } else if (courseName.contains("巧用“两点乾坤”")) {
+                customerCharacter.setCourse3(courseStatus);
+            }
+        }
     }
 
     public CustomerFeatureResponse.RecordContent getRecordContent(List<Events> events) {
@@ -197,12 +248,12 @@ public class EventServiceImpl implements EventService {
         return recordContent;
     }
 
-    private List<Map<String, Object>> convertEventDTOFromEvent(List<Events> events){
-        if (CollectionUtils.isEmpty(events)){
+    private List<Map<String, Object>> convertEventDTOFromEvent(List<Events> events) {
+        if (CollectionUtils.isEmpty(events)) {
             return null;
         }
         List<Map<String, Object>> result = new ArrayList<>();
-        for (Events item : events){
+        for (Events item : events) {
             Map<String, Object> dto = new HashMap<>();
             dto.put("client", item.getExt1());
 //            dto.put("event_type", item.getEventName());

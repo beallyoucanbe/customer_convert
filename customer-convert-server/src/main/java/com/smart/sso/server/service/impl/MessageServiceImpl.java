@@ -12,6 +12,7 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
+import com.smart.sso.server.service.EventService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
@@ -56,6 +57,8 @@ public class MessageServiceImpl implements MessageService {
     private CustomerBaseMapper customerBaseMapper;
     @Autowired
     private TelephoneRecordService recordService;
+    @Autowired
+    private EventService eventService;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -335,6 +338,11 @@ public class MessageServiceImpl implements MessageService {
 
         latestCustomerCharacter.setCustomerRefundStatus(Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTimeAddCustomer(customerBase.getCreateTime());
+
+        latestCustomerCharacter.setDeliveryRemindLiveFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue() : null);
+        latestCustomerCharacter.setDeliveryRemindCallbackFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue() : null);
+
+        eventService.setDeliveryCourseCharacter(customerBase.getCustomerId(), latestCustomerCharacter);
 
         // 设置事件的最新访问时间，如果有异常，就跳过
         try {

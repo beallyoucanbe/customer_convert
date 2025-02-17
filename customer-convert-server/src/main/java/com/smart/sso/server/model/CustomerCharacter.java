@@ -55,4 +55,23 @@ public class CustomerCharacter implements Serializable {
     private LocalDateTime latestTimeRemindCommunity;
     private LocalDateTime latestTimeUseFunction;
     private LocalDateTime timeAddCustomer;
+
+    private Double deliveryRemindLiveFreq;
+    private Double deliveryRemindCallbackFreq;
+
+    private Integer course1;
+    private Integer course2;
+    private Integer course3;
+    private Integer course4;
+    private Integer course5;
+    private Integer course6;
+    private Integer course7;
+    private Integer course8;
+    private Integer course9;
+    private Integer course10;
+    private Integer course11;
+    private Integer course12;
+    private Integer course13;
+    private Integer course14;
+    private Integer course15;
 }
