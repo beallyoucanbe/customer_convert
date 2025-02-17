@@ -1096,10 +1096,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 这里计算平均多少天一次
             double fre = (double) days / count;
             String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
+            customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
         }
 
-        customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
+        customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
     }
 
     private void setDeliveryRemindplayback(CustomerFeatureFromLLM featureFromLLM,
@@ -1142,10 +1142,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 这里计算平均多少天一次
             double fre = (double) days / count;
             String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
+            customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
         }
 
-        customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
+        customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
     }
 
     private void setWarmth(CustomerBase customerBase,
@@ -1192,7 +1192,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                                    CustomerFeatureFromLLM featureFromLLM,
                                    CustomerFeatureResponse customerFeature) {
         // 设置沟通频次
-        LocalDateTime deliveryPeriodStartTime = LocalDateTime.of(2025, 2, 1, 0, 0, 0);
+        LocalDateTime deliveryPeriodStartTime = LocalDateTime.of(2025, 2, 10, 0, 0, 0);
         int days = CommonUtils.calculateDaysDifference(deliveryPeriodStartTime);
         int communicationCount = recordService.getCommunicationCountFromTime(customerBase.getCustomerId(), deliveryPeriodStartTime);
         if (communicationCount > 0) {
