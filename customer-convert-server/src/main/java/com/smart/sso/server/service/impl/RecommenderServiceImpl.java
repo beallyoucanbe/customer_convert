@@ -2,11 +2,13 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.smart.sso.server.model.CustomerDoubt;
+import com.smart.sso.server.model.DoubtInfo;
 import com.smart.sso.server.model.RecommenderQuestion;
 import com.smart.sso.server.model.RecommenderQuestionDetail;
 import com.smart.sso.server.model.TelephoneRecord;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.primary.mapper.CustomerDoubtMapper;
+import com.smart.sso.server.primary.mapper.DoubtInfoMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
 import com.smart.sso.server.service.RecommenderService;
 import com.smart.sso.server.util.CommonUtils;
@@ -29,6 +31,9 @@ public class RecommenderServiceImpl implements RecommenderService {
 
     @Autowired
     private CustomerDoubtMapper customerDoubtMapper;
+
+    @Autowired
+    private DoubtInfoMapper doubtInfoMapper;
 
     @Autowired
     private TelephoneRecordMapper recordMapper;
@@ -111,7 +116,12 @@ public class RecommenderServiceImpl implements RecommenderService {
         }
         recordContent.setData(data);
         result.setRecords(recordContent);
-        result.setAiConclusion("测试ai总结");
+        QueryWrapper<DoubtInfo> queryWrapper2 = new QueryWrapper<>();
+        queryWrapper.eq("norm_doubt", question);
+        List<DoubtInfo> doubtInfoList = doubtInfoMapper.selectList(queryWrapper2);
+        if (!CollectionUtils.isEmpty(doubtInfoList)){
+            result.setAiConclusion(doubtInfoList.get(0).getSummary());
+        }
         return result;
     }
 }
