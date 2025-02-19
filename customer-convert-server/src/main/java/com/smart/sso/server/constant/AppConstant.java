@@ -91,6 +91,11 @@ public class AppConstant {
             "5）**超长通话**\n" +
             "<font color=\"info\">%s</font>";
 
+    public static final String RECOMMENDER_SUMMARY_FOR_STAFF_TEMPLATE = "您在%s遇到最多的客户问题是" +
+            "<font color=\"info\">%s</font>，共遇到<font color=\"info\">%s</font>次。\n" +
+            "以下是A类销售在遇到同类问题时的应对方法总结，供您参考借鉴：\n" +
+            "%s" +
+            "详细的对话原文请点击查看：[%s](%s)";
 
     public static final String COMMUNICATION_TIME_SUMMARY_FOR_STAFF = "客户总计%s个，其中通话%s个，总时长为**%s**";
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();

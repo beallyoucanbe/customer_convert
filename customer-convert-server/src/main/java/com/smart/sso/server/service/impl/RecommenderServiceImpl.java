@@ -116,12 +116,41 @@ public class RecommenderServiceImpl implements RecommenderService {
         }
         recordContent.setData(data);
         result.setRecords(recordContent);
-        QueryWrapper<DoubtInfo> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("norm_doubt", question);
-        List<DoubtInfo> doubtInfoList = doubtInfoMapper.selectList(queryWrapper2);
+        List<DoubtInfo> doubtInfoList = doubtInfoMapper.selectByNormDoubt(question);
         if (!CollectionUtils.isEmpty(doubtInfoList)){
             result.setAiConclusion(doubtInfoList.get(0).getSummary());
         }
         return result;
+    }
+
+    @Override
+    public List<CustomerDoubt> getRecommenderQuestionsListYesterday(String activityId) {
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取昨天的日期
+        LocalDateTime yesterday = currentTime.minusDays(1);
+        // 获取昨天的开始时间（00:00:00）
+        LocalDateTime startOfYesterday = yesterday.toLocalDate().atStartOfDay();
+        // 获取昨天的结束时间（23:59:59）
+        LocalDateTime endOfYesterday = yesterday.toLocalDate().atStartOfDay().plusDays(1).minusSeconds(1);
+        return customerDoubtMapper.selectByActivityIdAndTime(activityId, startOfYesterday, endOfYesterday);
+    }
+
+    @Override
+    public List<CustomerDoubt> getRecommenderQuestionsListToday(String activityId) {
+        // 获取当前时间的 LocalDateTime 对象
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取当天日期的开始时间（00:00:00）的 LocalDateTime 对象
+        LocalDateTime startOfDay = currentTime.toLocalDate().atStartOfDay();
+        return customerDoubtMapper.selectByActivityIdAndTime(activityId, startOfDay, currentTime);
+    }
+
+    @Override
+    public String getAiSummaryByQuestion(String question) {
+        List<DoubtInfo> doubtInfoList = doubtInfoMapper.selectByNormDoubt(question);
+        if (!CollectionUtils.isEmpty(doubtInfoList)){
+            return doubtInfoList.get(0).getSummary();
+        }
+        return null;
     }
 }

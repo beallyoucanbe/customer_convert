@@ -1,5 +1,6 @@
 package com.smart.sso.server.service;
 
+import com.smart.sso.server.model.CustomerDoubt;
 import com.smart.sso.server.model.TextMessage;
 
 import java.util.List;
@@ -27,5 +28,7 @@ public interface MessageService {
     void sendMessageForPerLeader(String userId);
 
     void sendCommunicationSummary(List<String> ownerIdList, String activityId, String day);
+
+    void sendRecommenderSummary(List<CustomerDoubt> customerDoubtList, String activityId, String day);
 
 }

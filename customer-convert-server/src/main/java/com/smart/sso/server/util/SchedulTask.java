@@ -8,11 +8,7 @@ import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.primary.mapper.ScheduledTasksMapper;
 import com.smart.sso.server.model.*;
-import com.smart.sso.server.service.ConfigService;
-import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.service.CustomerRelationService;
-import com.smart.sso.server.service.MessageService;
-import com.smart.sso.server.service.TelephoneRecordService;
+import com.smart.sso.server.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -47,6 +43,8 @@ public class SchedulTask {
     private ConfigService configService;
     @Autowired
     private TelephoneRecordService recordService;
+    @Autowired
+    private RecommenderService recommenderService;
 
     @Scheduled(cron = "0 */15 * * * ?")
     public void refreshConversionRate() {
@@ -334,4 +332,29 @@ public class SchedulTask {
         log.error("沟通时长的统计任务执行完成");
     }
 
+    /**
+     * 执行给员工发送话术推荐的任务
+     */
+    @Scheduled(cron = "0 0 18 * * ?")
+//    @Scheduled(cron = "0 */1 * * * ?")
+    public void sendRecommendToStaffToday() {
+        log.error("开始执行给员工发送话术推荐的任务");
+        String activityId = configService.getCurrentActivityId();
+        List<CustomerDoubt> recommenderQuestionsListToday = recommenderService.getRecommenderQuestionsListToday(activityId);
+        messageService.sendRecommenderSummary(recommenderQuestionsListToday, activityId, "today");
+        log.error("给员工发送话术推荐的任务执行完成");
+    }
+
+    /**
+     * 执行给员工发送话术推荐的任务
+     */
+//    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
+    public void sendRecommendToStaffYesterday() {
+        log.error("开始执行给员工发送话术推荐的任务");
+        String activityId = configService.getCurrentActivityId();
+        List<CustomerDoubt> recommenderQuestionsListToday = recommenderService.getRecommenderQuestionsListYesterday(activityId);
+        messageService.sendRecommenderSummary(recommenderQuestionsListToday, activityId, "yesterday");
+        log.error("给员工发送话术推荐的任务执行完成");
+    }
 }

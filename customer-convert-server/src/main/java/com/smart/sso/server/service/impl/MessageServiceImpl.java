@@ -11,10 +11,7 @@ import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
-import com.smart.sso.server.service.ConfigService;
-import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.service.MessageService;
-import com.smart.sso.server.service.TelephoneRecordService;
+import com.smart.sso.server.service.*;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -56,13 +53,15 @@ public class MessageServiceImpl implements MessageService {
     private CustomerInfoMapper customerInfoMapper;
     @Autowired
     private TelephoneRecordService recordService;
+    @Autowired
+    private RecommenderService recommenderService;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
     @Override
     public String sendMessageToUser(TextMessage message) {
         // 是否是通过企微机器人发送
-        if (AppConstant.robotUrl.containsKey(message.getTouser())){
+        if (AppConstant.robotUrl.containsKey(message.getTouser())) {
             return sendMessageToGroup(AppConstant.robotUrl.get(message.getTouser()), message);
         }
         // 创建请求头
@@ -152,19 +151,19 @@ public class MessageServiceImpl implements MessageService {
             // 资金量≥5万且认可数≥3，购买态度为确认购买
             if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) {
                 potentialCustomer.getHigh().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
                 potentialCustomer.getMiddle().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             } else if (approvalCount <= 2 &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
             if (!StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))
                     && customerInfoLongTimeNoSeeMap.containsKey(character.getCustomerId())) {
                 potentialCustomer.getLongTimeNoSee().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
@@ -314,7 +313,7 @@ public class MessageServiceImpl implements MessageService {
 
             if (nightTime()) {
                 log.error("延迟发送消息");
-                if (StringUtils.isEmpty(groupUrl)){
+                if (StringUtils.isEmpty(groupUrl)) {
                     // 没有配置群消息的，需要发送给主管和大区经理
                     textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
                     textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
@@ -338,7 +337,7 @@ public class MessageServiceImpl implements MessageService {
                     }
                 }
             } else {
-                if (StringUtils.isEmpty(groupUrl)){
+                if (StringUtils.isEmpty(groupUrl)) {
                     textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
                     textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
                     sendMessageToUser(textMessage);
@@ -437,19 +436,19 @@ public class MessageServiceImpl implements MessageService {
             // 资金量≥5万且认可数≥3，购买态度为确认购买
             if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) {
                 potentialCustomer.getHigh().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
                 potentialCustomer.getMiddle().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             } else if (approvalCount <= 2 &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(ownerId + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
             if (!StringUtils.isEmpty(character.getFundsVolume())
-                    && (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))
+                    && (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))
                     && customerInfoLongTimeNoSeeMap.containsKey(character.getCustomerId())) {
                 potentialCustomer.getLongTimeNoSee().add(character.getOwnerName() + "，" + character.getCustomerName() + "，" + character.getCustomerId());
             }
@@ -459,13 +458,13 @@ public class MessageServiceImpl implements MessageService {
             String leaderId = entry.getKey();
             for (String memberName : entry.getValue()) {
                 PotentialCustomer potentialCustomer = potentialCustomerMap.get(memberName);
-                if (Objects.isNull(potentialCustomer)){
+                if (Objects.isNull(potentialCustomer)) {
                     continue;
                 }
                 String message = String.format(AppConstant.PURCHASE_ATTITUDE_SUMMARY_FOR_LEADER_TEMPLATE, memberName,
-                                CommonUtils.convertStringFromList(potentialCustomer.getHigh()),
-                                CommonUtils.convertStringFromList(potentialCustomer.getMiddle()),
-                                CommonUtils.convertStringFromList(potentialCustomer.getLongTimeNoSee()));
+                        CommonUtils.convertStringFromList(potentialCustomer.getHigh()),
+                        CommonUtils.convertStringFromList(potentialCustomer.getMiddle()),
+                        CommonUtils.convertStringFromList(potentialCustomer.getLongTimeNoSee()));
                 TextMessage textMessage = new TextMessage();
                 TextMessage.TextContent textContent = new TextMessage.TextContent();
                 textMessage.setTouser(leaderId);
@@ -507,19 +506,19 @@ public class MessageServiceImpl implements MessageService {
             // 资金量≥5万且认可数≥3，购买态度为确认购买
             if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) {
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) {
                 potentialCustomer.getHigh().add(character.getCustomerId());
             } else if (approvalCount >= 3 && !Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5且认可数≥3，购买态度为尚未确认购买
                 potentialCustomer.getMiddle().add(character.getCustomerId());
             } else if (approvalCount <= 2 &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
-                    (character.getFundsVolume().equals("大于10万")||character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
+                    (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) { // 资金量≥5万且认可数≤2
                 potentialCustomer.getLow().add(character.getCustomerId());
             }
         }
-        for (String ownerId : ownerIdList){
+        for (String ownerId : ownerIdList) {
             // 获取某个人在某个时间段内所有的通话
             List<TelephoneRecord> telephoneRecordList;
             if (day.equals("today")) {
@@ -551,19 +550,19 @@ public class MessageServiceImpl implements MessageService {
             Set<String> highSet = new HashSet<>(potentialCustomer.getHigh());
             Set<String> middleSet = new HashSet<>(potentialCustomer.getMiddle());
             Set<String> lowSet = new HashSet<>(potentialCustomer.getLow());
-            for (Map.Entry<String, Integer> entry: teleTimeMap.entrySet()) {
+            for (Map.Entry<String, Integer> entry : teleTimeMap.entrySet()) {
                 // 双重检查
                 if (characterMap.containsKey(entry.getKey())) {
                     updateCustomerCharacter(entry.getKey(), activityId, false);
                     characterMap.put(entry.getKey(), customerCharacterMapper.selectByCustomerIdAndActivityId(entry.getKey(), activityId));
                 }
-                if (highSet.contains(entry.getKey())){
+                if (highSet.contains(entry.getKey())) {
                     highCount++;
                     highTime += entry.getValue();
-                } else if (middleSet.contains(entry.getKey())){
+                } else if (middleSet.contains(entry.getKey())) {
                     middleCount++;
                     middleTime += entry.getValue();
-                }  else if (lowSet.contains(entry.getKey())){
+                } else if (lowSet.contains(entry.getKey())) {
                     lowCount++;
                     lowTime += entry.getValue();
                 } else {
@@ -618,7 +617,7 @@ public class MessageServiceImpl implements MessageService {
                     String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, lowSet.size(), lowCount, getTimeString(lowTime)),
                     elseString,
                     customerExceedTimeStr
-                    );
+            );
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
             textMessage.setTouser(ownerId);
@@ -628,7 +627,7 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setMarkdown(textContent);
             sendMessageToUser(textMessage);
 
-            message = String.format( "业务员：%s:\n", ownerName) + message;
+            message = String.format("业务员：%s:\n", ownerName) + message;
             textMessage.getMarkdown().setContent(message);
             textMessage.setTouser(staffLeaderMap.get(ownerId));
             // 发送给主管
@@ -636,7 +635,65 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    private String getTimeString(int minutes){
+    @Override
+    public void sendRecommenderSummary(List<CustomerDoubt> customerDoubtList, String activityId, String day) {
+        // 统计每个人出现最多的问题
+        Map<String, Map<String, Integer>> questionCount = new HashMap<>();
+        for (CustomerDoubt item : customerDoubtList) {
+            String staffId = item.getSaleId();
+            String normDoubt = item.getNormDoubt();
+            if (questionCount.containsKey(staffId)) {
+                Map<String, Integer> questionCountMap = questionCount.get(staffId);
+                questionCountMap.put(normDoubt, questionCountMap.getOrDefault(normDoubt, 0) + 1);
+            } else {
+                Map<String, Integer> questionCountMap = new HashMap<>();
+                questionCountMap.put(normDoubt, 1);
+                questionCount.put(staffId, questionCountMap);
+            }
+        }
+        if (CollectionUtils.isEmpty(questionCount)) {
+            return;
+        }
+        for (Map.Entry<String, Map<String, Integer>> item : questionCount.entrySet()) {
+            String staffId = item.getKey();
+            Map<String, Integer> questionCountPer = item.getValue();
+            Map<String, Integer> sortedMap = questionCountPer.entrySet().stream()
+                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()) // 倒序排列
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+            List<String> questionMost = new ArrayList<>();
+            int max = 0;
+            for (Map.Entry<String, Integer> one : sortedMap.entrySet()) {
+                if (max == 0) {
+                    questionMost.add(one.getKey());
+                    max = one.getValue();
+                } else if (max == one.getValue().intValue()) {
+                    questionMost.add(one.getKey());
+                } else {
+                    break;
+                }
+            }
+            // 统计完成，开始发送消息
+            String dayStr = day.equals("today") ? "今日" : "昨日";
+            for (String doubt : questionMost) {
+                String aiSummary = recommenderService.getAiSummaryByQuestion(doubt);
+                String url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s", activityId, doubt, staffId);
+                String message = String.format(RECOMMENDER_SUMMARY_FOR_STAFF_TEMPLATE,
+                        dayStr, doubt, sortedMap.get(doubt),
+                        aiSummary, url, url);
+                TextMessage textMessage = new TextMessage();
+                TextMessage.TextContent textContent = new TextMessage.TextContent();
+                textMessage.setTouser(staffId);
+                textMessage.setAgentid(getAgentId(staffId));
+                textContent.setContent(message);
+                textMessage.setMsgtype("markdown");
+                textMessage.setMarkdown(textContent);
+                sendMessageToUser(textMessage);
+            }
+        }
+    }
+
+
+    private String getTimeString(int minutes) {
         // 计算小时数和剩余的分钟数
         int hours = minutes / 60;
         int remainingMinutes = minutes % 60;
@@ -650,14 +707,14 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    private String getPurchaseAttitude(String purchaseAttitude){
+    private String getPurchaseAttitude(String purchaseAttitude) {
         if (StringUtils.isEmpty(purchaseAttitude)) {
             return "未提及";
         }
         return Boolean.parseBoolean(purchaseAttitude) ? "确认购买" : "尚未确认购买";
     }
 
-    private int getApprovalCount(CustomerCharacter character){
+    private int getApprovalCount(CustomerCharacter character) {
         // 判断 认可度次数
         int approvalCount = 0;
         if (Boolean.parseBoolean(character.getSoftwareFunctionClarity())) {
@@ -676,7 +733,7 @@ public class MessageServiceImpl implements MessageService {
         return approvalCount;
     }
 
-    private boolean nightTime(){
+    private boolean nightTime() {
         LocalTime now = LocalTime.now();
         LocalTime start = LocalTime.of(22, 0);
         LocalTime end = LocalTime.of(8, 0);
