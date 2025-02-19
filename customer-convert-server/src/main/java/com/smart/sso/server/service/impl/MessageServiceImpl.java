@@ -468,7 +468,7 @@ public class MessageServiceImpl implements MessageService {
                 TextMessage textMessage = new TextMessage();
                 TextMessage.TextContent textContent = new TextMessage.TextContent();
                 textMessage.setTouser(leaderId);
-                textMessage.setAgentid("1000021");
+                textMessage.setAgentid(getAgentId(leaderId));
                 textContent.setContent(message);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
@@ -621,7 +621,7 @@ public class MessageServiceImpl implements MessageService {
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
             textMessage.setTouser(ownerId);
-            textMessage.setAgentid("1000021");
+            textMessage.setAgentid(getAgentId(ownerId));
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
