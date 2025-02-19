@@ -60,7 +60,11 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "course12=#{course12}, ",
             "course13=#{course13}, ",
             "course14=#{course14}, ",
-            "course15=#{course15} ",
+            "course15=#{course15}, ",
+            "teacher_profession=#{teacherProfession}, ",
+            "teacher_approve=#{teacherApprove}, ",
+            "course_processed=#{courseProcessed}, ",
+            "course_correct=#{courseCorrect} ",
             "WHERE id=#{id}"
     })
     int updateAllFields(CustomerCharacter customerCharacter);

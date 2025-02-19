@@ -74,4 +74,10 @@ public class CustomerCharacter implements Serializable {
     private Integer course13;
     private Integer course14;
     private Integer course15;
+
+    private String teacherProfession;
+    private String teacherApprove;
+
+    private Integer courseProcessed;
+    private Integer courseCorrect;
 }

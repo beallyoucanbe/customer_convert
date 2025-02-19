@@ -344,6 +344,11 @@ public class MessageServiceImpl implements MessageService {
 
         eventService.setDeliveryCourseCharacter(customerBase.getCustomerId(), latestCustomerCharacter);
 
+        latestCustomerCharacter.setTeacherApprove(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getCustomerConclusion().getCompareValue()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession().toString() : null);
+        latestCustomerCharacter.setCourseProcessed(customerFeature.getDeliveryPeriod().getMasterCourse().getProcess());
+        latestCustomerCharacter.setCourseCorrect(customerFeature.getDeliveryPeriod().getMasterCourse().getCorrect());
+
         // 设置事件的最新访问时间，如果有异常，就跳过
         try {
             if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getVisitLiveFreq().getRecords().getData())) {

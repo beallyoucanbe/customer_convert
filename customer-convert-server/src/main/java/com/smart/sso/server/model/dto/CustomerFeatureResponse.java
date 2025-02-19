@@ -127,7 +127,7 @@ public class CustomerFeatureResponse {
     @NoArgsConstructor
     public static class DeliveryPeriod{
         private DeliveryPeriodBasic basic = new DeliveryPeriodBasic();
-        private CourseTeacherFeature courseTeacher;
+        private CourseTeacherFeature courseTeacher = new CourseTeacherFeature();
         private MasterCourseFeature masterCourse = new MasterCourseFeature();
     }
 
