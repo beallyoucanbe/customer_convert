@@ -7,9 +7,9 @@ import java.util.Map;
 
 public interface MessageService {
 
-    String sendMessageToChat(TextMessage message);
+    String sendMessageToUser(TextMessage message);
 
-    String sendMessageToChat(String url, TextMessage message);
+    String sendMessageToGroup(String url, TextMessage message);
 
     /**
      * 发送购买态度总结任务

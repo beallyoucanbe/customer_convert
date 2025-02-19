@@ -14,6 +14,10 @@ public interface ConfigService {
 
     Map<String, String> getStaffLeaderMap();
 
+    Map<String, String> getStaffManagerMap();
+
+    Map<String, String> getUserIdNamerMap();
+
     /**
      * 获取参加这次活动的员工id
      * @return 分领导加这次活动的员工id

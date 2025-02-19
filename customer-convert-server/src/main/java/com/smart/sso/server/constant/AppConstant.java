@@ -87,6 +87,12 @@ public class AppConstant {
 
     public static final String COMMUNICATION_TIME_SUMMARY_FOR_STAFF = "客户总计%s个，其中通话%s个，总时长为**%s**";
     public static Map<String, Set<String>>  staffIdMap = new HashMap<>();
+    // 用来保存每个员工对应的leader（主管）
+    public static Map<String, String> staffLeaderMap = new HashMap<>();
+    // 用来保存每个员工对应的manager（大区经理）
+    public static Map<String, String> staffManagerrMap = new HashMap<>();
+    // 用来保存每个员工id和name 的对应关系
+    public static Map<String, String> userIdNameMap = new HashMap<>();
     public static Map<String, QiweiApplicationConfig> qiweiApplicationConfigMap = new HashMap<>();
     public static Map<String, String> accessTokenMap = new HashMap<>();
     public static Map<String, String> robotUrl = new HashMap<>();

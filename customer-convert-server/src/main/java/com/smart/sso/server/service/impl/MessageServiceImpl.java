@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.enums.EarningDesireEnum;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.model.VO.MessageSendVO;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
@@ -17,7 +16,6 @@ import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
-import com.smart.sso.server.util.DateUtil;
 import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,10 +60,10 @@ public class MessageServiceImpl implements MessageService {
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
     @Override
-    public String sendMessageToChat(TextMessage message) {
+    public String sendMessageToUser(TextMessage message) {
         // 是否是通过企微机器人发送
         if (AppConstant.robotUrl.containsKey(message.getTouser())){
-            return sendMessageToChat(AppConstant.robotUrl.get(message.getTouser()), message);
+            return sendMessageToGroup(AppConstant.robotUrl.get(message.getTouser()), message);
         }
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
@@ -95,7 +93,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public String sendMessageToChat(String url, TextMessage message) {
+    public String sendMessageToGroup(String url, TextMessage message) {
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
@@ -103,16 +101,15 @@ public class MessageServiceImpl implements MessageService {
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         // 发送 POST 请求
-        return null;
-//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-//        // 处理响应
-//        if (response.getStatusCode() == HttpStatus.OK) {
-//            log.error("发送消息结果：" + response.getBody());
-//            return response.getBody();
-//        } else {
-//            log.error("Failed to send message: " + response.getStatusCode());
-//            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
-//        }
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        // 处理响应
+        if (response.getStatusCode() == HttpStatus.OK) {
+            log.error("发送消息结果：" + response.getBody());
+            return response.getBody();
+        } else {
+            log.error("Failed to send message: " + response.getStatusCode());
+            throw new RuntimeException("Failed to send message: " + response.getStatusCode());
+        }
     }
 
 
@@ -185,7 +182,7 @@ public class MessageServiceImpl implements MessageService {
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToChat(textMessage);
+            sendMessageToUser(textMessage);
         }
     }
 
@@ -221,8 +218,10 @@ public class MessageServiceImpl implements MessageService {
             }
             String purchaseMessageDescribe = getPurchaseAttitude(newCustomerCharacter.getSoftwarePurchaseAttitude());
             String fundsMessageDescribe = Objects.nonNull(newCustomerCharacter.getFundsVolume()) ? newCustomerCharacter.getFundsVolume() : "未提及";
-            String url = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s&owner_id=%s&owner=%s",
+            String urlUser = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s&owner_id=%s&owner=%s",
                     customerInfo.getCustomerId(), customerInfo.getActivityId(), customerInfo.getOwnerId(), customerInfo.getOwnerName());
+            String urlLeader = String.format("https://newcmp.emoney.cn/chat/api/customer/redirect?customer_id=%s&active_id=%s&owner_id=%s&owner=%s",
+                    customerInfo.getCustomerId(), customerInfo.getActivityId(), staffLeaderMap.get(customerInfo.getOwnerId()), userIdNameMap.get(staffLeaderMap.get(customerInfo.getOwnerId())));
             StringBuilder possibleReasonStringBuilder = new StringBuilder();
             int id = 1;
             if (!purchaseMessageDescribe.equals("确认购买")) {
@@ -287,7 +286,7 @@ public class MessageServiceImpl implements MessageService {
             }
 
             // 发送消息给领导，发送到微信群
-            String message = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
+            String messageUser = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
                     newCustomerCharacter.getOwnerName(),
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(customerProfile.getLastCommunicationDate()),
                     newCustomerCharacter.getCustomerName(),
@@ -295,18 +294,53 @@ public class MessageServiceImpl implements MessageService {
                     purchaseMessageDescribe,
                     getApprovalCount(newCustomerCharacter),
                     possibleReasonStringBuilder,
-                    url, url);
+                    urlUser, urlUser);
+
+            String messageLeader = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
+                    newCustomerCharacter.getOwnerName(),
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(customerProfile.getLastCommunicationDate()),
+                    newCustomerCharacter.getCustomerName(),
+                    fundsMessageDescribe,
+                    purchaseMessageDescribe,
+                    getApprovalCount(newCustomerCharacter),
+                    possibleReasonStringBuilder,
+                    urlLeader, urlLeader);
+
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
-            textContent.setContent(message);
+            textContent.setContent(messageLeader);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
+            String groupUrl = configService.getStaffAreaRobotUrl(customerInfo.getOwnerId());
+
             if (nightTime()) {
                 log.error("延迟发送消息");
-                MessageSendVO vo = new MessageSendVO(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
-                AppConstant.messageNeedSend.add(vo);
+                if (StringUtils.isEmpty(groupUrl)){
+                    // 没有配置群消息的，需要发送给主管和大区经理
+                    textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
+                    textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+                    MessageSendVO vo = new MessageSendVO(null, textMessage);
+                    AppConstant.messageNeedSend.add(vo);
+
+                    TextMessage clonedMessage = textMessage.clone();
+                    clonedMessage.setTouser(staffManagerrMap.get(customerInfo.getOwnerId()));
+                    MessageSendVO vo2 = new MessageSendVO(null, textMessage);
+                    AppConstant.messageNeedSend.add(vo2);
+                } else {
+                    MessageSendVO vo = new MessageSendVO(groupUrl, textMessage);
+                    AppConstant.messageNeedSend.add(vo);
+                }
             } else {
-                sendMessageToChat(configService.getStaffAreaRobotUrl(customerInfo.getOwnerId()), textMessage);
+                if (StringUtils.isEmpty(groupUrl)){
+                    textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
+                    textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+                    sendMessageToUser(textMessage);
+
+                    textMessage.setTouser(staffManagerrMap.get(customerInfo.getOwnerId()));
+                    sendMessageToUser(textMessage);
+                } else {
+                    sendMessageToGroup(groupUrl, textMessage);
+                }
             }
 
             // 发送消息给业务员，发送给个人企微
@@ -315,12 +349,13 @@ public class MessageServiceImpl implements MessageService {
             textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
             textMessage.setTouser(customerInfo.getOwnerId());
             textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+            textMessage.getMarkdown().setContent(messageUser);
             if (nightTime()) {
                 log.error("延迟发送消息");
                 MessageSendVO vo = new MessageSendVO(null, textMessage);
                 AppConstant.messageNeedSend.add(vo);
             } else {
-                sendMessageToChat(textMessage);
+                sendMessageToUser(textMessage);
             }
         }
     }
@@ -358,7 +393,7 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setTouser(item);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToChat(textMessage);
+            sendMessageToUser(textMessage);
         }
     }
 
@@ -428,7 +463,7 @@ public class MessageServiceImpl implements MessageService {
                 textContent.setContent(message);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
-                sendMessageToChat(textMessage);
+                sendMessageToUser(textMessage);
             }
         }
     }
@@ -581,13 +616,13 @@ public class MessageServiceImpl implements MessageService {
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToChat(textMessage);
+            sendMessageToUser(textMessage);
 
             message = String.format( "业务员：%s:\n", ownerName) + message;
             textMessage.getMarkdown().setContent(message);
             textMessage.setTouser(staffLeaderMap.get(ownerId));
             // 发送给主管
-            sendMessageToChat(textMessage);
+            sendMessageToUser(textMessage);
         }
     }
 

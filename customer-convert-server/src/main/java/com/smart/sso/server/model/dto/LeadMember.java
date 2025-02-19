@@ -11,6 +11,8 @@ import java.util.Map;
 @NoArgsConstructor
 public class LeadMember {
     private String area;
+    private String manager;
+    private String id;
     private List<Team> teams;
 
     @Data

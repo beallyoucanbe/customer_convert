@@ -82,6 +82,56 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
+    public Map<String, String> getStaffManagerMap() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER_MEMBERS.getValue());
+        List<Config> configList = configMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(configList)) {
+            log.error("没有配置参加活动的销售名单，请先配置");
+            throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
+        }
+        Map<String, String> result = new HashMap<>();
+        for (Config config : configList) {
+            List<LeadMember> leadMembers = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMember>>() {
+            });
+            for (LeadMember item : leadMembers) {
+                for (LeadMember.Team team : item.getTeams()) {
+                    for (String memberId : team.getMembers().keySet()){
+                        result.put(memberId, item.getId());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, String> getUserIdNamerMap() {
+        QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
+        queryWrapper.eq("name", ConfigTypeEnum.LEADER_MEMBERS.getValue());
+        List<Config> configList = configMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(configList)) {
+            log.error("没有配置参加活动的销售名单，请先配置");
+            throw new RuntimeException("没有配置参加活动的销售名单，请先配置");
+        }
+        Map<String, String> result = new HashMap<>();
+        for (Config config : configList) {
+            List<LeadMember> leadMembers = JsonUtil.readValue(config.getValue(), new TypeReference<List<LeadMember>>() {
+            });
+            for (LeadMember item : leadMembers) {
+                result.put(item.getId(), item.getManager());
+                for (LeadMember.Team team : item.getTeams()) {
+                    result.put(team.getId(), team.getLeader());
+                    result.putAll(team.getMembers());
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Map<String, List<String>> getStaffIdsLeader() {
         QueryWrapper<Config> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("type", ConfigTypeEnum.COMMON.getValue());
@@ -211,6 +261,10 @@ public class ConfigServiceImpl implements ConfigService {
             staffIdMap.put(entry.getKey(), new HashSet<>(entry.getValue()));
         }
         AppConstant.staffIdMap = staffIdMap;
+        // 更新员工和主管和大区经理的关系
+        AppConstant.staffLeaderMap = getStaffLeaderMap();
+        AppConstant.staffManagerrMap = getStaffManagerMap();
+        AppConstant.userIdNameMap = getUserIdNamerMap();
 
         // 更新应用信息
         AppConstant.qiweiApplicationConfigMap = getQiweiApplicationConfig();
