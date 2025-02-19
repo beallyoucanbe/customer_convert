@@ -45,6 +45,8 @@ public class CustomerInfo implements Serializable {
     // 是否 188
     @TableField(exist = false)
     private Integer isSend188;
+    @TableField(exist = false)
+    private Integer custTypeId;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
 

@@ -769,6 +769,7 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         latestCustomerCharacter.setIsSend188(customerProfile.getIsSend188());
+        latestCustomerCharacter.setCustTypeId(customerProfile.getCustTypeId());
         latestCustomerCharacter.setUpdateTime(
                 customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
     }

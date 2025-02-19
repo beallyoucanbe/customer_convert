@@ -133,6 +133,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProfile customerProfile = convert2CustomerProfile(customerInfo);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerInfo, featureFromSale, featureFromLLM));
         customerProfile.setIsSend188(customerInfo.getIsSend188());
+        customerProfile.setCustTypeId(customerInfo.getCustTypeId());
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
@@ -291,6 +292,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerInfo.setClassAttendTimes(customerRelation.getClasseAttendTimes());
             customerInfo.setClassAttendDuration(customerRelation.getClasseAttendDuration());
             customerInfo.setIsSend188(customerRelation.getIsSend188());
+            customerInfo.setCustTypeId(customerRelation.getCustTypeId());
             if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
                     && customerRelation.getCustomerSigned()) {
                 stageStatus.setCompletePurchase(1);
