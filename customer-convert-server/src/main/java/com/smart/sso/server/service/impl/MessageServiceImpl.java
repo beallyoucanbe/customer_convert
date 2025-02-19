@@ -286,8 +286,7 @@ public class MessageServiceImpl implements MessageService {
             }
 
             // 发送消息给领导，发送到微信群
-            String messageUser = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
-                    newCustomerCharacter.getOwnerName(),
+            String messageUser = String.format(AppConstant.STAFF_PURCHASE_TEMPLATE,
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(customerProfile.getLastCommunicationDate()),
                     newCustomerCharacter.getCustomerName(),
                     fundsMessageDescribe,
@@ -296,7 +295,7 @@ public class MessageServiceImpl implements MessageService {
                     possibleReasonStringBuilder,
                     urlUser, urlUser);
 
-            String messageLeader = String.format(AppConstant.CUSTOMER_PURCHASE_TEMPLATE,
+            String messageLeader = String.format(AppConstant.LEADER_PURCHASE_TEMPLATE,
                     newCustomerCharacter.getOwnerName(),
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(customerProfile.getLastCommunicationDate()),
                     newCustomerCharacter.getCustomerName(),
@@ -324,11 +323,19 @@ public class MessageServiceImpl implements MessageService {
 
                     TextMessage clonedMessage = textMessage.clone();
                     clonedMessage.setTouser(staffManagerrMap.get(customerInfo.getOwnerId()));
-                    MessageSendVO vo2 = new MessageSendVO(null, textMessage);
+                    MessageSendVO vo2 = new MessageSendVO(null, clonedMessage);
                     AppConstant.messageNeedSend.add(vo2);
                 } else {
                     MessageSendVO vo = new MessageSendVO(groupUrl, textMessage);
                     AppConstant.messageNeedSend.add(vo);
+                    // 一区再单独推送主管
+                    if (staffLeaderMap.get(customerInfo.getOwnerId()).equals("zhanggangyun")) {
+                        TextMessage clonedMessage = textMessage.clone();
+                        clonedMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
+                        clonedMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+                        MessageSendVO vo2 = new MessageSendVO(null, clonedMessage);
+                        AppConstant.messageNeedSend.add(vo2);
+                    }
                 }
             } else {
                 if (StringUtils.isEmpty(groupUrl)){
@@ -340,13 +347,16 @@ public class MessageServiceImpl implements MessageService {
                     sendMessageToUser(textMessage);
                 } else {
                     sendMessageToGroup(groupUrl, textMessage);
+                    // 一区再单独推送主管
+                    if (staffLeaderMap.get(customerInfo.getOwnerId()).equals("zhanggangyun")) {
+                        textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
+                        textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+                        sendMessageToUser(textMessage);
+                    }
                 }
             }
 
             // 发送消息给业务员，发送给个人企微
-            String target = "**";
-            int index = textMessage.getMarkdown().getContent().indexOf(target, 5);
-            textMessage.getMarkdown().setContent("您" + textMessage.getMarkdown().getContent().substring(index + 2));
             textMessage.setTouser(customerInfo.getOwnerId());
             textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
             textMessage.getMarkdown().setContent(messageUser);
