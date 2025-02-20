@@ -21,7 +21,6 @@ public class TelephoneRecord {
     private String ownerId;
     private String ownerName;
     private String activityId;
-    private String period;
     private Integer communicationDuration;
     private Timestamp communicationTime;
     private String communicationType;
@@ -30,64 +29,37 @@ public class TelephoneRecord {
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> fundsVolume;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> hasTime;
-
+    private List<CommunicationContent> stockPosition;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> introduceService_1;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> introduceService_2;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> introduceService_3;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> introduceService_4;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> introduceService_5;
-
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> remindService_1;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> remindService_2;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> remindService_3;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> remindService_4;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> remindService_5;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> currentStocks;
+    private List<CommunicationContent> customerResponse;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> tradingStyle;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockMarketAge;
-
+    private List<CommunicationContent> purchaseSimilarProduct;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> deliveryRemindLive;
+    private List<CommunicationContent> consultingPracticalClass;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> deliveryRemindPlayback;
+    private List<CommunicationContent> customerLearning;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> teacherApproval;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_1;
+    private List<CommunicationContent> continueFollowingStock;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_2;
+    private List<CommunicationContent> softwareValueApproval;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_3;
+    private List<CommunicationContent> softwarePurchaseAttitude;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_4;
+    private List<CommunicationContent> memberStocksBuy;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_5;
+    private List<CommunicationContent> memberStocksPrice;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_6;
+    private List<CommunicationContent> welfareStocksBuy;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> courseMaster_7;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> customerRequireRefund;
+    private List<CommunicationContent> welfareStocksPrice;
 
     private Integer parsed;
     private String tenantId;
     // 预留属性
-    private String reservedInfo;
-    private String reservedProperty;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
 }
