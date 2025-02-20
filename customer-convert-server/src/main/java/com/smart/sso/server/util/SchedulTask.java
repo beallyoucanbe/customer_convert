@@ -239,7 +239,7 @@ public class SchedulTask {
     /**
      * 执行特征同步到BI的任务
      */
-    @Scheduled(cron = "0 0 7,12,17 * * ?")
+    @Scheduled(cron = "0 0 6,12,17 * * ?")
     public void refreshFeatureToBI() {
         log.error("开始执行客户情况特征同步到bi");
         LocalDateTime dateTime = LocalDateTime.now().minusDays(7).with(LocalTime.MIN);
@@ -323,7 +323,7 @@ public class SchedulTask {
     /**
      * 执行给员工发送话术推荐的任务
      */
-//    @Scheduled(cron = "0 0 18 * * ?")
+    @Scheduled(cron = "0 0 18 * * ?")
     public void sendRecommendToStaffToday() {
         log.error("开始执行给员工发送话术推荐的任务");
         String activityId = configService.getCurrentActivityId();
@@ -335,7 +335,7 @@ public class SchedulTask {
     /**
      * 执行给员工发送话术推荐的任务
      */
-//    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
     public void sendRecommendToStaffYesterday() {
         log.error("开始执行给员工发送话术推荐的任务");
         String activityId = configService.getCurrentActivityId();

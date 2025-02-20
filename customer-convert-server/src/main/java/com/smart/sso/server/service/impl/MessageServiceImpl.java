@@ -325,7 +325,7 @@ public class MessageServiceImpl implements MessageService {
                     purchaseMessageDescribe,
                     getApprovalCount(newCustomerCharacter),
                     possibleReasonStringBuilder,
-                    urlUser, urlUser);
+                    urlUser);
 
             String messageLeader = String.format(AppConstant.LEADER_PURCHASE_TEMPLATE,
                     newCustomerCharacter.getOwnerName(),
@@ -335,7 +335,7 @@ public class MessageServiceImpl implements MessageService {
                     purchaseMessageDescribe,
                     getApprovalCount(newCustomerCharacter),
                     possibleReasonStringBuilder,
-                    urlLeader, urlLeader);
+                    urlLeader);
 
             TextMessage textMessage = new TextMessage();
             TextMessage.TextContent textContent = new TextMessage.TextContent();
@@ -711,16 +711,28 @@ public class MessageServiceImpl implements MessageService {
             for (String doubt : questionMost) {
                 String aiSummary = recommenderService.getAiSummaryByQuestion(doubt);
                 String url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s", activityId, doubt, staffId);
-                String message = String.format(RECOMMENDER_SUMMARY_FOR_STAFF_TEMPLATE,
+                String messageUser = String.format(RECOMMENDER_SUMMARY_FOR_STAFF_TEMPLATE,
                         dayStr, doubt, sortedMap.get(doubt),
-                        aiSummary, url, url);
+                        aiSummary, url);
                 TextMessage textMessage = new TextMessage();
                 TextMessage.TextContent textContent = new TextMessage.TextContent();
                 textMessage.setTouser(staffId);
                 textMessage.setAgentid(getAgentId(staffId));
-                textContent.setContent(message);
+                textContent.setContent(messageUser);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
+                sendMessageToUser(textMessage, activityId, MessageContentType.SCRIPT_RECOMMENDATION_PUSH.getText());
+
+                url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s", activityId, doubt, staffLeaderMap.get(staffId));
+                String messageleader = String.format(RECOMMENDER_SUMMARY_FOR_LEADER_TEMPLATE,
+                        userIdNameMap.get(staffId), dayStr, doubt, sortedMap.get(doubt),
+                        userIdNameMap.get(staffId), aiSummary, url);
+                // 推送给主管leader
+                textMessage.setTouser(staffLeaderMap.get(staffId));
+                textMessage.getMarkdown().setContent(messageleader);
+                sendMessageToUser(textMessage, activityId, MessageContentType.SCRIPT_RECOMMENDATION_PUSH.getText());
+                // 推送给大区经理
+                textMessage.setTouser(staffManagerrMap.get(staffId));
                 sendMessageToUser(textMessage, activityId, MessageContentType.SCRIPT_RECOMMENDATION_PUSH.getText());
             }
         }

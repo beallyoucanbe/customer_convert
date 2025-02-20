@@ -78,9 +78,17 @@ public class RecommenderServiceImpl implements RecommenderService {
 
         recommenderQuestion.setQuestionTypeCount(sortedEntryList.size());
         List<RecommenderQuestion.QuestionContent> questions = new ArrayList<>();
-        sortedEntryList.forEach(item -> {
-            questions.add(new RecommenderQuestion.QuestionContent(item.getKey(), item.getValue().intValue()));
-        });
+        RecommenderQuestion.QuestionContent other = null;
+        for (Map.Entry<String, Long> item : sortedEntryList) {
+            if ("其他".equals(item.getKey())){
+                other = new RecommenderQuestion.QuestionContent(item.getKey(), item.getValue().intValue());
+            } else {
+                questions.add(new RecommenderQuestion.QuestionContent(item.getKey(), item.getValue().intValue()));
+            }
+        }
+        if (Objects.nonNull(other)) {
+            questions.add(other);
+        }
         recommenderQuestion.setQuestions(questions);
         return recommenderQuestion;
     }
@@ -91,6 +99,9 @@ public class RecommenderServiceImpl implements RecommenderService {
         QueryWrapper<CustomerDoubt> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("activity_id", activityId);
         queryWrapper.eq("norm_doubt", question);
+        queryWrapper.eq("sale_category", "A");
+        queryWrapper.orderBy(true, false, "communication_time");
+
         List<CustomerDoubt> customerDoubtList = customerDoubtMapper.selectList(queryWrapper);
 
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
