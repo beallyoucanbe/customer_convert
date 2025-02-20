@@ -12,11 +12,13 @@ import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.service.ConfigService;
+import com.smart.sso.server.service.CustomerInfoService;
 import com.smart.sso.server.service.TelephoneRecordService;
 
 import com.smart.sso.server.util.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -24,9 +26,7 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +44,9 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     private TelephoneRecordMapper telephoneRecordMapper;
     @Autowired
     private ConfigService configService;
+    @Autowired
+    @Lazy
+    private CustomerInfoService customerInfoService;
 
 
     @Override
@@ -775,12 +778,14 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Override
     public void refreshCommunicationRounds() {
         String activityId = configService.getCurrentActivityId();
-        List<TelephoneRecordStatics> customerIdList = recordMapper.selectTelephoneRecordStatics(activityId);
-        if (CollectionUtils.isEmpty(customerIdList)) {
+        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("activity_id", activityId);
+        List<CustomerInfo> customerInfos = customerInfoMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(customerInfos)) {
             return;
         }
-        for (TelephoneRecordStatics item : customerIdList) {
-            customerInfoMapper.updateCommunicationRounds(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime());
+        for (CustomerInfo item : customerInfos) {
+            customerInfoService.queryCustomerById(item.getCustomerId(), activityId);
         }
     }
 

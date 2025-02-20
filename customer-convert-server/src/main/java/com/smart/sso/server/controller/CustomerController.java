@@ -56,6 +56,8 @@ public class CustomerController {
     private RecommenderService recommenderService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private TelephoneRecordService telephoneRecordService;
 
     @ApiOperation(value = "获取客户列表")
     @GetMapping("/customers")
@@ -168,6 +170,7 @@ public class CustomerController {
     @ApiOperation(value = "存活检查接口")
     @GetMapping("/customer/check")
     public BaseResponse<Void> checkAlive() {
+        telephoneRecordService.refreshCommunicationRounds();
         return ResultUtils.success(null);
     }
 
