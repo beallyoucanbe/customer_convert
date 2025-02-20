@@ -776,20 +776,6 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     }
 
     @Override
-    public void refreshCommunicationRounds() {
-        String activityId = configService.getCurrentActivityId();
-        QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("activity_id", activityId);
-        List<CustomerInfo> customerInfos = customerInfoMapper.selectList(queryWrapper);
-        if (CollectionUtils.isEmpty(customerInfos)) {
-            return;
-        }
-        for (CustomerInfo item : customerInfos) {
-            customerInfoService.queryCustomerById(item.getCustomerId(), activityId);
-        }
-    }
-
-    @Override
     public int getCommunicationTimeCurrentDay(String customerId, LocalDateTime communicationTime) {
         QueryWrapper<TelephoneRecord> queryWrapperInfo = new QueryWrapper<>();
         LocalDateTime startOfDay = communicationTime.toLocalDate().atStartOfDay();

@@ -277,15 +277,6 @@ public class SchedulTask {
         log.error("客户配置同步任务执行完成");
     }
 
-
-    // 通话次数刷新规则：1，每天凌晨全量刷新，即重新计算一次
-    @Scheduled(cron = "0 30 3 * * ?")
-    public void refreshCommunicationRounds() {
-        log.error("开始全量刷新通话次数任务");
-        recordService.refreshCommunicationRounds();
-        log.error("全量刷新通话次数任务执行完成");
-    }
-
     // 每天早上8点，判断昨晚有无需要发送的信息
     @Scheduled(cron = "0 0 8 * * ?")
     public void executeMessageSend() {

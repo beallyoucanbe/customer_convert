@@ -26,12 +26,6 @@ public interface TelephoneRecordService {
      */
     Boolean syncCustomerInfo();
 
-    /**
-     * 全量更新当前活动的通话次数
-     * @return
-     */
-    void refreshCommunicationRounds();
-
     int getCommunicationTimeCurrentDay(String customerId, LocalDateTime communicationTime);
 
     List<TelephoneRecordStatics> getCustomerIdUpdate(LocalDateTime dateTime);
