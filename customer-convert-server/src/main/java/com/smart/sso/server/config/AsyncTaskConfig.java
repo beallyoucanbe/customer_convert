@@ -10,7 +10,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
-public class AsyncConfig {
+public class AsyncTaskConfig {
 
     /** Set the ThreadPoolExecutor's core pool size. */
     @Value("${async.corePoolSize:20}")
