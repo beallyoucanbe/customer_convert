@@ -10,5 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MessageSendVO {
     private String sendUrl;
+    private String activityId;
+    private String messageType;
     private TextMessage TextMessage;
 }

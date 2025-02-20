@@ -8,9 +8,9 @@ import java.util.Map;
 
 public interface MessageService {
 
-    String sendMessageToUser(TextMessage message);
+    String sendMessageToUser(TextMessage message, String activityid, String messageType);
 
-    String sendMessageToGroup(String url, TextMessage message);
+    String sendMessageToGroup(String url, TextMessage message,  String activityid, String messageType);
 
     /**
      * 发送购买态度总结任务

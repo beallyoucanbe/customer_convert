@@ -257,9 +257,9 @@ public class SchedulTask {
     }
 
     /**
-     * 执行发送消息给领导的任务
+     * 执行发送消息给领导的任务，潜力客户总结
      */
-    @Scheduled(cron = "0 0 9,18 * * ?")
+    @Scheduled(cron = "0 0 9 * * ?")
     public void sendMessageToLeader() {
         log.error("开始执行发送消息给领导");
         // 获取该领导下的所有员工
@@ -298,9 +298,9 @@ public class SchedulTask {
         while (!AppConstant.messageNeedSend.isEmpty()){
             MessageSendVO vo = AppConstant.messageNeedSend.poll();
             if (StringUtils.isEmpty(vo.getSendUrl())){
-                messageService.sendMessageToUser(vo.getTextMessage());
+                messageService.sendMessageToUser(vo.getTextMessage(), vo.getActivityId(), vo.getMessageType());
             } else {
-                messageService.sendMessageToGroup(vo.getSendUrl(), vo.getTextMessage());
+                messageService.sendMessageToGroup(vo.getSendUrl(), vo.getTextMessage(), vo.getActivityId(), vo.getMessageType());
             }
         }
         log.error("延迟消息发送任务执行完成");

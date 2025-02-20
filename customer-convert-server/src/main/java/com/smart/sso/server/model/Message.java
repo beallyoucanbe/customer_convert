@@ -25,6 +25,7 @@ public class Message implements Serializable {
     private String content;
     // 活动名称
     private String activityId;
+    private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime  updateTime;
 }

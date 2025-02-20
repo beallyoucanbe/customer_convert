@@ -5,12 +5,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.FundsVolumeEnum;
+import com.smart.sso.server.enums.MessageContentType;
+import com.smart.sso.server.enums.MessageTargetType;
 import com.smart.sso.server.model.VO.MessageSendVO;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
+import com.smart.sso.server.primary.mapper.MessageMapper;
 import com.smart.sso.server.service.*;
 import com.smart.sso.server.util.CommonUtils;
 import com.smart.sso.server.util.JsonUtil;
@@ -55,14 +58,16 @@ public class MessageServiceImpl implements MessageService {
     private TelephoneRecordService recordService;
     @Autowired
     private RecommenderService recommenderService;
+    @Autowired
+    private MessageMapper messageMapper;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
     @Override
-    public String sendMessageToUser(TextMessage message) {
+    public String sendMessageToUser(TextMessage message, String activityid, String messageType) {
         // 是否是通过企微机器人发送
         if (AppConstant.robotUrl.containsKey(message.getTouser())) {
-            return sendMessageToGroup(AppConstant.robotUrl.get(message.getTouser()), message);
+            return sendMessageToGroup(AppConstant.robotUrl.get(message.getTouser()), message, activityid, messageType);
         }
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
@@ -72,6 +77,17 @@ public class MessageServiceImpl implements MessageService {
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         String url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, getAccessToken(message.getTouser()));
+
+        Message messageText = new Message();
+        messageText.setId(CommonUtils.generatePrimaryKey());
+        messageText.setCustomerId(message.getTouser());
+        messageText.setTargetType(MessageTargetType.USER.getText());
+        messageText.setMessageType(messageType);
+        messageText.setContent(message.getMarkdown().getContent());
+        messageText.setActivityId(activityid);
+        messageText.setStatus(-1);
+        messageMapper.insert(messageText);
+
         // 发送 POST 请求
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
         // 处理响应
@@ -82,8 +98,11 @@ public class MessageServiceImpl implements MessageService {
             if (StringMap.get("errcode").toString().equals("40014")) {
                 configService.refreshCustomerConfig();
                 url = String.format(AppConstant.SEND_APPLICATION_MESSAGE_URL, getAccessToken(message.getTouser()));
-                restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+                response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+                StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+                });
             }
+            messageMapper.updateStatusById(messageText.getId(), (int) StringMap.get("errcode"));
             return response.getBody();
         } else {
             log.error("Failed to send message: " + response.getStatusCode());
@@ -92,11 +111,22 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public String sendMessageToGroup(String url, TextMessage message) {
+    public String sendMessageToGroup(String url, TextMessage message, String activityid, String messageType) {
         // 创建请求头
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         log.error("发送消息内容：" + JsonUtil.serialize(message) + url);
+
+        Message messageText = new Message();
+        messageText.setId(CommonUtils.generatePrimaryKey());
+        messageText.setCustomerId(message.getTouser());
+        messageText.setTargetType(MessageTargetType.GROUP.getText());
+        messageText.setMessageType(messageType);
+        messageText.setContent(message.getMarkdown().getContent());
+        messageText.setActivityId(activityid);
+        messageText.setStatus(-1);
+        messageMapper.insert(messageText);
+
         // 创建请求实体
         HttpEntity<TextMessage> requestEntity = new HttpEntity<>(message, headers);
         // 发送 POST 请求
@@ -104,6 +134,9 @@ public class MessageServiceImpl implements MessageService {
         // 处理响应
         if (response.getStatusCode() == HttpStatus.OK) {
             log.error("发送消息结果：" + response.getBody());
+            Map<String, Object> StringMap = JsonUtil.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+            });
+            messageMapper.updateStatusById(messageText.getId(), (int) StringMap.get("errcode"));
             return response.getBody();
         } else {
             log.error("Failed to send message: " + response.getStatusCode());
@@ -181,7 +214,7 @@ public class MessageServiceImpl implements MessageService {
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToUser(textMessage);
+            sendMessageToUser(textMessage, activityId, MessageContentType.POTENTIAL_CUSTOMER_LIST.getText());
         }
     }
 
@@ -317,22 +350,22 @@ public class MessageServiceImpl implements MessageService {
                     // 没有配置群消息的，需要发送给主管和大区经理
                     textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
                     textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
-                    MessageSendVO vo = new MessageSendVO(null, textMessage);
+                    MessageSendVO vo = new MessageSendVO(null, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText(), textMessage);
                     AppConstant.messageNeedSend.add(vo);
 
                     TextMessage clonedMessage = textMessage.clone();
                     clonedMessage.setTouser(staffManagerrMap.get(customerInfo.getOwnerId()));
-                    MessageSendVO vo2 = new MessageSendVO(null, clonedMessage);
+                    MessageSendVO vo2 = new MessageSendVO(null, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText(), clonedMessage);
                     AppConstant.messageNeedSend.add(vo2);
                 } else {
-                    MessageSendVO vo = new MessageSendVO(groupUrl, textMessage);
+                    MessageSendVO vo = new MessageSendVO(groupUrl, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText(), textMessage);
                     AppConstant.messageNeedSend.add(vo);
                     // 一区再单独推送主管
                     if (staffLeaderMap.get(customerInfo.getOwnerId()).equals("zhanggangyun")) {
                         TextMessage clonedMessage = textMessage.clone();
                         clonedMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
                         clonedMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
-                        MessageSendVO vo2 = new MessageSendVO(null, clonedMessage);
+                        MessageSendVO vo2 = new MessageSendVO(null, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText(), clonedMessage);
                         AppConstant.messageNeedSend.add(vo2);
                     }
                 }
@@ -340,31 +373,32 @@ public class MessageServiceImpl implements MessageService {
                 if (StringUtils.isEmpty(groupUrl)) {
                     textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
                     textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
-                    sendMessageToUser(textMessage);
+                    sendMessageToUser(textMessage, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText());
 
                     textMessage.setTouser(staffManagerrMap.get(customerInfo.getOwnerId()));
-                    sendMessageToUser(textMessage);
+                    sendMessageToUser(textMessage, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText());
                 } else {
-                    sendMessageToGroup(groupUrl, textMessage);
+                    sendMessageToGroup(groupUrl, textMessage, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText());
                     // 一区再单独推送主管
                     if (staffLeaderMap.get(customerInfo.getOwnerId()).equals("zhanggangyun")) {
                         textMessage.setTouser(staffLeaderMap.get(customerInfo.getOwnerId()));
                         textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
-                        sendMessageToUser(textMessage);
+                        sendMessageToUser(textMessage, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText());
                     }
                 }
             }
 
+            TextMessage clonedMessage = textMessage.clone();
             // 发送消息给业务员，发送给个人企微
-            textMessage.setTouser(customerInfo.getOwnerId());
-            textMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
-            textMessage.getMarkdown().setContent(messageUser);
+            clonedMessage.setTouser(customerInfo.getOwnerId());
+            clonedMessage.setAgentid(getAgentId(customerInfo.getOwnerId()));
+            clonedMessage.getMarkdown().setContent(messageUser);
             if (nightTime()) {
                 log.error("延迟发送消息");
-                MessageSendVO vo = new MessageSendVO(null, textMessage);
+                MessageSendVO vo = new MessageSendVO(null, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText(), clonedMessage);
                 AppConstant.messageNeedSend.add(vo);
             } else {
-                sendMessageToUser(textMessage);
+                sendMessageToUser(clonedMessage, activityId, MessageContentType.LONG_CALL_SUMMARY_REAL_TIME.getText());
             }
         }
     }
@@ -402,7 +436,7 @@ public class MessageServiceImpl implements MessageService {
             textMessage.setTouser(item);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToUser(textMessage);
+            sendMessageToUser(textMessage, "test", MessageContentType.TEST.getText());
         }
     }
 
@@ -472,7 +506,7 @@ public class MessageServiceImpl implements MessageService {
                 textContent.setContent(message);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
-                sendMessageToUser(textMessage);
+                sendMessageToUser(textMessage, activityId, MessageContentType.POTENTIAL_CUSTOMER_LIST.getText());
             }
         }
     }
@@ -625,13 +659,13 @@ public class MessageServiceImpl implements MessageService {
             textContent.setContent(message);
             textMessage.setMsgtype("markdown");
             textMessage.setMarkdown(textContent);
-            sendMessageToUser(textMessage);
+            sendMessageToUser(textMessage, activityId, MessageContentType.DISTRIBUTION_OF_CALL_DURATION.getText());
 
             message = String.format("业务员：%s:\n", ownerName) + message;
             textMessage.getMarkdown().setContent(message);
             textMessage.setTouser(staffLeaderMap.get(ownerId));
             // 发送给主管
-            sendMessageToUser(textMessage);
+            sendMessageToUser(textMessage, activityId, MessageContentType.DISTRIBUTION_OF_CALL_DURATION.getText());
         }
     }
 
@@ -687,7 +721,7 @@ public class MessageServiceImpl implements MessageService {
                 textContent.setContent(message);
                 textMessage.setMsgtype("markdown");
                 textMessage.setMarkdown(textContent);
-                sendMessageToUser(textMessage);
+                sendMessageToUser(textMessage, activityId, MessageContentType.SCRIPT_RECOMMENDATION_PUSH.getText());
             }
         }
     }
