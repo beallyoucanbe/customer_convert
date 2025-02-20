@@ -199,7 +199,6 @@ public class SchedulTask {
      */
     @Scheduled(cron = "0 30 8 * * ?")
     public void performTask() {
-        refreshFeatureToBI();
         //获取需要当前的活动
         String activityId = configService.getCurrentActivityId();
         if (Objects.isNull(activityId)) {
@@ -240,7 +239,7 @@ public class SchedulTask {
     /**
      * 执行特征同步到BI的任务
      */
-    @Scheduled(cron = "0 0 19 * * ?")
+    @Scheduled(cron = "0 0 7,12,17 * * ?")
     public void refreshFeatureToBI() {
         log.error("开始执行客户情况特征同步到bi");
         LocalDateTime dateTime = LocalDateTime.now().minusDays(7).with(LocalTime.MIN);
@@ -310,10 +309,9 @@ public class SchedulTask {
     /**
      * 沟通时长的统计
      */
-    @Scheduled(cron = "0 0 17 * * ?")
+    @Scheduled(cron = "0 30 17 * * ?")
     public void executeCommunicationdurationToday() {
         log.error("开始执行沟通时长的统计任务");
-        refreshFeatureToBI();
         String activityId = configService.getCurrentActivityId();
         // 获取今天截止到现在有过通话的销售人员名单
         List<String> ownerList = recordService.getOwnerHasTeleToday(activityId);
@@ -324,7 +322,6 @@ public class SchedulTask {
     @Scheduled(cron = "0 25 8 * * ?")
     public void executeCommunicationdurationYesterday() {
         log.error("开始执行沟通时长的统计任务");
-        refreshFeatureToBI();
         String activityId = configService.getCurrentActivityId();
         // 获取昨天有过通话的销售人员名单
         List<String> ownerList = recordService.getOwnerHasTeleYesterday(activityId);
