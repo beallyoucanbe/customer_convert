@@ -341,8 +341,11 @@ public class MessageServiceImpl implements MessageService {
 
         latestCustomerCharacter.setDeliveryRemindLiveFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue() : null);
         latestCustomerCharacter.setDeliveryRemindCallbackFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue() : null);
+        latestCustomerCharacter.setDeliveryTaskInteractionFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue() : null);
+        latestCustomerCharacter.setLatestTimeTaskInteraction(latestCustomerCharacter.getUpdateTime());
 
         eventService.setDeliveryCourseCharacter(customerBase.getCustomerId(), latestCustomerCharacter);
+        eventService.setDeliveryCourseTaskCharacter(customerBase.getCustomerId(), latestCustomerCharacter);
 
         latestCustomerCharacter.setTeacherApprove(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getCustomerConclusion().getCompareValue()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession().toString() : null);

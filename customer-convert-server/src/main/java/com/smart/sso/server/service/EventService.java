@@ -25,4 +25,7 @@ public interface EventService {
 
     void setDeliveryCourseCharacter(String userId, CustomerCharacter customerCharacter);
 
+    void setDeliveryCourseTaskCharacter(String userId, CustomerCharacter customerCharacter);
+
+
 }

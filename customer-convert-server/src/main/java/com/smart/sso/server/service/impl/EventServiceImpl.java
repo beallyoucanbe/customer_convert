@@ -217,6 +217,29 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Override
+    public void setDeliveryCourseTaskCharacter(String userId, CustomerCharacter customerCharacter) {
+        // 作业提交事件
+        String deliveryCourseEvent = "visit";
+        String deliveryCourseActionType = "wenjuan";
+        // 获取作业提交事件数据
+        List<Events> events = eventsMapper.getEventsByUserIdAndEventNameActionType(Integer.parseInt(userId), deliveryCourseEvent, deliveryCourseActionType);
+        if (CollectionUtils.isEmpty(events)) {
+            return;
+        }
+
+        for (Events item : events) {
+            String actionContent = item.getActionContent();
+            if (actionContent.contains("巧用“中线操盘”看多空")) {
+                customerCharacter.setTask1(1);
+            } else if (actionContent.contains("巧用“趋势柱线”辨强弱")) {
+                customerCharacter.setTask2(1);
+            } else if (actionContent.contains("巧用“两点乾坤”")) {
+                customerCharacter.setTask3(1);
+            }
+        }
+    }
+
     public CustomerFeatureResponse.RecordContent getRecordContent(List<Events> events) {
         CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
         List<CustomerFeatureResponse.RecordTitle> columns = JsonUtil.readValue(recordTitle, new TypeReference<List<CustomerFeatureResponse.RecordTitle>>() {

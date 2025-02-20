@@ -80,4 +80,23 @@ public class CustomerCharacter implements Serializable {
 
     private Integer courseProcessed;
     private Integer courseCorrect;
+
+    private LocalDateTime latestTimeTaskInteraction;
+    private Double deliveryTaskInteractionFreq;
+
+    private Integer task1;
+    private Integer task2;
+    private Integer task3;
+    private Integer task4;
+    private Integer task5;
+    private Integer task6;
+    private Integer task7;
+    private Integer task8;
+    private Integer task9;
+    private Integer task10;
+    private Integer task11;
+    private Integer task12;
+    private Integer task13;
+    private Integer task14;
+    private Integer task15;
 }
