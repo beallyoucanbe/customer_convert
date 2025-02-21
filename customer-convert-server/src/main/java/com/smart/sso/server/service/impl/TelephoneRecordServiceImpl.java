@@ -1,13 +1,9 @@
 package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.smart.sso.server.model.CustomerBase;
+import com.smart.sso.server.model.*;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
-import com.smart.sso.server.model.CommunicationContent;
-import com.smart.sso.server.model.CustomerFeatureFromLLM;
-import com.smart.sso.server.model.TelephoneRecord;
-import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
 import com.smart.sso.server.service.ConfigService;
@@ -295,13 +291,18 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 }
             }
             //客户学习请教
+            CommunicationFreqContent customerLearningFre = customerFeatureFromLLM.getCustomerLearning();
+            customerLearningFre.setCommunicationCount(customerLearningFre.getCommunicationCount() + 1);
+            customerLearningFre.setCommunicationTime(customerLearningFre.getCommunicationTime() + record.getCommunicationDuration());
             if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
-                CommunicationContent communicationContent = record.getCustomerResponse().get(0);
-                if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
-                        !communicationContent.getAnswerText().equals("无")) {
-                    communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
-                    customerFeatureFromLLM.getCustomerLearning().add(communicationContent);
+                CommunicationContent communicationContent = record.getCustomerLearning().get(0);
+                if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
+                    customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                    customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                            record.getCallId(),
+                            customerFeatureFromLLM.getCommunicationTime(),
+                            Integer.parseInt(communicationContent.getAnswerTag()),
+                            communicationContent.getAnswerText()));
                 }
             }
             //客户对老师的认可度

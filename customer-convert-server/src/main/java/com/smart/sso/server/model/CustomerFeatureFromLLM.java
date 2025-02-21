@@ -30,7 +30,7 @@ public class CustomerFeatureFromLLM {
     private CommunicationContent welfareStocksBuy;
     private CommunicationContent welfareStocksPrice;
     private CommunicationContent consultingPracticalClass;
-    private List<CommunicationContent> customerLearning = new ArrayList<>();
+    private CommunicationFreqContent customerLearning = new CommunicationFreqContent();
     private CommunicationContent teacherApproval;
     private CommunicationContent continueFollowingStock;
     private CommunicationContent softwareValueApproval;

@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,10 +57,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Autowired
     private TelephoneRecordService recordService;
     @Autowired
-    private EventService eventService;
-    @Autowired
     @Lazy
     private MessageService messageService;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 
     @Override
     public CustomerBaseListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -161,9 +163,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
             customerFeature.setSummary(getProcessSummary(customerFeature, stageStatus));
         }
-        setWarmth(customerBase, customerFeature);
-        setHandoverPeriod(customerBase, featureFromLLM, customerFeature);
-        setDeliveryPeriod(customerBase, featureFromLLM, customerFeature);
         return customerFeature;
     }
 
@@ -544,11 +543,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.getBasic().setConsultingPracticalClass(
                 convertBaseFeatureByOverwrite(featureFromLLM.getConsultingPracticalClass(), null, null, Boolean.class)
         );
-
-        customerFeatureResponse.getBasic().setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
-        customerFeatureResponse.getBasic().setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
-        customerFeatureResponse.getBasic().setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), null, Boolean.class));
-        customerFeatureResponse.getBasic().setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
+        // 老师的认可
+        BaseFeature teacherAppr =
+                convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), null, null, Boolean.class);
+        CourseTeacherFeature courseTeacherFeature = new CourseTeacherFeature(teacherAppr);
+        if (Objects.nonNull(featureFromLLM.getTeacherApproval())
+                && StringUtils.hasText(featureFromLLM.getTeacherApproval().getBuildText())) {
+            courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
+            CommunicationContent teacher = featureFromLLM.getTeacherApproval();
+            courseTeacherFeature.setTeacherProfessionChat(CommonUtils.getOriginChatFromChatText(StringUtils.isEmpty(teacher.getCallId()) ? featureFromLLM.getCallId() : teacher.getCallId(),
+                    teacher.getBuildText()));
+        }
+        customerFeatureResponse.getBasic().setTeacherApproval(courseTeacherFeature);
+        customerFeatureResponse.getBasic().setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
+        customerFeatureResponse.getBasic().setContinueFollowingStock(convertBaseFeatureByOverwrite(featureFromLLM.getContinueFollowingStock(), null, null, Boolean.class));
+        customerFeatureResponse.getBasic().setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), null, null, Boolean.class));
+        customerFeatureResponse.getBasic().setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), null, null, Boolean.class));
         return customerFeatureResponse;
     }
 
@@ -731,73 +741,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             } else {
                 questions.add(new CustomerFeatureResponse.Question("【交接期】未完成客户交易风格了解"));
             }
-            // 【交接期】完整介绍服务内容
-            // 优点：-【交接期】完整介绍服务内容:字段“是否完整介绍服务内容”的值为“是’
-            // 缺点：-【交接期】未完整介绍服务内容:字段“是否完整介绍服务内容”的值为“否’
-            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) &&
-                    (Boolean) customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) {
-                advantage.add("【交接期】完整介绍服务内容");
-            } else {
-                questions.add(new CustomerFeatureResponse.Question("【交接期】未完整介绍服务内容"));
-            }
-            // 【交接期】提醒查看盘中直播频次
-            // 优点：-【交接期】提醒查看盘中直播频次较高:字段“提醒查看盘中直播频次”的值为“高”或“中’
-            // 缺点：-【交接期】提醒查看盘中直播频次较低:字段“提醒查看盘中直播频次”的值为“低
-            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue())) {
-                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue();
-                if (fre < 2) {
-                    advantage.add("【交接期】提醒查看盘中直播频次较高");
-                } else {
-                    questions.add(new CustomerFeatureResponse.Question("【交接期】提醒查看盘中直播频次较低"));
-                }
-            }
-            // 【交接期】圈子内容传递频次
-            // 优点：-【交接期】提醒查看圈子内容频次较高:字段“提醒查看圈子内容频次”的值为“高”或“中"
-            // 缺点：-【交接期】提醒查看圈子内容频次较低:字段“提醒查看圈子内容频次”的值为“低’
-            if (Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue())) {
-                Double fre = (Double) customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue();
-                if (fre < 2) {
-                    advantage.add("【交接期】提醒查看圈子内容频次较高");
-                } else {
-                    questions.add(new CustomerFeatureResponse.Question("【交接期】提醒查看圈子内容频次较低"));
-                }
-            }
 
-            // 【交付期】沟通频次
-            // 优点：-【交付期】沟通频次较高：字段“沟通频次”的值为“高”或“中”
-            // 缺点：-【交付期】沟通频次较低：字段“沟通频次”的值为“低”
-            if (Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue())) {
-                Double fre = (Double) customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue();
-                if (fre < 2) {
-                    advantage.add("【交付期】沟通频次较高");
-                } else {
-                    questions.add(new CustomerFeatureResponse.Question("【交付期】沟通频次较低"));
-                }
-            }
-
-            // 【交付期】提醒查看交付课直播
-            // 优点：-【交付期】提醒查看交付课直播频次较高：字段“提醒查看交付课直播频次”的值为“高”或“中”
-            // 缺点：-【交付期】提醒查看交付课直播频次较低：字段“提醒查看交付课直播频次”的值为“低”
-            if (Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue())) {
-                Double fre = (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue();
-                if (fre < 2) {
-                    advantage.add("【交付期】提醒查看交付课直播频次较高");
-                } else {
-                    questions.add(new CustomerFeatureResponse.Question("【交付期】提醒查看交付课直播频次较低"));
-                }
-            }
-
-            // 【交付期】提醒查看交付课回放
-            // 优点：-【交付期】提醒查看交付课回放频次较高：字段“提醒查看交付课回放频次”的值为“高”或“中”
-            // 缺点：-【交付期】提醒查看交付课回放频次较低：字段“提醒查看交付课回放频次”的值为“低”
-            if (Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue())) {
-                Double fre = (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue();
-                if (fre < 2) {
-                    advantage.add("【交付期】提醒查看交付课回放频次较高");
-                } else {
-                    questions.add(new CustomerFeatureResponse.Question("【交付期】提醒查看交付课回放频次较低"));
-                }
-            }
 
             // 【交付期】客户认可老师
             // 优点：-【交付期】客户认可老师：“客户认可老师”的“客户结论”为“认可”
@@ -807,16 +751,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 advantage.add("【交付期】客户认可老师");
             } else {
                 questions.add(new CustomerFeatureResponse.Question("【交付期】客户尚未认可老师"));
-            }
-
-            // 【交付期】客户对课程的掌握情况
-            // 优点：-【交付期】客户对课程的掌握情况较好：“客户对课程的掌握情况”的“客户结论”大于等于5
-            // 缺点：-【交付期】客户对课程的掌握情况一般：“客户对课程的掌握情况”的“客户结论”小于4
-            int correct = customerFeature.getDeliveryPeriod().getMasterCourse().getCorrect();
-            if (correct >= 5 ) {
-                advantage.add("【交付期】客户对课程的掌握情况较好");
-            } else {
-                questions.add(new CustomerFeatureResponse.Question("【交付期】客户对课程的掌握情况一般"));
             }
 
             // 优点：- 客户确认购买：字段“客户对购买软件的态度”的值为“是”
@@ -847,197 +781,35 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return processSummary;
     }
 
-    private Boolean determineTradingMethod(TradeMethodFeature tradeMethodFeature) {
-        return tradeMethodFeature.getInquired().equals("yes")
-                && Objects.nonNull(tradeMethodFeature.getCustomerConclusion())
-                && !StringUtils.isEmpty(tradeMethodFeature.getCustomerConclusion().getCompareValue())
-                && Objects.nonNull(tradeMethodFeature.getStandardAction())
-                && Objects.nonNull(tradeMethodFeature.getStandardAction().getResult())
-                && tradeMethodFeature.getStandardAction().getResult();
-    }
+    private CustomerFeatureResponse.FrequencyContent getCustomerLearningFrequencyContent(CommunicationFreqContent communicationFreqContent){
+        CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
+        if (communicationFreqContent.getRemindCount() > 0 ) {
+            // 频率计算规则 提醒次数/通话次数
+            double fre = (double) (communicationFreqContent.getRemindCount() * 60) / communicationFreqContent.getCommunicationTime();
+            frequencyContent.setValue(fre);
 
-    private void setRemindLive(CustomerFeatureFromLLM featureFromLLM,
-                               CustomerFeatureResponse customerFeature,
-                               LocalDateTime customerCreateTime) {
-        // 提醒查看盘中直播：
-        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-        recordContent.setColumns(columns);
+            // 提醒查看交付课直播：
+            CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+            columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("remind_count", "请教次数"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("content", "原文摘要"));
+            recordContent.setColumns(columns);
 
-        List<Map<String, Object>> data = new ArrayList<>();
-        List<String> allTimeStr = new ArrayList<>();
-        int count = 0;
-        //1、销售提醒客户查看"盘中直播"的语句
-        if (!CollectionUtils.isEmpty(featureFromLLM.getRemindService_1())) {
-            for (CommunicationContent one : featureFromLLM.getRemindService_1()) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_time", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
+            List<Map<String, Object>> data = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
+                for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("communication_time", sdf.format(one.getCommunicationTime()));
+                    item.put("remind_count", one.getCount());
+                    item.put("content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getContent()));
+                    data.add(item);
+                }
             }
+            recordContent.setData(data);
+            frequencyContent.setRecords(recordContent);
         }
-        Collections.sort(data, new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_time");
-                String eventType2 = (String) o2.get("event_time");
-                return eventType2.compareTo(eventType1); // 字符串按字典序比较
-            }
-        });
-        recordContent.setData(data);
-
-        // 计算频次
-        if (!CollectionUtils.isEmpty(allTimeStr)) {
-            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
-            // 这里计算平均多少天一次
-            double fre = (double) days / count;
-            String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
-        }
-
-        customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
-    }
-
-
-    private void setRemindCommunity(CustomerFeatureFromLLM featureFromLLM,
-                                    CustomerFeatureResponse customerFeature,
-                                    LocalDateTime customerCreateTime) {
-        // 直播/圈子内容传递频次（区分三个老师的姓名）
-        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-        recordContent.setColumns(columns);
-
-        List<Map<String, Object>> data = new ArrayList<>();
-        List<String> allTimeStr = new ArrayList<>();
-        int count = 0;
-
-        //1，销售提醒客户查看"圈子内容"的语句
-        if (!CollectionUtils.isEmpty(featureFromLLM.getRemindService_2())) {
-            for (CommunicationContent one : featureFromLLM.getRemindService_2()) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_time", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
-            }
-        }
-        Collections.sort(data, new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_time");
-                String eventType2 = (String) o2.get("event_time");
-                return eventType2.compareTo(eventType1); // 字符串按字典序比较
-            }
-        });
-        recordContent.setData(data);
-        // 计算频次
-        if (!CollectionUtils.isEmpty(allTimeStr)) {
-            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
-            // 这里计算平均多少天一次
-            double fre = (double) days / count;
-            String formattedResult = String.format("%.1f", fre);
-            customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().setValue(Double.parseDouble(formattedResult));
-        }
-        customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().setRecords(recordContent);
-    }
-
-    private void setDeliveryRemindLive(CustomerFeatureFromLLM featureFromLLM,
-                                       CustomerFeatureResponse customerFeature,
-                                       LocalDateTime customerCreateTime) {
-        // 提醒查看交付课直播：
-        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-        recordContent.setColumns(columns);
-
-        List<Map<String, Object>> data = new ArrayList<>();
-        List<String> allTimeStr = new ArrayList<>();
-        int count = 0;
-        //1、提醒查看交付课直播
-        if (!CollectionUtils.isEmpty(featureFromLLM.getDeliveryRemindLive())) {
-            for (CommunicationContent one : featureFromLLM.getDeliveryRemindLive()) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_time", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
-            }
-        }
-        Collections.sort(data, new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_time");
-                String eventType2 = (String) o2.get("event_time");
-                return eventType2.compareTo(eventType1); // 字符串按字典序比较
-            }
-        });
-        recordContent.setData(data);
-
-        // 计算频次
-        if (!CollectionUtils.isEmpty(allTimeStr)) {
-            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
-            // 这里计算平均多少天一次
-            double fre = (double) days / count;
-            String formattedResult = String.format("%.1f", fre);
-            customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
-        }
-
-        customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
-    }
-
-    private void setDeliveryRemindplayback(CustomerFeatureFromLLM featureFromLLM,
-                                           CustomerFeatureResponse customerFeature,
-                                           LocalDateTime customerCreateTime) {
-        // 提醒查看交付课直播：
-        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-        recordContent.setColumns(columns);
-
-        List<Map<String, Object>> data = new ArrayList<>();
-        List<String> allTimeStr = new ArrayList<>();
-        int count = 0;
-        //1、提醒查看交付课直播
-        if (!CollectionUtils.isEmpty(featureFromLLM.getDeliveryRemindLive())) {
-            for (CommunicationContent one : featureFromLLM.getDeliveryRemindLive()) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("event_time", one.getTs());
-                item.put("event_content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getAnswerText()));
-                data.add(item);
-                allTimeStr.add(one.getTs());
-                count++;
-            }
-        }
-        Collections.sort(data, new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_time");
-                String eventType2 = (String) o2.get("event_time");
-                return eventType2.compareTo(eventType1); // 字符串按字典序比较
-            }
-        });
-        recordContent.setData(data);
-
-        // 计算频次
-        if (!CollectionUtils.isEmpty(allTimeStr)) {
-            int days = CommonUtils.calculateDaysDifference(customerCreateTime);
-            // 这里计算平均多少天一次
-            double fre = (double) days / count;
-            String formattedResult = String.format("%.1f", fre);
-            customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setValue(Double.parseDouble(formattedResult));
-        }
-
-        customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
+        return frequencyContent;
     }
 
 }
