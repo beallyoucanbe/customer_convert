@@ -1,6 +1,5 @@
 package com.smart.sso.server.model;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -46,7 +45,6 @@ public class CustomerBase implements Serializable {
     private LocalDateTime  updateTime;
 
     private LocalDateTime purchaseTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTimeTelephone;
 
     private Integer customerRefundStatus;

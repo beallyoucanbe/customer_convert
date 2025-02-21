@@ -446,28 +446,24 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         List<CustomerInfo> characterList = customerRelationService.getByActivity(activityId);
         for (CustomerInfo info : characterList) {
-            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(Long.toString(info.getCustomerId()), activityId);
+            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(info.getUserId(), activityId);
             if (Objects.nonNull(customerBase)) {
                 // 判断销售是否发生变更
                 if (!info.getSalesId().toString().equals(customerBase.getOwnerId())) {
                     customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
                 }
-                if (!Objects.equals(info.getCustomerRefundStatus(), customerBase.getCustomerRefundStatus())) {
-                    customerBaseMapper.updateRefundStatusById(customerBase.getId(), info.getCustomerRefundStatus(), info.getRefundTime());
-                }
+//                if (!Objects.equals(info.getCustomerRefundStatus(), customerBase.getCustomerRefundStatus())) {
+//                    customerBaseMapper.updateRefundStatusById(customerBase.getId(), info.getCustomerRefundStatus(), info.getRefundTime());
+//                }
             } else {
                 customerBase = new CustomerBase();
                 customerBase.setId(CommonUtils.generatePrimaryKey());
-                customerBase.setCustomerId(Long.toString(info.getCustomerId()));
-                customerBase.setOwnerId(Long.toString(info.getSalesId()));
-                customerBase.setCustomerName(info.getCustomerName());
+                customerBase.setCustomerId(info.getUserId());
+                customerBase.setOwnerId(info.getSalesId());
+                customerBase.setCustomerName(info.getUserName());
                 customerBase.setOwnerName(info.getSalesName());
                 customerBase.setActivityId(activityId);
-                customerBase.setActivityName(info.getActivityName());
-                customerBase.setUpdateTimeTelephone(LocalDateTime.now());
-                customerBase.setPurchaseTime(info.getPurchaseTime());
-                customerBase.setRefundTime(info.getRefundTime());
-                customerBase.setCustomerRefundStatus(info.getCustomerRefundStatus());
+                customerBase.setActivityName("");
                 customerBaseMapper.insert(customerBase);
             }
         }

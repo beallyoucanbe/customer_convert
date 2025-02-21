@@ -1,6 +1,5 @@
 package com.smart.sso.server.model;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -36,6 +35,13 @@ public class TelephoneRecord {
     private List<CommunicationContent> tradingStyle;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> purchaseSimilarProduct;
+    private List<CommunicationContent> memberStocksBuy;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> memberStocksPrice;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> welfareStocksBuy;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> welfareStocksPrice;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> consultingPracticalClass;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
@@ -49,13 +55,7 @@ public class TelephoneRecord {
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> softwarePurchaseAttitude;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> memberStocksBuy;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> memberStocksPrice;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> welfareStocksBuy;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> welfareStocksPrice;
+
 
     private Integer parsed;
     private String tenantId;
