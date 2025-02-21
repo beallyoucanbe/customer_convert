@@ -11,21 +11,16 @@ import com.smart.sso.server.model.*;
 import com.smart.sso.server.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.*;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Stream;
+
 
 
 @Component
@@ -158,14 +153,14 @@ public class SchedulTask {
             try {
                 QueryWrapper<CustomerBase> queryWrapper2 = new QueryWrapper<>();
                 queryWrapper2.eq("owner_id", item.getSalesId().toString());
-                queryWrapper2.eq("customer_id", item.getCustomerId().toString());
+                queryWrapper2.eq("customer_id", item.getUserId());
                 CustomerBase customerBase = customerBaseMapper.selectOne(queryWrapper2);
                 if (Objects.isNull(customerBase)) {
                     continue;
                 }
                 // 检查info表中是否有购买时间，如果有，代表已购买，跳过不处理，如果没有，就记录首次探测到购买的时间
                 if (Objects.isNull(customerBase.getPurchaseTime())) {
-                    customerBaseMapper.updatePurchaseTimeById(customerBase.getId(), item.getPurchaseTime());
+                    customerBaseMapper.updatePurchaseTimeById(customerBase.getId(), item.getPurchase_2_0Time());
                 }
                 CustomerFeature customerFeature = customerFeatureMapper.selectById(customerBase.getId());
                 if (Objects.nonNull(customerFeature) && Objects.nonNull(customerFeature.getSoftwarePurchaseAttitudeSales())) {
@@ -194,7 +189,7 @@ public class SchedulTask {
                     customerFeatureMapper.insert(feature);
                 }
             } catch (Exception e) {
-                log.error("执行购买状态任务失败：" + item.getCustomerId());
+                log.error("执行购买状态任务失败：" + item.getUserId());
             }
         }
         // 更新成功，更新任务状态
@@ -320,57 +315,5 @@ public class SchedulTask {
             }
         }
         log.error("延迟消息发送任务执行完成");
-    }
-
-    /**
-     * 定时检查是否有需要处理的通话
-     */
-    @Scheduled(cron = "0 */50 * * * ?")
-    public void processCommunication() {
-        log.error("开始检查是否有需要处理的通话");
-        // 检查微信
-        String dateTimeStr = DateUtil.getCurrentDateTime();
-        String dateStr = dateTimeStr.split(" ")[0];
-        Path folderPath = Paths.get("/data/customer-convert/callback/wecom/" + dateStr);
-        // 获取文件夹下面的所有文件
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath)) {
-            for (Path entry : stream) {
-                try {
-                    String fileName = entry.getFileName().toString();
-                    if (!recordService.existId(fileName)) {
-                        Thread.sleep(3000L);
-                        log.error("开始执行python脚本处理微信对话，{}", entry);
-                        communicationService.wecomCallBack(entry.toString());
-                    }
-                } catch (Exception e) {
-                    log.error("微信记录处理失败，文件路径为：{}", entry.toString(), e);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // 检查语音通话
-        Path teleFilePath = Paths.get("/data/customer-convert/callback/telephone/" + dateStr + "_message.txt");
-        try (Stream<String> lines = Files.lines(teleFilePath)) {
-            // 逐行处理文件内容
-            lines.forEach(item -> {
-                        try {
-                            Map<String, Object> one = JsonUtil.readValue(item, new TypeReference<Map<String, Object>>() {
-                            });
-                            String taskId = one.get("task_id").toString();
-                            if (!recordService.existId(taskId)) {
-                                Thread.sleep(3000L);
-                                log.error("开始执行python脚本处理语音对话，task_id : {}", taskId);
-                                communicationService.telephoneCallBack(item);
-                            }
-                        } catch (Exception e) {
-                            log.error("语音记录处理失败，task_id：{}", item, e);
-                        }
-                    }
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

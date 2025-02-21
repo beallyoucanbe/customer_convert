@@ -2,10 +2,7 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.enums.HasTimeEnum;
-import com.smart.sso.server.enums.StockPositonEnum;
-import com.smart.sso.server.enums.TradingStyleEnum;
+import com.smart.sso.server.enums.*;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
@@ -35,9 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
-import static com.smart.sso.server.enums.FundsVolumeEnum.FIVE_TO_TEN_MILLION;
-import static com.smart.sso.server.enums.FundsVolumeEnum.GREAT_TEN_MILLION;
-import static com.smart.sso.server.enums.FundsVolumeEnum.LESS_FIVE_MILLION;
+import static com.smart.sso.server.enums.FundsVolumeEnum.*;
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 
 @Service
@@ -191,13 +186,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (StringUtils.isEmpty(conclusion.getCompareValue())) {
             return result;
         }
-        if (conclusion.getCompareValue().equals(GREAT_TEN_MILLION.getValue())) {
+        if (conclusion.getCompareValue().equals(GREAT_THIRTY_W.getValue())) {
             return "high";
         }
-        if (conclusion.getCompareValue().equals(FIVE_TO_TEN_MILLION.getValue())) {
+        if (conclusion.getCompareValue().equals(TWENTY_TO_THIRTY_W.getValue())) {
             return "medium";
         }
-        if (conclusion.getCompareValue().equals(LESS_FIVE_MILLION.getValue())) {
+        if (conclusion.getCompareValue().equals(LESS_FIFTEEN_W.getValue())) {
             return "low";
         }
         return result;
@@ -211,14 +206,10 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         if (Objects.nonNull(customerFeature)) {
             // 客户信息收集:“客户的资金体量”有值 and“客户是否有时间听课”有值
-            CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
             try {
-                if (Objects.nonNull(basic.getFundsVolume().getCustomerConclusion().getCompareValue()) &&
-                        !basic.getFundsVolume().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !basic.getFundsVolume().getCustomerConclusion().getCompareValue().equals("null") &&
-                        Objects.nonNull(basic.getHasTime().getCustomerConclusion().getCompareValue()) &&
-                        !basic.getHasTime().getCustomerConclusion().getCompareValue().equals("无") &&
-                        !basic.getHasTime().getCustomerConclusion().getCompareValue().equals("null")) {
+                if (Objects.nonNull(customerFeature.getWarmth().getFundsVolume().getCompareValue()) &&
+                        !customerFeature.getWarmth().getFundsVolume().getCompareValue().equals("无") &&
+                        !customerFeature.getWarmth().getFundsVolume().getCompareValue().equals("null")) {
                     stageStatus.setMatchingJudgment(1);
                 }
             } catch (Exception e) {
@@ -244,7 +235,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
             // 客户认可老师
             try {
-                if ((Boolean) basic.getTeacherApproval().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue()) {
                     stageStatus.setFunctionIntroduction(1);
                 }
             } catch (Exception e) {
@@ -253,7 +244,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
             // 客户确认购买 客户对购买软件的态度”的值为“是”
             try {
-                if ((Boolean) basic.getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+                if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
                     stageStatus.setConfirmPurchase(1);
                 }
             } catch (Exception e) {
@@ -265,8 +256,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         try {
             CustomerInfo customerInfo = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
                     customerBase.getOwnerId(), customerBase.getActivityId());
-            if (Objects.nonNull(customerInfo) && Objects.nonNull(customerInfo.getCustomerPurchaseStatus())
-                    && customerInfo.getCustomerPurchaseStatus() == 1) {
+            if (Objects.nonNull(customerInfo) && Objects.nonNull(customerInfo.getIsPurchased_2_0())
+                    && customerInfo.getIsPurchased_2_0() == 1) {
                 stageStatus.setCompletePurchase(1);
             }
         } catch (Exception e) {
@@ -295,15 +286,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setId(customerBase.getId());
             customerFeatureMapper.insert(customerFeature);
         }
-        if (Objects.nonNull(customerFeatureRequest.getBasic())) {
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-        }
 
         if (Objects.nonNull(customerFeatureRequest.getWarmth())) {
             if (Objects.nonNull(customerFeatureRequest.getWarmth().getFundsVolume()) &&
@@ -311,13 +293,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             Objects.nonNull(customerFeatureRequest.getWarmth().getFundsVolume().getSalesManualTag()))) {
                 customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getFundsVolume().getSalesRecord(),
                         customerFeatureRequest.getWarmth().getFundsVolume().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
-
-            if (Objects.nonNull(customerFeatureRequest.getWarmth().getCustomerRequireRefund()) &&
-                    (Objects.nonNull(customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesManualTag()))) {
-                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesRecord(),
-                        customerFeatureRequest.getWarmth().getCustomerRequireRefund().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
         }
         customerFeatureMapper.updateById(customerFeature);
@@ -425,7 +400,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (CustomerBase customerBase : customerFeatureList) {
             CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerBase.getCustomerId(), customerBase.getActivityId());
             boolean tttt = true;
-            if (!equal(featureProfile.getBasic().getFundsVolume())) {
+            if (!equal(featureProfile.getWarmth().getFundsVolume())) {
                 tttt = false;
                 featureNum++;
             }
@@ -470,13 +445,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
-    private boolean equal(Feature feature) {
-        if (Objects.isNull(feature.getCustomerConclusion().getSalesManualTag())) {
+    private boolean equal(Feature.CustomerConclusion feature) {
+        if (Objects.isNull(feature.getSalesManualTag())) {
             return true;
         }
-        if (Objects.isNull(feature.getCustomerConclusion().getModelRecord())) {
+        if (Objects.isNull(feature.getModelRecord())) {
             return false;
-        } else if (feature.getCustomerConclusion().getModelRecord().equals(feature.getCustomerConclusion().getSalesManualTag())) {
+        } else if (feature.getModelRecord().equals(feature.getSalesManualTag())) {
             return true;
         } else {
             return false;
@@ -543,34 +518,37 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.getWarmth().setClassAttendTimes(1);
         customerFeatureResponse.getWarmth().setClassAttendDuration(2);
         customerFeatureResponse.getWarmth().setFundsVolume(
-                convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class).getCustomerConclusion()
-        );
+                convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class).getCustomerConclusion());
         customerFeatureResponse.getWarmth().setStockPosition(
-                convertBaseFeatureByOverwrite(featureFromLLM.getStockPosition(),  null, StockPositonEnum.class, String.class).getCustomerConclusion()
-        );
+                convertBaseFeatureByOverwrite(featureFromLLM.getStockPosition(),  null, StockPositonEnum.class, String.class).getCustomerConclusion());
         customerFeatureResponse.getWarmth().setTradingStyle(
                 convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, TradingStyleEnum.class, String.class).getCustomerConclusion()
-
         );
         customerFeatureResponse.getWarmth().setCustomerResponse("");
         customerFeatureResponse.getWarmth().setPurchaseSimilarProduct(
-                convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, null, Boolean.class).getCustomerConclusion()
-        );
+                convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, null, Boolean.class).getCustomerConclusion());
 
         // 设置base
-        customerFeatureResponse.getBasic().setMemberStocksBuy();
-
-        // Basic 基本信息
-        basic.setFundsVolume(
-
+        customerFeatureResponse.getBasic().setMemberStocksBuy(
+                convertBaseFeatureByOverwrite(featureFromLLM.getMemberStocksBuy(), null, null, Boolean.class)
         );
-        basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
-        basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
-        basic.setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), null, Boolean.class));
+        customerFeatureResponse.getBasic().setMemberStocksPrice(
+                convertBaseFeatureByOverwrite(featureFromLLM.getMemberStocksPrice(), null, PriceFluctuationsEnum.class, String.class)
+        );
+        customerFeatureResponse.getBasic().setWelfareStocksBuy(
+                convertBaseFeatureByOverwrite(featureFromLLM.getWelfareStocksBuy(), null, null, Boolean.class)
+        );
+        customerFeatureResponse.getBasic().setWelfareStocksPrice(
+                convertBaseFeatureByOverwrite(featureFromLLM.getWelfareStocksPrice(), null, PriceFluctuationsEnum.class, String.class)
+        );
+        customerFeatureResponse.getBasic().setConsultingPracticalClass(
+                convertBaseFeatureByOverwrite(featureFromLLM.getConsultingPracticalClass(), null, null, Boolean.class)
+        );
 
-        basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
-
-        customerFeatureResponse.setBasic(basic);
+        customerFeatureResponse.getBasic().setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
+        customerFeatureResponse.getBasic().setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
+        customerFeatureResponse.getBasic().setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), null, Boolean.class));
+        customerFeatureResponse.getBasic().setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
         return customerFeatureResponse;
     }
 
@@ -878,101 +856,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 && tradeMethodFeature.getStandardAction().getResult();
     }
 
-    private void setIntroduceService(CustomerFeatureFromLLM featureFromLLM, CustomerFeatureResponse customerFeature) {
-        // 5个维度：
-        int completeInfo = 0;
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_1()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())) {
-            completeInfo += 20;
-        }
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_2()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())) {
-            completeInfo += 20;
-        }
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_3()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())) {
-            completeInfo += 20;
-        }
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_4()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())) {
-            completeInfo += 20;
-        }
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_5()) &&
-                !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())) {
-            completeInfo += 20;
-        }
-        customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setValue(completeInfo);
-        CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
-        List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_type", "维度名"));
-        columns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-        recordContent.setColumns(columns);
-
-        List<Map<String, Object>> data = new ArrayList<>();
-        //1、盘中直播"沙场点兵"、回放位置
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_1()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_1().getAnswerText())) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "盘中直播\"沙场点兵\"、回放位置");
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_1().getCallId(), featureFromLLM.getIntroduceService_1().getAnswerText()));
-            data.add(item);
-        } else {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "盘中直播\"沙场点兵\"、回放位置");
-            item.put("event_content", null);
-            data.add(item);
-        }
-        //2、"智能投教圈"、提醒客户查收老师信息
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_2()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_2().getAnswerText())) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "\"智能投教圈\"、提醒客户查收老师信息");
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_2().getCallId(), featureFromLLM.getIntroduceService_2().getAnswerText()));
-            data.add(item);
-        } else {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "\"智能投教圈\"、提醒客户查收老师信息");
-            item.put("event_content", null);
-            data.add(item);
-        }
-        //3、老师相关课程位置
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_3()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_3().getAnswerText())) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "老师相关课程位置");
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_3().getCallId(), featureFromLLM.getIntroduceService_3().getAnswerText()));
-            data.add(item);
-        } else {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "老师相关课程位置");
-            item.put("event_content", null);
-            data.add(item);
-        }
-        //4、16节交付大课都包含什么内容
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_4()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_4().getAnswerText())) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "16节交付大课都包含什么内容");
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_4().getCallId(), featureFromLLM.getIntroduceService_4().getAnswerText()));
-            data.add(item);
-        } else {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "16节交付大课都包含什么内容");
-            item.put("event_content", null);
-            data.add(item);
-        }
-        //5、软件功能指标位置
-        if (Objects.nonNull(featureFromLLM.getIntroduceService_5()) && !StringUtils.isEmpty(featureFromLLM.getIntroduceService_5().getAnswerText())) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "软件功能指标位置");
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getIntroduceService_5().getCallId(), featureFromLLM.getIntroduceService_5().getAnswerText()));
-            data.add(item);
-        } else {
-            Map<String, Object> item = new HashMap<>();
-            item.put("event_type", "软件功能指标位置");
-            item.put("event_content", null);
-            data.add(item);
-        }
-        recordContent.setData(data);
-        customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().setRecords(recordContent);
-    }
-
     private void setRemindLive(CustomerFeatureFromLLM featureFromLLM,
                                CustomerFeatureResponse customerFeature,
                                LocalDateTime customerCreateTime) {
@@ -1157,339 +1040,4 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().setRecords(recordContent);
     }
 
-    private void setWarmth(CustomerBase customerBase,
-                           CustomerFeatureResponse customerFeature) {
-        customerFeature.getWarmth().setDeliveryCourse(eventService.getDeliveryCourseListenContent(customerBase.getCustomerId()));
-        customerFeature.getWarmth().setVisitLiveFreq(eventService.getVisitLiveFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
-        customerFeature.getWarmth().setVisitCommunityFreq(eventService.getVisitCommunityFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
-        customerFeature.getWarmth().setFunctionFreq(eventService.getFunctionFreqContent(customerBase.getCustomerId(), customerBase.getCreateTime()));
-        if (Objects.nonNull(customerFeature.getBasic().getFundsVolume()) &&
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getModelRecord())) {
-            customerFeature.getWarmth().setFundsVolume(customerFeature.getBasic().getFundsVolume().getCustomerConclusion());
-        }
-        if (Objects.nonNull(customerFeature.getBasic().getHasTime()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord())) {
-            CustomerFeatureResponse.ChatContent hasTime = new CustomerFeatureResponse.ChatContent();
-            hasTime.setValue(customerFeature.getBasic().getHasTime().getCustomerConclusion().getModelRecord().toString());
-            hasTime.setOriginChat(customerFeature.getBasic().getHasTime().getCustomerConclusion().getOriginChat());
-            customerFeature.getWarmth().setCustomerCourse(hasTime);
-        }
-
-        if (Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund()) &&
-                Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion()) &&
-                Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue())) {
-            customerFeature.getWarmth().setCustomerRequireRefund(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion());
-        }
-    }
-
-    // 设置交接期属性
-    private void setHandoverPeriod(CustomerBase customerBase,
-                                   CustomerFeatureFromLLM featureFromLLM,
-                                   CustomerFeatureResponse customerFeature) {
-        setIntroduceService(featureFromLLM, customerFeature);
-        setRemindLive(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        setRemindCommunity(featureFromLLM, customerFeature, customerBase.getCreateTime());
-        customerFeature.getHandoverPeriod().setCurrentStocks(customerFeature.getTradingMethod().getCurrentStocks());
-        customerFeature.getHandoverPeriod().setTradingStyle(customerFeature.getTradingMethod().getTradingStyle());
-        customerFeature.getHandoverPeriod().setStockMarketAge(customerFeature.getTradingMethod().getStockMarketAge());
-    }
-
-    // 设置交付期属性
-    private void setDeliveryPeriod(CustomerBase customerBase,
-                                   CustomerFeatureFromLLM featureFromLLM,
-                                   CustomerFeatureResponse customerFeature) {
-        // 设置沟通频次
-        LocalDateTime deliveryPeriodStartTime = LocalDateTime.of(2025, 2, 10, 0, 0, 0);
-        int days = CommonUtils.calculateDaysDifference(deliveryPeriodStartTime);
-        int communicationCount = recordService.getCommunicationCountFromTime(customerBase.getCustomerId(), deliveryPeriodStartTime);
-        if (communicationCount > 0) {
-            double fre = (double) days / communicationCount;
-            customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(fre);
-        }
-        // 交付课直播
-        setDeliveryRemindLive(featureFromLLM, customerFeature, deliveryPeriodStartTime);
-        // 交付课回放
-        setDeliveryRemindplayback(featureFromLLM, customerFeature, deliveryPeriodStartTime);
-        CourseTeacherFeature courseTeacherFeature = new CourseTeacherFeature(customerFeature.getBasic().getTeacherApproval());
-        if (Objects.nonNull(featureFromLLM.getTeacherApproval())
-                && StringUtils.hasText(featureFromLLM.getTeacherApproval().getBuildText())) {
-            courseTeacherFeature.setTeacherProfession(Boolean.TRUE);
-            CommunicationContent teacher = featureFromLLM.getTeacherApproval();
-            courseTeacherFeature.setTeacherProfessionChat(CommonUtils.getOriginChatFromChatText(StringUtils.isEmpty(teacher.getCallId()) ? featureFromLLM.getCallId() : teacher.getCallId(),
-                    teacher.getBuildText()));
-        }
-        customerFeature.getDeliveryPeriod().setCourseTeacher(courseTeacherFeature);
-        setMasterCourse(featureFromLLM, customerFeature);
-    }
-
-    private void setMasterCourse(CustomerFeatureFromLLM featureFromLLM,
-                                 CustomerFeatureResponse customerFeature) {
-        CustomerFeatureResponse.Basic basic = customerFeature.getBasic();
-        int process = 0;
-        int correct = 0;
-        List<String> questionTags = new ArrayList<>();
-        List<Map<String, Object>> recordsData = new ArrayList<>();
-        List<Map<String, Object>> correctRecordsData = new ArrayList<>();
-        List<Map<String, Object>> questionRecordsData = new ArrayList<>();
-        if (basic.getCourseMaster_1().getInquired().equals("yes")) {
-            process++;
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否学会了课上内容");
-            item.put("event_time", featureFromLLM.getCourseMaster_1().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
-                    featureFromLLM.getCourseMaster_1().getQuestion()));
-            recordsData.add(item);
-
-            if (Objects.nonNull(basic.getCourseMaster_1().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_1().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_1().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否学会了课上内容");
-                item2.put("question", featureFromLLM.getCourseMaster_1().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_1().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_1().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了课上内容");
-                item3.put("tag", basic.getCourseMaster_1().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_1().getCallId(),
-                        featureFromLLM.getCourseMaster_1().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-        if (basic.getCourseMaster_2().getInquired().equals("yes")) {
-            process++;
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否会调了指标");
-            item.put("event_time", featureFromLLM.getCourseMaster_2().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
-                    featureFromLLM.getCourseMaster_2().getQuestion()));
-            recordsData.add(item);
-
-            if (Objects.nonNull(basic.getCourseMaster_2().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_2().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_2().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否会调了指标");
-                item2.put("question", featureFromLLM.getCourseMaster_2().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_2().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_2().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否会调了指标");
-                item3.put("tag", basic.getCourseMaster_2().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_2().getCallId(),
-                        featureFromLLM.getCourseMaster_2().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-        if (basic.getCourseMaster_3().getInquired().equals("yes")) {
-            process++;
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否学会了短线战法买点");
-            item.put("event_time", featureFromLLM.getCourseMaster_3().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
-                    featureFromLLM.getCourseMaster_3().getQuestion()));
-            recordsData.add(item);
-
-            if (Objects.nonNull(basic.getCourseMaster_3().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_3().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_3().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否学会了短线战法买点");
-                item2.put("question", featureFromLLM.getCourseMaster_3().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_3().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_3().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了短线战法买点");
-                item3.put("tag", basic.getCourseMaster_3().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_3().getCallId(),
-                        featureFromLLM.getCourseMaster_3().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-        if (basic.getCourseMaster_4().getInquired().equals("yes")) {
-            process++;
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否学会了小蜜蜂止盈法");
-            item.put("event_time", featureFromLLM.getCourseMaster_4().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
-                    featureFromLLM.getCourseMaster_4().getQuestion()));
-            recordsData.add(item);
-
-            if (Objects.nonNull(basic.getCourseMaster_4().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_4().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_4().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否学会了小蜜蜂止盈法");
-                item2.put("question", featureFromLLM.getCourseMaster_4().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_4().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_4().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了小蜜蜂止盈法");
-                item3.put("tag", basic.getCourseMaster_4().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_4().getCallId(),
-                        featureFromLLM.getCourseMaster_4().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-        if (basic.getCourseMaster_5().getInquired().equals("yes")) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否学会了预警信号");
-            item.put("event_time", featureFromLLM.getCourseMaster_5().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
-                    featureFromLLM.getCourseMaster_5().getQuestion()));
-            recordsData.add(item);
-            if (Objects.nonNull(basic.getCourseMaster_5().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_5().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_5().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否学会了预警信号");
-                item2.put("question", featureFromLLM.getCourseMaster_5().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_5().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_5().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了预警信号");
-                item3.put("tag", basic.getCourseMaster_5().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_5().getCallId(),
-                        featureFromLLM.getCourseMaster_5().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-        if (basic.getCourseMaster_6().getInquired().equals("yes")) {
-            process++;
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否学会了低吸信号");
-            item.put("event_time", featureFromLLM.getCourseMaster_6().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
-                    featureFromLLM.getCourseMaster_6().getQuestion()));
-            recordsData.add(item);
-            if (Objects.nonNull(basic.getCourseMaster_6().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_6().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_6().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否学会了低吸信号");
-                item2.put("question", featureFromLLM.getCourseMaster_6().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_6().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_6().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了低吸信号");
-                item3.put("tag", basic.getCourseMaster_6().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_6().getCallId(),
-                        featureFromLLM.getCourseMaster_6().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-        if (basic.getCourseMaster_7().getInquired().equals("yes")) {
-            process++;
-            Map<String, Object> item = new HashMap<>();
-            item.put("dim_name", "是否学会了使用热点狙击指标");
-            item.put("event_time", featureFromLLM.getCourseMaster_7().getTs());
-            item.put("event_content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
-                    featureFromLLM.getCourseMaster_7().getQuestion()));
-            recordsData.add(item);
-            if (Objects.nonNull(basic.getCourseMaster_7().getCustomerConclusion()) &&
-                    Objects.nonNull(basic.getCourseMaster_7().getCustomerConclusion().getModelRecord()) &&
-                    (Boolean) basic.getCourseMaster_7().getCustomerConclusion().getModelRecord()) {
-                correct++;
-                Map<String, Object> item2 = new HashMap<>();
-                item2.put("dim_name", "是否学会了使用热点狙击指标");
-                item2.put("question", featureFromLLM.getCourseMaster_7().getQuestion());
-                item2.put("answer", featureFromLLM.getCourseMaster_7().getAnswerText());
-                correctRecordsData.add(item2);
-            }
-
-            if (Objects.nonNull(basic.getCourseMaster_7().getCustomerQuestion()) &&
-                    StringUtils.hasText(basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString())) {
-                questionTags.add(basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString());
-                Map<String, Object> item3 = new HashMap<>();
-                item3.put("dim_name", "是否学会了使用热点狙击指标");
-                item3.put("tag", basic.getCourseMaster_7().getCustomerQuestion().getModelRecord().toString());
-                item3.put("content", CommonUtils.getOriginChatFromChatText(featureFromLLM.getCourseMaster_7().getCallId(),
-                        featureFromLLM.getCourseMaster_7().getDoubtText()));
-                questionRecordsData.add(item3);
-            }
-        }
-
-        Collections.sort(recordsData, new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                String eventType1 = (String) o1.get("event_time");
-                String eventType2 = (String) o2.get("event_time");
-                return eventType2.compareTo(eventType1); // 字符串按字典序比较
-            }
-        });
-        customerFeature.getDeliveryPeriod().getMasterCourse().setProcess(process);
-        customerFeature.getDeliveryPeriod().getMasterCourse().setCorrect(correct);
-
-        if (!CollectionUtils.isEmpty(recordsData)) {
-            CustomerFeatureResponse.RecordContent records = new CustomerFeatureResponse.RecordContent();
-            List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("dim_name", "维度名称"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("event_time", "会话时间"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("event_content", "原文摘要"));
-            records.setColumns(recordsColumns);
-            records.setData(recordsData);
-            customerFeature.getDeliveryPeriod().getMasterCourse().setRecords(records);
-        }
-
-        if (!CollectionUtils.isEmpty(correctRecordsData)) {
-            CustomerFeatureResponse.RecordContent correctRecords = new CustomerFeatureResponse.RecordContent();
-            List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("dim_name", "维度名称"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("question", "销售提问"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("answer", "客户回答"));
-            correctRecords.setColumns(recordsColumns);
-            correctRecords.setData(correctRecordsData);
-            customerFeature.getDeliveryPeriod().getMasterCourse().setCorrectRecords(correctRecords);
-        }
-
-        if (!CollectionUtils.isEmpty(questionRecordsData)) {
-            CustomerFeatureResponse.RecordContent questionRecords = new CustomerFeatureResponse.RecordContent();
-            List<CustomerFeatureResponse.RecordTitle> recordsColumns = new ArrayList<>();
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("dim_name", "维度名称"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("tag", "问题标签"));
-            recordsColumns.add(new CustomerFeatureResponse.RecordTitle("content", "原文摘要"));
-            questionRecords.setColumns(recordsColumns);
-            questionRecords.setData(questionRecordsData);
-            customerFeature.getDeliveryPeriod().getMasterCourse().setQuestionRecords(questionRecords);
-            customerFeature.getDeliveryPeriod().getMasterCourse().setQuestionTags(questionTags);
-        }
-    }
 }
