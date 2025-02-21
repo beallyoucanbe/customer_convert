@@ -213,6 +213,30 @@ public class EventServiceImpl implements EventService {
                 customerCharacter.setCourse2(courseStatus);
             } else if (courseName.contains("巧用“两点乾坤”")) {
                 customerCharacter.setCourse3(courseStatus);
+            } else if (courseName.contains("强势调整的原理和优选条")) {
+                customerCharacter.setCourse4(courseStatus);
+            } else if (courseName.contains("强调的买卖点与止盈止")) {
+                customerCharacter.setCourse5(courseStatus);
+            } else if (courseName.contains("量化盈利模式的应用")) {
+                customerCharacter.setCourse6(courseStatus);
+            } else if (courseName.contains("主力军情实战应用")) {
+                customerCharacter.setCourse7(courseStatus);
+            } else if (courseName.contains("龙头低吸指标的原理")) {
+                customerCharacter.setCourse8(courseStatus);
+            } else if (courseName.contains("龙头低吸战法")) {
+                customerCharacter.setCourse9(courseStatus);
+            } else if (courseName.contains("证券分析的三大方法与底层逻")) {
+                customerCharacter.setCourse10(courseStatus);
+            } else if (courseName.contains("如何运用技术分析与行为分析")) {
+                customerCharacter.setCourse11(courseStatus);
+            } else if (courseName.contains("如何用尖端武器跟政策")) {
+                customerCharacter.setCourse12(courseStatus);
+            } else if (courseName.contains("巧用龙虎榜跟游资")) {
+                customerCharacter.setCourse13(courseStatus);
+            } else if (courseName.contains("外资风向标")) {
+                customerCharacter.setCourse14(courseStatus);
+            } else if (courseName.contains("产业资本运作的逻辑")) {
+                customerCharacter.setCourse15(courseStatus);
             }
         }
     }
@@ -236,6 +260,30 @@ public class EventServiceImpl implements EventService {
                 customerCharacter.setTask2(1);
             } else if (actionContent.contains("巧用“两点乾坤”")) {
                 customerCharacter.setTask3(1);
+            } else if (actionContent.contains("强势调整的原理和优选条")) {
+                customerCharacter.setTask4(1);
+            } else if (actionContent.contains("强调的买卖点与止盈止")) {
+                customerCharacter.setTask5(1);
+            } else if (actionContent.contains("量化盈利模式的应用")) {
+                customerCharacter.setTask6(1);
+            } else if (actionContent.contains("主力军情实战应用")) {
+                customerCharacter.setTask7(1);
+            } else if (actionContent.contains("龙头低吸指标的原理")) {
+                customerCharacter.setTask8(1);
+            } else if (actionContent.contains("龙头低吸战法")) {
+                customerCharacter.setTask9(1);
+            } else if (actionContent.contains("证券分析的三大方法与底层逻")) {
+                customerCharacter.setTask10(1);
+            } else if (actionContent.contains("如何运用技术分析与行为分析")) {
+                customerCharacter.setTask11(1);
+            } else if (actionContent.contains("如何用尖端武器跟政策")) {
+                customerCharacter.setTask12(1);
+            } else if (actionContent.contains("巧用龙虎榜跟游资")) {
+                customerCharacter.setTask13(1);
+            } else if (actionContent.contains("外资风向标")) {
+                customerCharacter.setTask14(1);
+            } else if (actionContent.contains("产业资本运作的逻辑")) {
+                customerCharacter.setTask15(1);
             }
         }
     }
