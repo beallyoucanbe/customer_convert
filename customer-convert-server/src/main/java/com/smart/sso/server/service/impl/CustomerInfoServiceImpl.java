@@ -119,7 +119,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureFromLLM featureFromLLM = recordService.getCustomerFeatureFromLLM(customerId, activityId);
 
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
-
         CustomerProfile customerProfile = convert2CustomerProfile(customerBase);
         customerProfile.setCustomerStage(getCustomerStageStatus(customerBase, featureFromSale, featureFromLLM));
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
@@ -427,9 +426,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 if (!info.getSalesId().toString().equals(customerBase.getOwnerId())) {
                     customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
                 }
-//                if (!Objects.equals(info.getCustomerRefundStatus(), customerBase.getCustomerRefundStatus())) {
-//                    customerBaseMapper.updateRefundStatusById(customerBase.getId(), info.getCustomerRefundStatus(), info.getRefundTime());
-//                }
             } else {
                 customerBase = new CustomerBase();
                 customerBase.setId(CommonUtils.generatePrimaryKey());
@@ -512,7 +508,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return null;
         }
         CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
-
         // 设置温度
         customerFeatureResponse.getWarmth().setClassAttendTimes(1);
         customerFeatureResponse.getWarmth().setClassAttendDuration(2);

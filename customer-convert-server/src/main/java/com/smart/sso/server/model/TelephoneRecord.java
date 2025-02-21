@@ -35,6 +35,7 @@ public class TelephoneRecord {
     private List<CommunicationContent> tradingStyle;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> purchaseSimilarProduct;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> memberStocksBuy;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> memberStocksPrice;
@@ -54,8 +55,6 @@ public class TelephoneRecord {
     private List<CommunicationContent> softwareValueApproval;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> softwarePurchaseAttitude;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-
 
     private Integer parsed;
     private String tenantId;

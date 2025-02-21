@@ -62,10 +62,14 @@ public class CustomerFeatureResponse {
     @Setter
     @NoArgsConstructor
     public static class Warmth{
-        // 听课次数
-        private Integer classAttendTimes;
-        // 听课时长
-        private Integer classAttendDuration;
+        // 2.0听课次数
+        private Integer classAttendTimes_2;
+        // 2.0听课时长
+        private Integer classAttendDuration_2;
+        // 3.0听课次数
+        private Integer classAttendTimes_3;
+        // 3.0听课时长
+        private Integer classAttendDuration_3;
         // 客户资金体量
         private Feature.CustomerConclusion fundsVolume = new Feature.CustomerConclusion();
         // 客户仓位

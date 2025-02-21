@@ -26,7 +26,6 @@ public class CustomerRelationServiceImpl implements CustomerRelationService {
     @Override
     public List<CustomerInfo> getByActivity(String activityId) {
         QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("activity_id", activityId);
         return customerInfoMapper.selectList(queryWrapper);
     }
 
