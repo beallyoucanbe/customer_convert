@@ -718,7 +718,7 @@ public class MessageServiceImpl implements MessageService {
             String dayStr = day.equals("today") ? "今日" : "昨日";
             for (String doubt : questionMost) {
                 String aiSummary = recommenderService.getAiSummaryByQuestion(doubt);
-                String url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s", activityId, doubt, staffId);
+                String url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s&owner=%s", activityId, doubt, staffId, userIdNameMap.get(staffId));
                 String messageUser = String.format(RECOMMENDER_SUMMARY_FOR_STAFF_TEMPLATE,
                         dayStr, doubt, sortedMap.get(doubt),
                         aiSummary, url);
@@ -731,7 +731,7 @@ public class MessageServiceImpl implements MessageService {
                 textMessage.setMarkdown(textContent);
                 sendMessageToUser(textMessage, activityId, MessageContentType.SCRIPT_RECOMMENDATION_PUSH.getText());
 
-                url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s", activityId, doubt, staffLeaderMap.get(staffId));
+                url = String.format("https://newcmp.emoney.cn/chat/recommendation?activity_id=%s&active_question=%s&owner_id=%s&owner=%s", activityId, doubt, staffLeaderMap.get(staffId), userIdNameMap.get(staffLeaderMap.get(staffId)));
                 String messageleader = String.format(RECOMMENDER_SUMMARY_FOR_LEADER_TEMPLATE,
                         userIdNameMap.get(staffId), dayStr, doubt, sortedMap.get(doubt),
                         userIdNameMap.get(staffId), aiSummary, url);
