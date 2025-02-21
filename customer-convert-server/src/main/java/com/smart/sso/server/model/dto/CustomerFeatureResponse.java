@@ -68,22 +68,20 @@ public class CustomerFeatureResponse {
     @Setter
     @NoArgsConstructor
     public static class Warmth{
-        // 交付课听课情况
-        private CourseContent deliveryCourse = new CourseContent();
-        // 营销课听课情况
-        private CourseContent marketingCourse = new CourseContent();
-        // 直播访问频次
-        private FrequencyContent visitLiveFreq = new FrequencyContent();
-        // 圈子访问频次
-        private FrequencyContent visitCommunityFreq = new FrequencyContent();
-        // 功能指标使用频次
-        private FrequencyContent functionFreq = new FrequencyContent();
+        // 听课次数
+        private Integer classAttendTimes;
+        // 听课时长
+        private Integer classAttendDuration;
         // 客户资金体量
         private Feature.CustomerConclusion fundsVolume = new Feature.CustomerConclusion();
-        // 是否有时间听课
-        private ChatContent customerCourse = new ChatContent();
-        // 客户是否要求退款
-        private Feature.CustomerConclusion customerRequireRefund = new Feature.CustomerConclusion();
+        // 客户仓位
+        private Feature.CustomerConclusion stockPosition = new Feature.CustomerConclusion();
+        // 交易风格
+        private Feature.CustomerConclusion tradingStyle = new Feature.CustomerConclusion();
+        // 客户的回复频次
+        private String customerResponse;
+        // 是否购买类似的产品
+        private Feature.CustomerConclusion purchaseSimilarProduct = new Feature.CustomerConclusion();
     }
 
     @Getter

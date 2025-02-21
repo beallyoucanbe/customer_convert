@@ -22,4 +22,9 @@ public class CustomerProfile {
     private Long totalDuration ;
     private CustomerStageStatus customerStage ;
     private String conversionRate ;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    // 客户接入时间
+    private Date createTime ;
+    // 成交周期
+    private Integer transactionCycle ;
 }
