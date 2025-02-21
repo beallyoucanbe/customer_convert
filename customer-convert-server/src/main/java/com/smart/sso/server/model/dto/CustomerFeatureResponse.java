@@ -12,9 +12,6 @@ public class CustomerFeatureResponse {
     private Basic basic;
     private CustomerProcessSummary.TradingMethod tradingMethod;
     private Warmth warmth = new Warmth();
-    private HandoverPeriod handoverPeriod = new HandoverPeriod();
-    private DeliveryPeriod deliveryPeriod = new DeliveryPeriod();
-
 
     @Getter
     @Setter
@@ -30,19 +27,17 @@ public class CustomerFeatureResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Basic {
-        private BaseFeature fundsVolume;
-        private BaseFeature hasTime;
+        private BaseFeature memberStocksBuy;
+        private BaseFeature memberStocksPrice;
+        private BaseFeature welfareStocksBuy;
+        private BaseFeature welfareStocksPrice;
+        private BaseFeature consultingPracticalClass;
+        private FrequencyContent customerLearningFreq;
         private BaseFeature teacherApproval;
-        private BaseFeature softwarePurchaseAttitude;
-        private BaseFeature courseMaster_1;
-        private BaseFeature courseMaster_2;
-        private BaseFeature courseMaster_3;
-        private BaseFeature courseMaster_4;
-        private BaseFeature courseMaster_5;
-        private BaseFeature courseMaster_6;
-        private BaseFeature courseMaster_7;
-        private BaseFeature customerRequireRefund;
 
+        private BaseFeature continueFollowingStock;
+        private BaseFeature softwareValueApproval;
+        private BaseFeature softwarePurchaseAttitude;
     }
 
     @Getter
@@ -107,44 +102,6 @@ public class CustomerFeatureResponse {
     public static class ChatContent{
         private String value;
         private OriginChat originChat;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class HandoverPeriod{
-        private HandoverPeriodBasic basic = new HandoverPeriodBasic();
-        private TradeMethodFeature currentStocks;
-        private TradeMethodFeature tradingStyle;
-        private TradeMethodFeature stockMarketAge;
-
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class DeliveryPeriod{
-        private DeliveryPeriodBasic basic = new DeliveryPeriodBasic();
-        private CourseTeacherFeature courseTeacher = new CourseTeacherFeature();
-        private MasterCourseFeature masterCourse = new MasterCourseFeature();
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class HandoverPeriodBasic{
-        private FrequencyContent completeIntro = new FrequencyContent();
-        private FrequencyContent remindLiveFreq  = new FrequencyContent();
-        private FrequencyContent remindCommunityFreq = new FrequencyContent();;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class DeliveryPeriodBasic{
-        private FrequencyContent communicationFreq = new FrequencyContent();
-        private FrequencyContent remindLiveFreq  = new FrequencyContent();
-        private FrequencyContent remindPlaybackFreq = new FrequencyContent();;
     }
 
     @Getter
