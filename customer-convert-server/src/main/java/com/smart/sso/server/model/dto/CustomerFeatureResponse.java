@@ -73,7 +73,7 @@ public class CustomerFeatureResponse {
         // 交易风格
         private Feature.CustomerConclusion tradingStyle = new Feature.CustomerConclusion();
         // 客户的回复频次
-        private String customerResponse;
+        private Integer customerResponse;
         // 是否购买类似的产品
         private Feature.CustomerConclusion purchaseSimilarProduct = new Feature.CustomerConclusion();
     }

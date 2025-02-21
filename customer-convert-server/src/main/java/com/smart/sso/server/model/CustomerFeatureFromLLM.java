@@ -3,7 +3,7 @@ package com.smart.sso.server.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class CustomerFeatureFromLLM {
     private String ownerName;
     private String currentCampaign;
     private Integer communicationDuration;
-    private Timestamp communicationTime;
+    private LocalDateTime communicationTime;
     private String callId;
 
     private CommunicationContent fundsVolume;

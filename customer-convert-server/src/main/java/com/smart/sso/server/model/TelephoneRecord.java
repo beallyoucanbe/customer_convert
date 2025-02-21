@@ -21,7 +21,7 @@ public class TelephoneRecord {
     private String ownerName;
     private String activityId;
     private Integer communicationDuration;
-    private Timestamp communicationTime;
+    private LocalDateTime communicationTime;
     private String communicationType;
     private String callId;
 

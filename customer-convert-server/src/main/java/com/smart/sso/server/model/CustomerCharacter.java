@@ -32,71 +32,26 @@ public class CustomerCharacter implements Serializable {
     private Boolean confirmValueStage;
     private Boolean confirmPurchaseStage;
     private Boolean completePurchaseStage;
-
+    private Integer classAttendTimes;
+    private Integer classAttendDuration;
     private String fundsVolume;
-    private String hasTime;
-    private String completeIntro;
-    private String completeStockInfo;
-    private Double remindCommunityFreq;
-    private Double remindLiveFreq;
-    private Double visitLiveFreq;
-    private Double visitCommunityFreq;
-    private Double functionFreq;
+    private String stockPosition;
+    private String tradingStyle;
+    private Integer customerResponse;
+    private String purchaseSimilarProduct;
+    private String memberStocksBuy;
+    private String memberStocksPrice;
+    private String welfareStocksBuy;
+    private String welfareStocksPrice;
+    private String consultingPracticalClass;
+    private String customerLearningFreq;
+    private String continueFollowingStock;
+    private String teacherProfession;
+    private String teacherApprove;
+    private String softwareValueApproval;
+    private String softwarePurchaseAttitude;
+
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private LocalDateTime updateTimeTelephone;
-
-    private String customerRefundStatus;
-    private LocalDateTime refundTime;
-
-    private LocalDateTime latestTimeVisitLive;
-    private LocalDateTime latestTimeRemindLive;
-    private LocalDateTime latestTimeVisitCommunity;
-    private LocalDateTime latestTimeRemindCommunity;
-    private LocalDateTime latestTimeUseFunction;
-    private LocalDateTime timeAddCustomer;
-
-    private Double deliveryRemindLiveFreq;
-    private Double deliveryRemindCallbackFreq;
-
-    private Integer course1;
-    private Integer course2;
-    private Integer course3;
-    private Integer course4;
-    private Integer course5;
-    private Integer course6;
-    private Integer course7;
-    private Integer course8;
-    private Integer course9;
-    private Integer course10;
-    private Integer course11;
-    private Integer course12;
-    private Integer course13;
-    private Integer course14;
-    private Integer course15;
-
-    private String teacherProfession;
-    private String teacherApprove;
-
-    private Integer courseProcessed;
-    private Integer courseCorrect;
-
-    private LocalDateTime latestTimeTaskInteraction;
-    private Double deliveryTaskInteractionFreq;
-
-    private Integer task1;
-    private Integer task2;
-    private Integer task3;
-    private Integer task4;
-    private Integer task5;
-    private Integer task6;
-    private Integer task7;
-    private Integer task8;
-    private Integer task9;
-    private Integer task10;
-    private Integer task11;
-    private Integer task12;
-    private Integer task13;
-    private Integer task14;
-    private Integer task15;
 }

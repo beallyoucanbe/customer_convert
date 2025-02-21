@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 public class ChatHistoryVO {
@@ -13,7 +13,7 @@ public class ChatHistoryVO {
     private Integer communicationDuration;
     @JsonProperty("time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Timestamp communicationTime;
+    private LocalDateTime communicationTime;
     private ChatHistoryInfo basic;
     private String type;
 

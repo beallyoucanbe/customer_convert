@@ -523,7 +523,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.getWarmth().setTradingStyle(
                 convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, TradingStyleEnum.class, String.class).getCustomerConclusion()
         );
-        customerFeatureResponse.getWarmth().setCustomerResponse("");
+        customerFeatureResponse.getWarmth().setCustomerResponse(3);
         customerFeatureResponse.getWarmth().setPurchaseSimilarProduct(
                 convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, null, Boolean.class).getCustomerConclusion());
 

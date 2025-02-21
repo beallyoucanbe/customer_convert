@@ -4,7 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.enums.HasTimeEnum;
+import com.smart.sso.server.enums.StockPositonEnum;
+import com.smart.sso.server.enums.TradingStyleEnum;
 import com.smart.sso.server.primary.mapper.CustomerCharacterMapper;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
 import com.smart.sso.server.model.*;
@@ -12,7 +13,6 @@ import com.smart.sso.server.model.VO.CustomerProfile;
 import com.smart.sso.server.model.dto.CustomerFeatureResponse;
 import com.smart.sso.server.service.ConfigService;
 import com.smart.sso.server.service.CustomerInfoService;
-import com.smart.sso.server.service.EventService;
 import com.smart.sso.server.service.MessageService;
 import com.smart.sso.server.service.TelephoneRecordService;
 import com.smart.sso.server.util.CommonUtils;
@@ -20,21 +20,13 @@ import com.smart.sso.server.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,8 +49,6 @@ public class MessageServiceImpl implements MessageService {
     private CustomerBaseMapper customerBaseMapper;
     @Autowired
     private TelephoneRecordService recordService;
-    @Autowired
-    private EventService eventService;
 
     ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
 
@@ -300,7 +290,6 @@ public class MessageServiceImpl implements MessageService {
         sendMessageToChat(textMessage);
     }
 
-
     private void updateCharacter(CustomerCharacter latestCustomerCharacter, CustomerBase customerBase,
                                  CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
         latestCustomerCharacter.setId(customerBase.getId());
@@ -319,79 +308,25 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
+        latestCustomerCharacter.setClassAttendTimes(customerFeature.getWarmth().getClassAttendTimes());
+        latestCustomerCharacter.setClassAttendDuration(customerFeature.getWarmth().getClassAttendDuration());
+        latestCustomerCharacter.setCustomerResponse(customerFeature.getWarmth().getCustomerResponse());
         latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue().toString() : null));
-        latestCustomerCharacter.setHasTime(HasTimeEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getHasTime().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getHasTime().getCustomerConclusion().getCompareValue().toString() : null));
+                Objects.nonNull(customerFeature.getWarmth().getFundsVolume().getCompareValue()) ? customerFeature.getWarmth().getFundsVolume().getCompareValue().toString() : null));
+        latestCustomerCharacter.setStockPosition(StockPositonEnum.getTextByValue(
+                Objects.nonNull(customerFeature.getWarmth().getStockPosition().getCompareValue()) ? customerFeature.getWarmth().getStockPosition().getCompareValue().toString() : null));
+        latestCustomerCharacter.setTradingStyle(TradingStyleEnum.getTextByValue(
+                Objects.nonNull(customerFeature.getWarmth().getTradingStyle().getCompareValue()) ? customerFeature.getWarmth().getTradingStyle().getCompareValue().toString() : null));
+        latestCustomerCharacter.setPurchaseSimilarProduct(Objects.nonNull(customerFeature.getWarmth().getPurchaseSimilarProduct().getCompareValue()) ? customerFeature.getWarmth().getPurchaseSimilarProduct().getCompareValue().toString() : null);
 
-        latestCustomerCharacter.setCompleteIntro(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue()) ? customerFeature.getHandoverPeriod().getBasic().getCompleteIntro().getValue().toString() : null);
-        latestCustomerCharacter.setCompleteStockInfo(customerProfile.getCustomerStage().getTransactionStyle() == 1 ? "true" : "false");
+        latestCustomerCharacter.setMemberStocksBuy(Objects.nonNull(customerFeature.getBasic().getMemberStocksBuy().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getMemberStocksBuy().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setMemberStocksBuy(Objects.nonNull(customerFeature.getBasic().getMemberStocksPrice().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getMemberStocksPrice().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setWelfareStocksBuy(Objects.nonNull(customerFeature.getBasic().getWelfareStocksBuy().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getWelfareStocksBuy().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setWelfareStocksPrice(Objects.nonNull(customerFeature.getBasic().getWelfareStocksPrice().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getWelfareStocksPrice().getCustomerConclusion().getCompareValue().toString() : null);
 
-        latestCustomerCharacter.setRemindLiveFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getValue() : null);
-        latestCustomerCharacter.setRemindCommunityFreq(Objects.nonNull(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue()) ? (Double) customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getValue() : null);
-        latestCustomerCharacter.setVisitLiveFreq(Objects.nonNull(customerFeature.getWarmth().getVisitLiveFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitLiveFreq().getValue() : null);
-        latestCustomerCharacter.setVisitCommunityFreq(Objects.nonNull(customerFeature.getWarmth().getVisitCommunityFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitCommunityFreq().getValue() : null);
-        latestCustomerCharacter.setFunctionFreq(Objects.nonNull(customerFeature.getWarmth().getFunctionFreq().getValue()) ? (Double) customerFeature.getWarmth().getFunctionFreq().getValue() : null);
-
-        latestCustomerCharacter.setUpdateTime(
-                customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
-
-        latestCustomerCharacter.setCustomerRefundStatus(Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setTimeAddCustomer(customerBase.getCreateTime());
-
-        latestCustomerCharacter.setDeliveryRemindLiveFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindLiveFreq().getValue() : null);
-        latestCustomerCharacter.setDeliveryRemindCallbackFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getRemindPlaybackFreq().getValue() : null);
-        latestCustomerCharacter.setDeliveryTaskInteractionFreq(Objects.nonNull(customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue()) ? (Double) customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().getValue() : null);
-        latestCustomerCharacter.setLatestTimeTaskInteraction(latestCustomerCharacter.getUpdateTime());
-
-        eventService.setDeliveryCourseCharacter(customerBase.getCustomerId(), latestCustomerCharacter);
-        eventService.setDeliveryCourseTaskCharacter(customerBase.getCustomerId(), latestCustomerCharacter);
-
-        latestCustomerCharacter.setTeacherApprove(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getCustomerConclusion().getCompareValue()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession().toString() : null);
-        latestCustomerCharacter.setCourseProcessed(customerFeature.getDeliveryPeriod().getMasterCourse().getProcess());
-        latestCustomerCharacter.setCourseCorrect(customerFeature.getDeliveryPeriod().getMasterCourse().getCorrect());
-
-        // 设置事件的最新访问时间，如果有异常，就跳过
-        try {
-            if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getVisitLiveFreq().getRecords().getData())) {
-                List<Map<String, Object>> items = customerFeature.getWarmth().getVisitLiveFreq().getRecords().getData();
-                latestCustomerCharacter.setLatestTimeVisitLive(LocalDateTime.parse(items.get(0).get("event_time").toString(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            }
-        } catch (Exception e) {
-        }
-        try {
-            if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getVisitCommunityFreq().getRecords().getData())) {
-                List<Map<String, Object>> items = customerFeature.getWarmth().getVisitCommunityFreq().getRecords().getData();
-                latestCustomerCharacter.setLatestTimeVisitCommunity(LocalDateTime.parse(items.get(0).get("event_time").toString(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            }
-        } catch (Exception e) {
-        }
-        try {
-            if (!CollectionUtils.isEmpty(customerFeature.getWarmth().getFunctionFreq().getRecords().getData())) {
-                List<Map<String, Object>> items = customerFeature.getWarmth().getFunctionFreq().getRecords().getData();
-                latestCustomerCharacter.setLatestTimeUseFunction(LocalDateTime.parse(items.get(0).get("event_time").toString(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            }
-        } catch (Exception e) {
-        }
-        try {
-            if (!CollectionUtils.isEmpty(customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getRecords().getData())) {
-                List<Map<String, Object>> items = customerFeature.getHandoverPeriod().getBasic().getRemindLiveFreq().getRecords().getData();
-                latestCustomerCharacter.setLatestTimeRemindLive(LocalDateTime.parse(items.get(0).get("event_time").toString(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            }
-        } catch (Exception e) {
-        }
-        try {
-            if (!CollectionUtils.isEmpty(customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getRecords().getData())) {
-                List<Map<String, Object>> items = customerFeature.getHandoverPeriod().getBasic().getRemindCommunityFreq().getRecords().getData();
-                latestCustomerCharacter.setLatestTimeRemindCommunity(LocalDateTime.parse(items.get(0).get("event_time").toString(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            }
-        } catch (Exception e) {
-        }
+        latestCustomerCharacter.setTeacherApprove(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getTeacherProfession()) ? customerFeature.getBasic().getTeacherApproval().getTeacherProfession().toString() : null);
+        latestCustomerCharacter.setUpdateTime(customerProfile.getLastCommunicationDate());
+        latestCustomerCharacter.setCreateTime(customerProfile.getAccessTime());
     }
 }
