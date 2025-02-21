@@ -553,120 +553,128 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         for (String ownerId : ownerIdList) {
-            // 获取某个人在某个时间段内所有的通话
-            List<TelephoneRecord> telephoneRecordList;
-            if (day.equals("today")) {
-                telephoneRecordList = recordService.getOwnerTelephoneRecordToday(ownerId);
-            } else {
-                telephoneRecordList = recordService.getOwnerTelephoneRecordYesterday(ownerId);
-            }
-            String ownerName = telephoneRecordList.get(0).getOwnerName();
-            Map<String, Integer> teleTimeMap = new HashMap<>();
-            // 统计每个客户的通话时长，按照分钟统计
-            for (TelephoneRecord item : telephoneRecordList) {
-                if (teleTimeMap.containsKey(item.getCustomerId())) {
-                    teleTimeMap.put(item.getCustomerId(), teleTimeMap.get(item.getCustomerId()) + item.getCommunicationDuration());
+            try {
+                // 获取某个人在某个时间段内所有的通话
+                List<TelephoneRecord> telephoneRecordList;
+                if (day.equals("today")) {
+                    telephoneRecordList = recordService.getOwnerTelephoneRecordToday(ownerId);
                 } else {
-                    teleTimeMap.put(item.getCustomerId(), item.getCommunicationDuration());
+                    telephoneRecordList = recordService.getOwnerTelephoneRecordYesterday(ownerId);
                 }
-            }
-            int communicationDurationToday = teleTimeMap.values().stream().mapToInt(Integer::intValue).sum();
-            // 统计该销售下所有客户的特征信息
-            int highCount = 0;
-            int highTime = 0;
-            int middleCount = 0;
-            int middleTime = 0;
-            int lowCount = 0;
-            int lowTime = 0;
-            int elseTime = 0;
-            StringBuilder elseString = new StringBuilder();
-            PotentialCustomer potentialCustomer = potentialCustomerMap.get(ownerId);
-            Set<String> highSet = new HashSet<>(potentialCustomer.getHigh());
-            Set<String> middleSet = new HashSet<>(potentialCustomer.getMiddle());
-            Set<String> lowSet = new HashSet<>(potentialCustomer.getLow());
-            for (Map.Entry<String, Integer> entry : teleTimeMap.entrySet()) {
-                // 双重检查
-                if (characterMap.containsKey(entry.getKey())) {
-                    updateCustomerCharacter(entry.getKey(), activityId, false);
-                    characterMap.put(entry.getKey(), customerCharacterMapper.selectByCustomerIdAndActivityId(entry.getKey(), activityId));
-                }
-                if (highSet.contains(entry.getKey())) {
-                    highCount++;
-                    highTime += entry.getValue();
-                } else if (middleSet.contains(entry.getKey())) {
-                    middleCount++;
-                    middleTime += entry.getValue();
-                } else if (lowSet.contains(entry.getKey())) {
-                    lowCount++;
-                    lowTime += entry.getValue();
-                } else {
-                    try {
-                        elseString.append(characterMap.get(entry.getKey()).getCustomerName()).append("，").append(entry.getKey())
-                                .append("（资金体量为：").append(StringUtils.isEmpty(characterMap.get(entry.getKey()).getFundsVolume()) ? "未提及" : characterMap.get(entry.getKey()).getFundsVolume())
-                                .append("，认可数为：").append(getApprovalCount(characterMap.get(entry.getKey()))).append("个，购买态度为：")
-                                .append(getPurchaseAttitude(characterMap.get(entry.getKey()).getSoftwarePurchaseAttitude())).append("）\n");
-                        elseTime += entry.getValue();
-                    } catch (Exception e) {
-
+                String ownerName = telephoneRecordList.get(0).getOwnerName();
+                Map<String, Integer> teleTimeMap = new HashMap<>();
+                // 统计每个客户的通话时长，按照分钟统计
+                for (TelephoneRecord item : telephoneRecordList) {
+                    if (teleTimeMap.containsKey(item.getCustomerId())) {
+                        teleTimeMap.put(item.getCustomerId(), teleTimeMap.get(item.getCustomerId()) + item.getCommunicationDuration());
+                    } else {
+                        teleTimeMap.put(item.getCustomerId(), item.getCommunicationDuration());
                     }
                 }
-            }
-            if (StringUtils.hasText(elseString)) {
-                elseString.append("总时长为**").append(getTimeString(elseTime)).append("**");
-            }
-
-            // 构建超长通话
-            StringBuilder customerExceedTimeStr = new StringBuilder();
-            // 是否有单个客户当天通话超过2个小时
-            Set<String> customerExceed2Hour = teleTimeMap.entrySet().stream().filter(item -> item.getValue() >= 120).map(Map.Entry::getKey).collect(Collectors.toSet());
-            if (!CollectionUtils.isEmpty(customerExceed2Hour)) {
-                for (String one : customerExceed2Hour) {
+                int communicationDurationToday = teleTimeMap.values().stream().mapToInt(Integer::intValue).sum();
+                // 统计该销售下所有客户的特征信息
+                int highCount = 0;
+                int highTime = 0;
+                int middleCount = 0;
+                int middleTime = 0;
+                int lowCount = 0;
+                int lowTime = 0;
+                int elseTime = 0;
+                StringBuilder elseString = new StringBuilder();
+                PotentialCustomer potentialCustomer = potentialCustomerMap.get(ownerId);
+                Set<String> highSet = new HashSet<>(potentialCustomer.getHigh());
+                Set<String> middleSet = new HashSet<>(potentialCustomer.getMiddle());
+                Set<String> lowSet = new HashSet<>(potentialCustomer.getLow());
+                for (Map.Entry<String, Integer> entry : teleTimeMap.entrySet()) {
                     try {
-                        customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
-                                .append("，单通通话超过2小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
-                                .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
-                                .append(getPurchaseAttitude(characterMap.get(one).getSoftwarePurchaseAttitude())).append("）\n");
+                        // 双重检查
+                        if (characterMap.containsKey(entry.getKey())) {
+                            characterMap.put(entry.getKey(), customerCharacterMapper.selectByCustomerIdAndActivityId(entry.getKey(), activityId));
+                        }
+                        if (highSet.contains(entry.getKey())) {
+                            highCount++;
+                            highTime += entry.getValue();
+                        } else if (middleSet.contains(entry.getKey())) {
+                            middleCount++;
+                            middleTime += entry.getValue();
+                        } else if (lowSet.contains(entry.getKey())) {
+                            lowCount++;
+                            lowTime += entry.getValue();
+                        } else {
+                            try {
+                                elseString.append(characterMap.get(entry.getKey()).getCustomerName()).append("，").append(entry.getKey())
+                                        .append("（资金体量为：").append(StringUtils.isEmpty(characterMap.get(entry.getKey()).getFundsVolume()) ? "未提及" : characterMap.get(entry.getKey()).getFundsVolume())
+                                        .append("，认可数为：").append(getApprovalCount(characterMap.get(entry.getKey()))).append("个，购买态度为：")
+                                        .append(getPurchaseAttitude(characterMap.get(entry.getKey()).getSoftwarePurchaseAttitude())).append("）\n");
+                                elseTime += entry.getValue();
+                            } catch (Exception e) {
+
+                            }
+                        }
                     } catch (Exception e) {
+                        log.error("统计沟通时长报错， customer_id = " + entry.getKey());
                     }
                 }
-            }
-            // 是否有客户累计通话超过8小时
-            Set<String> customerExceed8Hour = allCustomerExceed8Hour.stream().filter(teleTimeMap::containsKey).collect(Collectors.toSet());
-            if (!CollectionUtils.isEmpty(customerExceed8Hour)) {
-                for (String one : customerExceed8Hour) {
-                    try {
-                        customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
-                                .append("，累计通话超过4小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
-                                .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
-                                .append(getPurchaseAttitude(characterMap.get(one).getSoftwarePurchaseAttitude())).append("）\n");
-                    } catch (Exception e) {
+                if (StringUtils.hasText(elseString)) {
+                    elseString.append("总时长为**").append(getTimeString(elseTime)).append("**");
+                }
+
+                // 构建超长通话
+                StringBuilder customerExceedTimeStr = new StringBuilder();
+                // 是否有单个客户当天通话超过2个小时
+                Set<String> customerExceed2Hour = teleTimeMap.entrySet().stream().filter(item -> item.getValue() >= 120).map(Map.Entry::getKey).collect(Collectors.toSet());
+                if (!CollectionUtils.isEmpty(customerExceed2Hour)) {
+                    for (String one : customerExceed2Hour) {
+                        try {
+                            customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
+                                    .append("，单通通话超过2小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
+                                    .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
+                                    .append(getPurchaseAttitude(characterMap.get(one).getSoftwarePurchaseAttitude())).append("）\n");
+                        } catch (Exception e) {
+                        }
                     }
                 }
-            }
-            String dayStr = day.equals("today") ? "今日" : "昨日";
-            String message = String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF_TEMPLATE,
-                    dayStr, getTimeString(communicationDurationToday),
-                    String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, highSet.size(), highCount, getTimeString(highTime)),
-                    String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, middleSet.size(), middleCount, getTimeString(middleTime)),
-                    String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, lowSet.size(), lowCount, getTimeString(lowTime)),
-                    elseString,
-                    customerExceedTimeStr
-            );
-            TextMessage textMessage = new TextMessage();
-            TextMessage.TextContent textContent = new TextMessage.TextContent();
-            textMessage.setTouser(ownerId);
-            textMessage.setAgentid(getAgentId(ownerId));
-            textContent.setContent(message);
-            textMessage.setMsgtype("markdown");
-            textMessage.setMarkdown(textContent);
-            sendMessageToUser(textMessage, activityId, MessageContentType.DISTRIBUTION_OF_CALL_DURATION.getText());
+                // 是否有客户累计通话超过8小时
+                Set<String> customerExceed8Hour = allCustomerExceed8Hour.stream().filter(teleTimeMap::containsKey).collect(Collectors.toSet());
+                if (!CollectionUtils.isEmpty(customerExceed8Hour)) {
+                    for (String one : customerExceed8Hour) {
+                        try {
+                            customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
+                                    .append("，累计通话超过4小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
+                                    .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
+                                    .append(getPurchaseAttitude(characterMap.get(one).getSoftwarePurchaseAttitude())).append("）\n");
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+                String dayStr = day.equals("today") ? "今日" : "昨日";
+                String message = String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF_TEMPLATE,
+                        dayStr, getTimeString(communicationDurationToday),
+                        String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, highSet.size(), highCount, getTimeString(highTime)),
+                        String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, middleSet.size(), middleCount, getTimeString(middleTime)),
+                        String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, lowSet.size(), lowCount, getTimeString(lowTime)),
+                        elseString,
+                        customerExceedTimeStr
+                );
+                TextMessage textMessage = new TextMessage();
+                TextMessage.TextContent textContent = new TextMessage.TextContent();
+                textMessage.setTouser(ownerId);
+                textMessage.setAgentid(getAgentId(ownerId));
+                textContent.setContent(message);
+                textMessage.setMsgtype("markdown");
+                textMessage.setMarkdown(textContent);
+                sendMessageToUser(textMessage, activityId, MessageContentType.DISTRIBUTION_OF_CALL_DURATION.getText());
 
-            message = String.format("业务员：%s:\n", ownerName) + message;
-            textMessage.getMarkdown().setContent(message);
-            textMessage.setTouser(staffLeaderMap.get(ownerId));
-            // 发送给主管
-            sendMessageToUser(textMessage, activityId, MessageContentType.DISTRIBUTION_OF_CALL_DURATION.getText());
+                message = String.format("业务员：%s:\n", ownerName) + message;
+                textMessage.getMarkdown().setContent(message);
+                textMessage.setTouser(staffLeaderMap.get(ownerId));
+                // 发送给主管
+                sendMessageToUser(textMessage, activityId, MessageContentType.DISTRIBUTION_OF_CALL_DURATION.getText());
+            } catch (Exception e) {
+                log.error("统计沟通时长报错， owner_id = " + ownerId);
+            }
         }
+
     }
 
     @Override
