@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.HasTimeEnum;
+import com.smart.sso.server.enums.StockPositonEnum;
+import com.smart.sso.server.enums.TradingStyleEnum;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
@@ -181,12 +183,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (true) {
             return result;
         }
-        if (Objects.isNull(customerFeature) || Objects.isNull(customerFeature.getBasic())
-                || Objects.isNull(customerFeature.getBasic().getFundsVolume())
-                || Objects.isNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion())) {
+        if (Objects.isNull(customerFeature)
+                || Objects.isNull(customerFeature.getWarmth().getFundsVolume().getCompareValue())) {
             return result;
         }
-        Feature.CustomerConclusion conclusion = customerFeature.getBasic().getFundsVolume().getCustomerConclusion();
+        Feature.CustomerConclusion conclusion = customerFeature.getWarmth().getFundsVolume();
         if (StringUtils.isEmpty(conclusion.getCompareValue())) {
             return result;
         }
@@ -537,20 +538,35 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             return null;
         }
         CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
+
+        // 设置温度
+        customerFeatureResponse.getWarmth().setClassAttendTimes(1);
+        customerFeatureResponse.getWarmth().setClassAttendDuration(2);
+        customerFeatureResponse.getWarmth().setFundsVolume(
+                convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class).getCustomerConclusion()
+        );
+        customerFeatureResponse.getWarmth().setStockPosition(
+                convertBaseFeatureByOverwrite(featureFromLLM.getStockPosition(),  null, StockPositonEnum.class, String.class).getCustomerConclusion()
+        );
+        customerFeatureResponse.getWarmth().setTradingStyle(
+                convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, TradingStyleEnum.class, String.class).getCustomerConclusion()
+
+        );
+        customerFeatureResponse.getWarmth().setCustomerResponse("");
+        customerFeatureResponse.getWarmth().setPurchaseSimilarProduct(
+                convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, null, Boolean.class).getCustomerConclusion()
+        );
+
+        // 设置base
+        customerFeatureResponse.getBasic().setMemberStocksBuy();
+
         // Basic 基本信息
-        CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
-        basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
+        basic.setFundsVolume(
+
+        );
         basic.setHasTime(convertBaseFeatureByOverwrite(featureFromLLM.getHasTime(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), HasTimeEnum.class, String.class));
         basic.setTeacherApproval(convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getHasTimeSales(), null, Boolean.class));
         basic.setCustomerRequireRefund(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRequireRefund(), Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), null, Boolean.class));
-
-        basic.setCourseMaster_1(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_1(), null, null, Boolean.class));
-        basic.setCourseMaster_2(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_2(), null, null, Boolean.class));
-        basic.setCourseMaster_3(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_3(), null, null, Boolean.class));
-        basic.setCourseMaster_4(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_4(), null, null, Boolean.class));
-        basic.setCourseMaster_5(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_5(), null, null, Boolean.class));
-        basic.setCourseMaster_6(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_6(), null, null, Boolean.class));
-        basic.setCourseMaster_7(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_7(), null, null, Boolean.class));
 
         basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
 
@@ -564,10 +580,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerProcessSummary customerSummaryResponse = new CustomerProcessSummary();
         CustomerProcessSummary.TradingMethod tradingMethod = new CustomerProcessSummary.TradingMethod();
-        tradingMethod.setCurrentStocks(convertTradeMethodFeatureByOverwrite(featureFromLLM.getCurrentStocks(), Objects.isNull(featureFromSale) ? null : featureFromSale.getCurrentStocksSales(), null, String.class));
         tradingMethod.setTradingStyle(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
-        tradingMethod.setStockMarketAge(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
-
         customerSummaryResponse.setTradingMethod(tradingMethod);
         return customerSummaryResponse;
     }

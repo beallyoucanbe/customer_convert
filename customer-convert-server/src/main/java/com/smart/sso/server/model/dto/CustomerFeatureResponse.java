@@ -9,7 +9,7 @@ import java.util.Map;
 public class CustomerFeatureResponse {
 
     private ProcessSummary summary;
-    private Basic basic;
+    private Basic basic = new Basic();
     private CustomerProcessSummary.TradingMethod tradingMethod;
     private Warmth warmth = new Warmth();
 
@@ -33,8 +33,7 @@ public class CustomerFeatureResponse {
         private BaseFeature welfareStocksPrice;
         private BaseFeature consultingPracticalClass;
         private FrequencyContent customerLearningFreq;
-        private BaseFeature teacherApproval;
-
+        private CourseTeacherFeature teacherApproval;
         private BaseFeature continueFollowingStock;
         private BaseFeature softwareValueApproval;
         private BaseFeature softwarePurchaseAttitude;
