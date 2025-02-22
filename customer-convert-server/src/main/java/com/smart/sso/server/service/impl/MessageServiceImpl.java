@@ -308,8 +308,10 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
-        latestCustomerCharacter.setClassAttendTimes(customerFeature.getWarmth().getClassAttendTimes());
-        latestCustomerCharacter.setClassAttendDuration(customerFeature.getWarmth().getClassAttendDuration());
+        latestCustomerCharacter.setClassAttendTimes_2(customerFeature.getWarmth().getClassAttendTimes_2());
+        latestCustomerCharacter.setClassAttendDuration_2(customerFeature.getWarmth().getClassAttendDuration_2());
+        latestCustomerCharacter.setClassAttendTimes_3(customerFeature.getWarmth().getClassAttendTimes_3());
+        latestCustomerCharacter.setClassAttendDuration_3(customerFeature.getWarmth().getClassAttendDuration_3());
         latestCustomerCharacter.setCustomerResponse(customerFeature.getWarmth().getCustomerResponse());
         latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
                 Objects.nonNull(customerFeature.getWarmth().getFundsVolume().getCompareValue()) ? customerFeature.getWarmth().getFundsVolume().getCompareValue().toString() : null));

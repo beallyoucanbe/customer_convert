@@ -19,8 +19,8 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -35,8 +35,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     private TelephoneRecordMapper telephoneRecordMapper;
     @Autowired
     private ConfigService configService;
-
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String activityId) {
@@ -95,7 +94,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getCustomerResponse().add(communicationContent);
                 }
             }
@@ -365,7 +364,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //客户对软件价值认可
             if (!CollectionUtils.isEmpty(record.getSoftwareValueApproval())) {
                 CommunicationContent communicationContent = record.getSoftwareValueApproval().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getSoftwareValueApproval())) {
                     customerFeatureFromLLM.setSoftwareValueApproval(communicationContent);
                     customerFeatureFromLLM.getSoftwareValueApproval().setCallId(record.getCallId());
@@ -393,7 +392,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //客户对软件购买态度
             if (!CollectionUtils.isEmpty(record.getSoftwarePurchaseAttitude())) {
                 CommunicationContent communicationContent = record.getSoftwarePurchaseAttitude().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getSoftwarePurchaseAttitude())) {
                     customerFeatureFromLLM.setSoftwarePurchaseAttitude(communicationContent);
                     customerFeatureFromLLM.getSoftwarePurchaseAttitude().setCallId(record.getCallId());

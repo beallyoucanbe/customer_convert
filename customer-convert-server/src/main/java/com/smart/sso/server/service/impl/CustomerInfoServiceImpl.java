@@ -3,10 +3,7 @@ package com.smart.sso.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smart.sso.server.enums.*;
-import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
-import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
-import com.smart.sso.server.primary.mapper.CustomerBaseMapper;
-import com.smart.sso.server.primary.mapper.TelephoneRecordMapper;
+import com.smart.sso.server.primary.mapper.*;
 import com.smart.sso.server.model.*;
 import com.smart.sso.server.model.VO.CustomerListVO;
 import com.smart.sso.server.model.VO.CustomerProfile;
@@ -29,6 +26,7 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,8 +58,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Lazy
     private MessageService messageService;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CustomerBaseListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -143,6 +140,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String activityId) {
         CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerInfo customerInfo = customerRelationService.getByCustomer(customerBase.getCustomerId(),
+                customerBase.getOwnerId());
         if (Objects.isNull(customerBase)) {
             customerBase = recordService.syncCustomerInfoFromRecord(customerId, customerId);
             if (Objects.isNull(customerBase)) {
@@ -159,6 +158,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerBase, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
         if (Objects.nonNull(customerFeature)) {
+            if (Objects.nonNull(customerInfo)) {
+                // 这里设置听课数据
+                customerFeature.getWarmth().setClassAttendTimes_2(customerInfo.getTotalCourses_2_0());
+                customerFeature.getWarmth().setClassAttendDuration_2(customerInfo.getTotalDuration_2_0());
+                customerFeature.getWarmth().setClassAttendTimes_3(customerInfo.getTotalCourses_3_0());
+                customerFeature.getWarmth().setClassAttendDuration_3(customerInfo.getTotalDuration_3_0());
+            }
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
             customerFeature.setSummary(getProcessSummary(customerFeature, stageStatus));
         }
@@ -252,8 +258,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         // 客户完成购买”，:CRM取回客户的购买状态值为“是”
         try {
-            CustomerInfo customerInfo = customerRelationService.getByActivityAndCustomer(customerBase.getCustomerId(),
-                    customerBase.getOwnerId(), customerBase.getActivityId());
+            CustomerInfo customerInfo = customerRelationService.getByCustomer(customerBase.getCustomerId(),
+                    customerBase.getOwnerId());
             if (Objects.nonNull(customerInfo) && Objects.nonNull(customerInfo.getIsPurchased_2_0())
                     && customerInfo.getIsPurchased_2_0() == 1) {
                 stageStatus.setCompletePurchase(1);
@@ -509,8 +515,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
         // 设置温度
-        customerFeatureResponse.getWarmth().setClassAttendTimes(1);
-        customerFeatureResponse.getWarmth().setClassAttendDuration(2);
         customerFeatureResponse.getWarmth().setFundsVolume(
                 convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class).getCustomerConclusion());
         customerFeatureResponse.getWarmth().setStockPosition(
@@ -520,7 +524,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         );
         customerFeatureResponse.getWarmth().setCustomerResponse(3);
         customerFeatureResponse.getWarmth().setPurchaseSimilarProduct(
-                convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, null, Boolean.class).getCustomerConclusion());
+                convertBaseFeatureByOverwrite(featureFromLLM.getPurchaseSimilarProduct(),  null, null, Boolean.class).getCustomerConclusion());
 
         // 设置base
         customerFeatureResponse.getBasic().setMemberStocksBuy(
@@ -653,12 +657,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             "有购买意向".equals(resultAnswer) ||
                             "认可".equals(resultAnswer) ||
                             "学会".equals(resultAnswer) ||
+                            "买过".equals(resultAnswer) ||
                             "清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.TRUE);
                     } else if ("否".equals(resultAnswer) ||
                             "无购买意向".equals(resultAnswer) ||
                             "不认可".equals(resultAnswer) ||
                             "没学会".equals(resultAnswer) ||
+                            "没买过".equals(resultAnswer) ||
                             "不清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.FALSE);
                     } else {
@@ -795,7 +801,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
                 for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
                     Map<String, Object> item = new HashMap<>();
-                    item.put("communication_time", sdf.format(one.getCommunicationTime()));
+                    item.put("communication_time", one.getCommunicationTime().format(formatter));
                     item.put("remind_count", one.getCount());
                     item.put("content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getContent()));
                     data.add(item);

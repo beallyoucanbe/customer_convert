@@ -32,8 +32,10 @@ public class CustomerCharacter implements Serializable {
     private Boolean confirmValueStage;
     private Boolean confirmPurchaseStage;
     private Boolean completePurchaseStage;
-    private Integer classAttendTimes;
-    private Integer classAttendDuration;
+    private Integer classAttendTimes_2;
+    private Integer classAttendDuration_2;
+    private Integer classAttendTimes_3;
+    private Integer classAttendDuration_3;
     private String fundsVolume;
     private String stockPosition;
     private String tradingStyle;

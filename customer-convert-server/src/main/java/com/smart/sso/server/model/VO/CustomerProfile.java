@@ -15,6 +15,7 @@ public class CustomerProfile {
     private String customerId ;
     @JsonProperty("owner")
     private String ownerName ;
+    private String ownerId ;
     private String activityName;
     private String activityId;
     private Integer communicationRounds ;
@@ -27,5 +28,5 @@ public class CustomerProfile {
     // 客户接入时间
     private LocalDateTime accessTime ;
     // 成交周期
-    private Integer transactionCycle ;
+    private Integer transactionCycle_2 ;
 }

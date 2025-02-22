@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CustomerRelationService {
 
-    CustomerInfo getByActivityAndCustomer(String customerId, String ownerId, String activityId);
+    CustomerInfo getByCustomer(String customerId, String ownerId);
 
     List<CustomerInfo> getByActivity(String activityId);
 

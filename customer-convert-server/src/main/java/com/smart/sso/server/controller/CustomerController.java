@@ -5,6 +5,7 @@ import com.smart.sso.server.common.ResultUtils;
 import com.smart.sso.server.constant.AppConstant;
 import com.smart.sso.server.model.ActivityInfoWithVersion;
 import com.smart.sso.server.model.Config;
+import com.smart.sso.server.model.CustomerInfo;
 import com.smart.sso.server.model.TelephoneRecordStatics;
 import com.smart.sso.server.model.VO.ChatDetail;
 import com.smart.sso.server.model.VO.ChatHistoryVO;
@@ -46,7 +47,8 @@ public class CustomerController {
     private TelephoneRecordService recordService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
+    @Autowired
+    private CustomerRelationService customerRelationService;
     @Autowired
     private ConfigService configService;
 
@@ -70,6 +72,9 @@ public class CustomerController {
     public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "customer_id") String customerId,
                                                             @PathVariable(value = "activity_id") String activityId) {
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerId, activityId);
+        CustomerInfo customerInfo = customerRelationService.getByCustomer(customerId, customerProfile.getOwnerId());
+        customerProfile.setAccessTime(customerInfo.getAccessTime());
+        customerProfile.setTransactionCycle_2(customerInfo.getOrderCycle_2_0());
         return ResultUtils.success(customerProfile);
     }
 

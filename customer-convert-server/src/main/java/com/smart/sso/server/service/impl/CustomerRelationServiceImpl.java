@@ -15,11 +15,10 @@ public class CustomerRelationServiceImpl implements CustomerRelationService {
     @Autowired
     private CustomerInfoMapper customerInfoMapper;
     @Override
-    public CustomerInfo getByActivityAndCustomer(String customerId, String ownerId, String activityId) {
+    public CustomerInfo getByCustomer(String customerId, String ownerId) {
         QueryWrapper<CustomerInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("sales_id", ownerId);
-        queryWrapper.eq("customer_id", Long.parseLong(customerId));
-        queryWrapper.eq("activity_id", activityId);
+        queryWrapper.eq("user_id", Long.parseLong(customerId));
         return customerInfoMapper.selectOne(queryWrapper);
     }
 

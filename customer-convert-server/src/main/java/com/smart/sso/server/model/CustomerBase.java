@@ -46,7 +46,4 @@ public class CustomerBase implements Serializable {
 
     private LocalDateTime purchaseTime;
     private LocalDateTime  updateTimeTelephone;
-
-    private Integer customerRefundStatus;
-    private LocalDateTime refundTime;
 }
