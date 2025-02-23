@@ -39,17 +39,17 @@ public class CustomerCharacter implements Serializable {
     private String fundsVolume;
     private String stockPosition;
     private String tradingStyle;
-    private Integer customerResponse;
+    private Float customerResponse;
     private String purchaseSimilarProduct;
     private String memberStocksBuy;
     private String memberStocksPrice;
     private String welfareStocksBuy;
     private String welfareStocksPrice;
     private String consultingPracticalClass;
-    private String customerLearningFreq;
+    private Double customerLearningFreq;
     private String continueFollowingStock;
     private String teacherProfession;
-    private String teacherApprove;
+    private String teacherApproval;
     private String softwareValueApproval;
     private String softwarePurchaseAttitude;
 

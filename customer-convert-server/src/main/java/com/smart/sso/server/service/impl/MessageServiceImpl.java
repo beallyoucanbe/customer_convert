@@ -326,7 +326,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setWelfareStocksBuy(Objects.nonNull(customerFeature.getBasic().getWelfareStocksBuy().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getWelfareStocksBuy().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setWelfareStocksPrice(Objects.nonNull(customerFeature.getBasic().getWelfareStocksPrice().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getWelfareStocksPrice().getCustomerConclusion().getCompareValue().toString() : null);
 
-        latestCustomerCharacter.setTeacherApprove(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setTeacherApproval(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getTeacherProfession()) ? customerFeature.getBasic().getTeacherApproval().getTeacherProfession().toString() : null);
         latestCustomerCharacter.setUpdateTime(customerProfile.getLastCommunicationDate());
         latestCustomerCharacter.setCreateTime(customerProfile.getAccessTime());

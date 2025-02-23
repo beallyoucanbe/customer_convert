@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 8080
   servlet:
     context-path: /api
 
@@ -19,14 +19,9 @@ spring:
   datasource:
     primary:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://127.0.0.1:3306/customer_new?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-      username: root
-      password: my-secret-pw
-    secondary:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://127.0.0.1:3306/customer?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-      username: root
-      password: my-secret-pw
+      url: jdbc:mysql://rm-uf6ww10yk39fbw7pq.mysql.rds.aliyuncs.com:3306/db_ai?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      username: ai
+      password: XO-P_c-g4posTF#
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
