@@ -338,7 +338,7 @@ public class SchedulTask {
                 try {
                     String fileName = entry.getFileName().toString();
                     if (!recordService.existId(fileName)) {
-                        Thread.sleep(3000L);
+                        Thread.sleep(10000L);
                         log.error("开始执行python脚本处理微信对话，{}", entry);
                         communicationService.wecomCallBack(entry.toString());
                     }
@@ -360,7 +360,7 @@ public class SchedulTask {
                             });
                             String taskId = one.get("task_id").toString();
                             if (!recordService.existId(taskId)) {
-                                Thread.sleep(3000L);
+                                Thread.sleep(10000L);
                                 log.error("开始执行python脚本处理语音对话，task_id : {}", taskId);
                                 communicationService.telephoneCallBack(item);
                             }
