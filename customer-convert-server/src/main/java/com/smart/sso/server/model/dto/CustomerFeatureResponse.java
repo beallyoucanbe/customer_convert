@@ -2,6 +2,7 @@ package com.smart.sso.server.model.dto;
 
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,9 +18,9 @@ public class CustomerFeatureResponse {
     @Setter
     public static class ProcessSummary {
         // 优势列表
-        private List<String> advantage;
+        private List<String> advantage = new ArrayList<>();
         // 问题列表
-        private List<Question> questions;
+        private List<Question> questions = new ArrayList<>();
     }
 
     @Getter

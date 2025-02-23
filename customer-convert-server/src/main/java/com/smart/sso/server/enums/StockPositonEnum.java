@@ -6,10 +6,10 @@ import org.springframework.util.StringUtils;
 @Getter
 public enum StockPositonEnum {
 
-    LIGHT ("light ", "轻仓"),
-    HEAVY (" heavy ", "重仓"),
-    FULL ("full  ", "满仓"),
-    EMPTY ("empty ", "空仓");
+    LIGHT ("light", "轻仓"),
+    HEAVY ("heavy", "重仓"),
+    FULL ("full", "满仓"),
+    EMPTY ("empty", "空仓");
 
     private final String value;
     private final String text;

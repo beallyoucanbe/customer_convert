@@ -6,10 +6,10 @@ import org.springframework.util.StringUtils;
 @Getter
 public enum TradingStyleEnum {
 
-    SHORT ("short ", "短线"),
-    LONG ("long ", "长线"),
-    BAND ("band  ", "波段"),
-    UNSTEADY ("unsteady ", "不固定风格");
+    SHORT ("short", "短线"),
+    LONG ("long", "长线"),
+    BAND ("band", "波段"),
+    UNSTEADY ("unsteady", "不固定风格");
 
     private final String value;
     private final String text;

@@ -298,6 +298,39 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getFundsVolume().getSalesRecord(),
                         customerFeatureRequest.getWarmth().getFundsVolume().getSalesManualTag(), DateUtil.getCurrentDateTime()));
             }
+            if (Objects.nonNull(customerFeatureRequest.getWarmth().getStockPosition()) &&
+                    (Objects.nonNull(customerFeatureRequest.getWarmth().getStockPosition().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getWarmth().getStockPosition().getSalesManualTag()))) {
+                customerFeature.setEarningDesireSales(new FeatureContentSales(customerFeatureRequest.getWarmth().getStockPosition().getSalesRecord(),
+                        customerFeatureRequest.getWarmth().getStockPosition().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+        }
+
+        if (Objects.nonNull(customerFeatureRequest.getBasic())) {
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getTeacherApproval()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getTeacherApproval().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getTeacherApproval().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setCurrentStocksSales(new FeatureContentSales(customerFeatureRequest.getBasic().getTeacherApproval().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getTeacherApproval().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getContinueFollowingStock()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getContinueFollowingStock().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getContinueFollowingStock().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setLearningAbilitySales(new FeatureContentSales(customerFeatureRequest.getBasic().getContinueFollowingStock().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getContinueFollowingStock().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setSoftwareValueApprovalSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getSoftwareValueApproval().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
+            if (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude()) &&
+                    (Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord()) ||
+                            Objects.nonNull(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag()))) {
+                customerFeature.setSoftwarePurchaseAttitudeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesRecord(),
+                        customerFeatureRequest.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
+            }
         }
         customerFeatureMapper.updateById(customerFeature);
         try {
@@ -518,7 +551,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.getWarmth().setFundsVolume(
                 convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class).getCustomerConclusion());
         customerFeatureResponse.getWarmth().setStockPosition(
-                convertBaseFeatureByOverwrite(featureFromLLM.getStockPosition(),  null, StockPositonEnum.class, String.class).getCustomerConclusion());
+                convertBaseFeatureByOverwrite(featureFromLLM.getStockPosition(),  Objects.isNull(featureFromSale) ? null : featureFromSale.getEarningDesireSales(), StockPositonEnum.class, String.class).getCustomerConclusion());
         customerFeatureResponse.getWarmth().setTradingStyle(
                 convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, TradingStyleEnum.class, String.class).getCustomerConclusion()
         );
@@ -544,7 +577,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         );
         // 老师的认可
         BaseFeature teacherAppr =
-                convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), null, null, Boolean.class);
+                convertBaseFeatureByOverwrite(featureFromLLM.getTeacherApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getCurrentStocksSales(), null, Boolean.class);
         CourseTeacherFeature courseTeacherFeature = new CourseTeacherFeature(teacherAppr);
         if (Objects.nonNull(featureFromLLM.getTeacherApproval())
                 && StringUtils.hasText(featureFromLLM.getTeacherApproval().getBuildText())) {
@@ -555,9 +588,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         customerFeatureResponse.getBasic().setTeacherApproval(courseTeacherFeature);
         customerFeatureResponse.getBasic().setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
-        customerFeatureResponse.getBasic().setContinueFollowingStock(convertBaseFeatureByOverwrite(featureFromLLM.getContinueFollowingStock(), null, null, Boolean.class));
-        customerFeatureResponse.getBasic().setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), null, null, Boolean.class));
-        customerFeatureResponse.getBasic().setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), null, null, Boolean.class));
+        customerFeatureResponse.getBasic().setContinueFollowingStock(convertBaseFeatureByOverwrite(featureFromLLM.getContinueFollowingStock(), Objects.isNull(featureFromSale) ? null : featureFromSale.getLearningAbilitySales(), null, Boolean.class));
+        customerFeatureResponse.getBasic().setSoftwareValueApproval(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareValueApproval(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareValueApprovalSales(), null, Boolean.class));
+        customerFeatureResponse.getBasic().setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
         return customerFeatureResponse;
     }
 
@@ -721,6 +754,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private CustomerFeatureResponse.ProcessSummary getProcessSummary(CustomerFeatureResponse customerFeature, CustomerStageStatus stageStatus) {
         CustomerFeatureResponse.ProcessSummary processSummary = new CustomerFeatureResponse.ProcessSummary();
+        if (true) {
+            return processSummary;
+        }
         List<String> advantage = new ArrayList<>();
         List<CustomerFeatureResponse.Question> questions = new ArrayList<>();
         try {
