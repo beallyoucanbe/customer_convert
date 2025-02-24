@@ -452,16 +452,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public void syncCustomerInfoFromRelation() {
+        String activityId = configService.getCurrentActivityId();
+        if (Objects.isNull(activityId)) {
+            log.error("没有当前的活动，请先配置");
+            return;
+        }
         List<CustomerInfo> characterList = customerRelationService.getByActivity("");
         for (CustomerInfo info : characterList) {
             CustomerBase customerBase = customerBaseMapper.selectByCustomerId(info.getUserId());
             if (Objects.nonNull(customerBase)) {
                 // 判断销售是否发生变更
-                if (!info.getSalesId().toString().equals(customerBase.getOwnerId())) {
+                if (!Objects.equals(info.getSalesId(), customerBase.getOwnerId())) {
                     customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
                 }
-                if (!info.getAccessTime().equals(customerBase.getCreateTime())) {
-                    customerBaseMapper.updateAccessTimeById(customerBase.getId(), info.getCreateTime());
+
+                if (!Objects.equals(info.getAccessTime(), customerBase.getCreateTime())) {
+                    customerBaseMapper.updateAccessTimeById(customerBase.getId(), info.getAccessTime());
                 }
             } else {
                 customerBase = new CustomerBase();
@@ -471,6 +477,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerBase.setCustomerName(info.getUserName());
                 customerBase.setOwnerName(info.getSalesName());
                 customerBase.setCreateTime(info.getAccessTime());
+                customerBase.setActivityId(activityId);
                 customerBaseMapper.insert(customerBase);
             }
         }
