@@ -35,6 +35,7 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "stock_position=#{stockPosition}, ",
             "trading_style=#{tradingStyle}, ",
             "customer_response=#{customerResponse}, ",
+            "latest_time_customer_response=#{latestTimeCustomerResponse}, ",
             "purchase_similar_product=#{purchaseSimilarProduct}, ",
             "member_stocks_buy=#{memberStocksBuy}, ",
             "member_stocks_price=#{memberStocksPrice}, ",
@@ -46,7 +47,9 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "teacher_approval=#{teacherApproval}, ",
             "teacher_profession=#{teacherProfession}, ",
             "software_value_approval=#{softwareValueApproval}, ",
-            "software_purchase_attitude=#{softwarePurchaseAttitude}",
+            "software_purchase_attitude=#{softwarePurchaseAttitude}, ",
+            "create_time=#{createTime}, ",
+            "update_time=#{updateTime} ",
             "WHERE id=#{id}"
     })
     int updateAllFields(CustomerCharacter customerCharacter);

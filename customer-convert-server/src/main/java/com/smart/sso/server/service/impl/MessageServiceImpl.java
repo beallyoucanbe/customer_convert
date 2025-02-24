@@ -225,7 +225,7 @@ public class MessageServiceImpl implements MessageService {
 
         for (Field field : fields) {
             // 跳过 createTime 和 updateTime 字段
-            if ("createTime".equals(field.getName()) || "updateTimeTelephone".equals(field.getName())) {
+            if ("updateTimeTelephone".equals(field.getName())) {
                 continue;
             }
             field.setAccessible(true);
