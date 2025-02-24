@@ -1194,7 +1194,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 设置沟通频次
         LocalDateTime deliveryPeriodStartTime = LocalDateTime.of(2025, 2, 10, 0, 0, 0);
         int days = CommonUtils.calculateDaysDifference(deliveryPeriodStartTime);
-        int communicationCount = recordService.getCommunicationCountFromTime(customerBase.getCustomerId(), deliveryPeriodStartTime);
+//        int communicationCount = recordService.getCommunicationCountFromTime(customerBase.getCustomerId(), deliveryPeriodStartTime);
+        int communicationCount = featureFromLLM.getHomework().size();
         if (communicationCount > 0) {
             double fre = (double) days / communicationCount;
             customerFeature.getDeliveryPeriod().getBasic().getCommunicationFreq().setValue(fre);

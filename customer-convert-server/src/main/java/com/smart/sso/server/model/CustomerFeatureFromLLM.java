@@ -55,5 +55,7 @@ public class CustomerFeatureFromLLM {
 
     private CommunicationContent softwarePurchaseAttitude;
 
+    private List<CommunicationContent> homework = new ArrayList<>();
+
 
 }

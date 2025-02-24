@@ -406,6 +406,17 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 }
             }
 
+            //交付期沟通
+            if (!CollectionUtils.isEmpty(record.getHomework())) {
+                CommunicationContent communicationContent = record.getHomework().get(0);
+                if (!StringUtils.isEmpty(communicationContent.getQuestion()) &&
+                        !communicationContent.getQuestion().equals("无")) {
+                    communicationContent.setCallId(record.getCallId());
+                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    customerFeatureFromLLM.getHomework().add(communicationContent);
+                }
+            }
+
             //客户对老师的认可度
             if (!CollectionUtils.isEmpty(record.getTeacherApproval())) {
                 CommunicationContent communicationContent = record.getTeacherApproval().get(0);

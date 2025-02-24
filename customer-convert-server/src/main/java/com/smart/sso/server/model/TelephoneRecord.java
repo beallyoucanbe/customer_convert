@@ -82,6 +82,8 @@ public class TelephoneRecord {
     private List<CommunicationContent> courseMaster_7;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> customerRequireRefund;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> homework;
 
     private Integer parsed;
     private String tenantId;
