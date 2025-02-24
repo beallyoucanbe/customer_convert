@@ -74,12 +74,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (!StringUtils.isEmpty(params.getConversionRate())) {
             queryWrapper.eq("conversion_rate", params.getConversionRate());
         }
-        if (!StringUtils.isEmpty(params.getActivityName())) {
-            queryWrapper.like("activity_name", params.getActivityName());
-        } else {
-            String activityId = configService.getCurrentActivityId();
-            queryWrapper.like("activity_id", activityId);
-        }
 
         String sortOrder = params.getSortBy();
         if (sortOrder.equals("owner")) {
@@ -105,7 +99,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerProfile queryCustomerById(String customerId, String activityId) {
-        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerId(customerId);
         if (Objects.isNull(customerBase)) {
             customerBase = recordService.syncCustomerInfoFromRecord(customerId, customerId);
             if (Objects.isNull(customerBase)) {
@@ -139,7 +133,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public CustomerFeatureResponse queryCustomerFeatureById(String customerId, String activityId) {
-        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerId(customerId);
         CustomerInfo customerInfo = customerRelationService.getByCustomer(customerBase.getCustomerId(),
                 customerBase.getOwnerId());
         if (Objects.isNull(customerBase)) {
@@ -157,6 +151,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerProcessSummary summaryResponse = convert2CustomerProcessSummaryResponse(featureFromLLM, featureFromSale);
         CustomerStageStatus stageStatus = getCustomerStageStatus(customerBase, featureFromSale, featureFromLLM);
         CustomerFeatureResponse customerFeature = convert2CustomerFeatureResponse(featureFromSale, featureFromLLM);
+        // 设置回复频率
+        if (!CollectionUtils.isEmpty(featureFromLLM.getCustomerResponse())){
+            int daysDifference = CommonUtils.calculateDaysDifference(customerBase.getCreateTime());
+            customerFeature.getWarmth().setCustomerResponse((float) (featureFromLLM.getCustomerResponse().size()/daysDifference));
+            customerFeature.getWarmth().setLatestTimeCustomerResponse( LocalDateTime.parse(featureFromLLM.getCustomerResponse().get(0).getTs(), formatter));
+        }
         if (Objects.nonNull(customerFeature)) {
             if (Objects.nonNull(customerInfo)) {
                 // 这里设置听课数据
@@ -283,7 +283,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public void modifyCustomerFeatureById(String customerId, String activityId, CustomerFeatureResponse customerFeatureRequest) {
-        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerId(customerId);
         CustomerFeature customerFeature = customerFeatureMapper.selectById(customerBase.getId());
         if (Objects.isNull(customerFeature)) {
             customerFeature = new CustomerFeature();
@@ -452,18 +452,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     public void syncCustomerInfoFromRelation() {
-        String activityId = configService.getCurrentActivityId();
-        if (Objects.isNull(activityId)) {
-            log.error("没有当前的活动，请先配置");
-            return;
-        }
-        List<CustomerInfo> characterList = customerRelationService.getByActivity(activityId);
+        List<CustomerInfo> characterList = customerRelationService.getByActivity("");
         for (CustomerInfo info : characterList) {
-            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(info.getUserId(), activityId);
+            CustomerBase customerBase = customerBaseMapper.selectByCustomerId(info.getUserId());
             if (Objects.nonNull(customerBase)) {
                 // 判断销售是否发生变更
                 if (!info.getSalesId().toString().equals(customerBase.getOwnerId())) {
                     customerBaseMapper.updateSalesById(customerBase.getId(), info.getSalesId().toString(), info.getSalesName());
+                }
+                if (!info.getAccessTime().equals(customerBase.getCreateTime())) {
+                    customerBaseMapper.updateAccessTimeById(customerBase.getId(), info.getCreateTime());
                 }
             } else {
                 customerBase = new CustomerBase();
@@ -472,8 +470,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                 customerBase.setOwnerId(info.getSalesId());
                 customerBase.setCustomerName(info.getUserName());
                 customerBase.setOwnerName(info.getSalesName());
-                customerBase.setActivityId(activityId);
-                customerBase.setActivityName("");
+                customerBase.setCreateTime(info.getAccessTime());
                 customerBaseMapper.insert(customerBase);
             }
         }
@@ -555,10 +552,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         customerFeatureResponse.getWarmth().setTradingStyle(
                 convertBaseFeatureByOverwrite(featureFromLLM.getTradingStyle(),  null, TradingStyleEnum.class, String.class).getCustomerConclusion()
         );
-        customerFeatureResponse.getWarmth().setCustomerResponse(3.0f);
         customerFeatureResponse.getWarmth().setPurchaseSimilarProduct(
                 convertBaseFeatureByOverwrite(featureFromLLM.getPurchaseSimilarProduct(),  null, null, Boolean.class).getCustomerConclusion());
-
         // 设置base
         customerFeatureResponse.getBasic().setMemberStocksBuy(
                 convertBaseFeatureByOverwrite(featureFromLLM.getMemberStocksBuy(), null, null, Boolean.class)
@@ -690,12 +685,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                             "有购买意向".equals(resultAnswer) ||
                             "认可".equals(resultAnswer) ||
                             "学会".equals(resultAnswer) ||
+                            "愿意".equals(resultAnswer) ||
                             "买过".equals(resultAnswer) ||
                             "清晰".equals(resultAnswer)) {
                         customerConclusion.setModelRecord(Boolean.TRUE);
                     } else if ("否".equals(resultAnswer) ||
                             "无购买意向".equals(resultAnswer) ||
                             "不认可".equals(resultAnswer) ||
+                            "不愿意".equals(resultAnswer) ||
                             "没学会".equals(resultAnswer) ||
                             "没买过".equals(resultAnswer) ||
                             "不清晰".equals(resultAnswer)) {

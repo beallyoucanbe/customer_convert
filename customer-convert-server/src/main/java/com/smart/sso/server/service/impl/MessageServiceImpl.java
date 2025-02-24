@@ -145,11 +145,11 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public void updateCustomerCharacter(String customerId, String activityId, boolean checkPurchaseAttitude) {
-        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerId(customerId);
         // info 表不存在，先触发同步
         if (Objects.isNull(customerBase)) {
             customerInfoService.queryCustomerById(customerId, activityId);
-            customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+            customerBase = customerBaseMapper.selectByCustomerId(customerId);
         }
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerBase.getCustomerId(), customerBase.getActivityId());
         CustomerFeatureResponse customerFeature = customerInfoService.queryCustomerFeatureById(customerBase.getCustomerId(), customerBase.getActivityId());
@@ -313,6 +313,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setClassAttendTimes_3(customerFeature.getWarmth().getClassAttendTimes_3());
         latestCustomerCharacter.setClassAttendDuration_3(customerFeature.getWarmth().getClassAttendDuration_3());
         latestCustomerCharacter.setCustomerResponse(customerFeature.getWarmth().getCustomerResponse());
+        latestCustomerCharacter.setLatestTimeCustomerResponse(customerFeature.getWarmth().getLatestTimeCustomerResponse());
         latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
                 Objects.nonNull(customerFeature.getWarmth().getFundsVolume().getCompareValue()) ? customerFeature.getWarmth().getFundsVolume().getCompareValue().toString() : null));
         latestCustomerCharacter.setStockPosition(StockPositonEnum.getTextByValue(
@@ -326,8 +327,14 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setWelfareStocksBuy(Objects.nonNull(customerFeature.getBasic().getWelfareStocksBuy().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getWelfareStocksBuy().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setWelfareStocksPrice(Objects.nonNull(customerFeature.getBasic().getWelfareStocksPrice().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getWelfareStocksPrice().getCustomerConclusion().getCompareValue().toString() : null);
 
+        latestCustomerCharacter.setConsultingPracticalClass(Objects.nonNull(customerFeature.getBasic().getConsultingPracticalClass().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getConsultingPracticalClass().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setCustomerLearningFreq(
+                Objects.nonNull(customerFeature.getBasic().getCustomerLearningFreq()) && Objects.nonNull(customerFeature.getBasic().getCustomerLearningFreq().getValue()) ? (Double) customerFeature.getBasic().getCustomerLearningFreq().getValue() : null);
+        latestCustomerCharacter.setContinueFollowingStock(Objects.nonNull(customerFeature.getBasic().getContinueFollowingStock().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getContinueFollowingStock().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTeacherApproval(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getTeacherApproval().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getBasic().getTeacherApproval().getTeacherProfession()) ? customerFeature.getBasic().getTeacherApproval().getTeacherProfession().toString() : null);
+        latestCustomerCharacter.setSoftwareValueApproval(Objects.nonNull(customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareValueApproval().getCustomerConclusion().getCompareValue().toString() : null);
+        latestCustomerCharacter.setSoftwarePurchaseAttitude(Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setUpdateTime(customerProfile.getLastCommunicationDate());
         latestCustomerCharacter.setCreateTime(customerProfile.getAccessTime());
     }

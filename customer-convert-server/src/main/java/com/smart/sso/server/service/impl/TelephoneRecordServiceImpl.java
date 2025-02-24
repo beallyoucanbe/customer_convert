@@ -45,7 +45,6 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         QueryWrapper<TelephoneRecord> queryWrapper = new QueryWrapper<>();
         // 按照沟通时间倒序排列
         queryWrapper.eq("customer_id", customerId);
-        queryWrapper.eq("activity_id", activityId);
         queryWrapper.orderBy(true, false, "communication_time");
         List<TelephoneRecord> records = recordMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(records)) {
@@ -438,7 +437,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         chatDetail.setCommunicationTime(record.getCommunicationTime());
         chatDetail.setCommunicationDuration(record.getCommunicationDuration());
 
-        String filePath = "/data/customer-convert/callback/files/" + record.getCallId(); // 文件路径
+        String filePath = "/home/haiyangu1/hsw/files/" + record.getCallId(); // 文件路径
         List<ChatDetail.Message> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -524,7 +523,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             return;
         }
         for (TelephoneRecordStatics item : customerIdList) {
-            CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(item.getCustomerId(), item.getActivityId());
+            CustomerBase customerBase = customerBaseMapper.selectByCustomerId(item.getCustomerId());
             if (item.getFirstCommunicationTime().isBefore(customerBase.getCreateTime())) {
                 customerBaseMapper.updateCommunicationRoundsCreatetime(item.getCustomerId(), activityId, item.getTotalCalls(), item.getLatestCommunicationTime(), item.getFirstCommunicationTime());
             } else {
@@ -575,7 +574,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
     @Override
     public CustomerBase syncCustomerInfoFromRecord(String customerId, String activityId) {
-        CustomerBase customerBase = customerBaseMapper.selectByCustomerIdAndCampaignId(customerId, activityId);
+        CustomerBase customerBase = customerBaseMapper.selectByCustomerId(customerId);
         // info 表存在记录，并且客户名称不为空，说明已经同步过信息，跳过
         if (Objects.nonNull(customerBase) && !StringUtils.isEmpty(customerBase.getCustomerName())) {
             return customerBase;

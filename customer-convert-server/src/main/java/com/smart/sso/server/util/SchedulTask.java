@@ -290,7 +290,7 @@ public class SchedulTask {
     }
 
     // 每天更新一次info到base表的同步
-    @Scheduled(cron = "0 30 7 * * ?")
+    @Scheduled(cron = "0 30 7,17 * * ?")
     public void refreshCustomerInfos() {
         log.error("开始刷新客户信息");
         customerInfoService.syncCustomerInfoFromRelation();

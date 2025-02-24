@@ -2,6 +2,7 @@ package com.smart.sso.server.model.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ public class CustomerFeatureResponse {
         private Feature.CustomerConclusion tradingStyle = new Feature.CustomerConclusion();
         // 客户的回复频次
         private Float customerResponse;
+        private LocalDateTime latestTimeCustomerResponse;
         // 是否购买类似的产品
         private Feature.CustomerConclusion purchaseSimilarProduct = new Feature.CustomerConclusion();
     }

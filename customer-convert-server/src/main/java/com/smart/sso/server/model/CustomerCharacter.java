@@ -40,6 +40,7 @@ public class CustomerCharacter implements Serializable {
     private String stockPosition;
     private String tradingStyle;
     private Float customerResponse;
+    private LocalDateTime latestTimeCustomerResponse;
     private String purchaseSimilarProduct;
     private String memberStocksBuy;
     private String memberStocksPrice;

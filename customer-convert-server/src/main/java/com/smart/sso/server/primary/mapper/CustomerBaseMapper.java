@@ -15,8 +15,8 @@ public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
     @Update("UPDATE customer_base SET conversion_rate = #{conversion_rate} WHERE id = #{id}")
     int updateConversionRateById(@Param("id") String id, @Param("conversion_rate") String conversionRate);
 
-    @Select("select * from customer_base where customer_id = #{customer_id} and activity_id = #{activity_id}")
-    CustomerBase selectByCustomerIdAndCampaignId(@Param("customer_id") String customer_id, @Param("activity_id") String activity_id);
+    @Select("select * from customer_base where customer_id = #{customer_id}")
+    CustomerBase selectByCustomerId(@Param("customer_id") String customer_id);
 
     @Select("SELECT activity_name AS activityName, activity_id AS activityId FROM customer_base WHERE customer_id = #{customer_id}")
     List<ActivityInfo> selectActivityInfoByCustomerId(@Param("customer_id") String customer_id);
@@ -37,6 +37,9 @@ public interface CustomerBaseMapper extends BaseMapper<CustomerBase> {
 
     @Update("UPDATE customer_base SET purchase_time = #{purchase_time}, customer_purchase_status = 1 WHERE id = #{id}")
     int updatePurchaseTimeById(@Param("id") String id, @Param("purchase_time") LocalDateTime purchase_time);
+
+    @Update("UPDATE customer_base SET create_time = #{create_time} WHERE id = #{id}")
+    int updateAccessTimeById(@Param("id") String id, @Param("create_time") LocalDateTime create_time);
 
     @Update("UPDATE customer_base SET owner_id = #{owner_id}, owner_name = #{owner_name} WHERE id = #{id}")
     int updateSalesById(@Param("id") String id,
