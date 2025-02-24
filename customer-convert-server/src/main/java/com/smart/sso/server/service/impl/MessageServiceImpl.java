@@ -159,6 +159,10 @@ public class MessageServiceImpl implements MessageService {
             if (character.getCompletePurchaseStage()) {
                 continue;
             }
+            // 只推送合格用户
+            if (StringUtils.isEmpty(character.getCustTypeId()) || !character.getCustTypeId().equals(1)){
+                continue;
+            }
             String ownerId = character.getOwnerId();
             PotentialCustomer potentialCustomer;
             if (!potentialCustomerMap.containsKey(ownerId)) {
@@ -457,6 +461,10 @@ public class MessageServiceImpl implements MessageService {
             if (character.getCompletePurchaseStage()) {
                 continue;
             }
+            // 只推送合格用户
+            if (StringUtils.isEmpty(character.getCustTypeId()) || !character.getCustTypeId().equals(1)){
+                continue;
+            }
             String ownerId = character.getOwnerName();
             PotentialCustomer potentialCustomer;
             if (!potentialCustomerMap.containsKey(ownerId)) {
@@ -525,6 +533,10 @@ public class MessageServiceImpl implements MessageService {
         for (CustomerCharacter character : characterList) {
             // 完成购买，跳过不统计
             if (character.getCompletePurchaseStage()) {
+                continue;
+            }
+            // 只推送合格用户
+            if (StringUtils.isEmpty(character.getCustTypeId()) || !character.getCustTypeId().equals(1)){
                 continue;
             }
             String ownerId = character.getOwnerId();
