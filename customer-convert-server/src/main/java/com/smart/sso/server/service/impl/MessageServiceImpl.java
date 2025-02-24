@@ -871,7 +871,10 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setCustomerContinueCommunicate(Objects.nonNull(customerFeature.getBasic().getCustomerContinueCommunicate().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerContinueCommunicate().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setOwnerPackagingCourse(Objects.nonNull(customerFeature.getBasic().getOwnerPackagingCourse().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getOwnerPackagingCourse().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setOwnerPackagingFunction(Objects.nonNull(customerFeature.getBasic().getOwnerPackagingFunction().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getOwnerPackagingFunction().getCustomerConclusion().getCompareValue().toString() : null);
-
+        latestCustomerCharacter.setClassAttendTimes(customerFeature.getBasic().getClassAttendTimes());
+        latestCustomerCharacter.setClassAttendDuration(customerFeature.getBasic().getClassAttendDuration());
+        latestCustomerCharacter.setCustomerLearningFreq(Objects.nonNull(customerFeature.getBasic().getCustomerLearningFreq().getValue()) ? (Double) customerFeature.getBasic().getCustomerLearningFreq().getValue() : null);
+        latestCustomerCharacter.setOwnerInteractionFreq(Objects.nonNull(customerFeature.getBasic().getOwnerInteractionFreq().getValue()) ? (Double) customerFeature.getBasic().getOwnerInteractionFreq().getValue() : null);
         List<String> advantages = customerFeature.getSummary().getAdvantage();
         List<CustomerFeatureResponse.Question> questions = customerFeature.getSummary().getQuestions();
         for (String item : advantages) {

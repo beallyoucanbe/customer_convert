@@ -56,7 +56,10 @@ public class CustomerCharacter implements Serializable {
     private int standardExplanationCompletion;
     private Integer isSend188;
     private Integer custTypeId;
-
+    private Integer classAttendTimes;
+    private Integer classAttendDuration;
+    private Double customerLearningFreq;
+    private Double ownerInteractionFreq;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private LocalDateTime updateTimeTelephone;

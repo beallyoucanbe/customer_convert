@@ -44,6 +44,10 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "owner_packaging_function=#{ownerPackagingFunction}, ",
             "is_send188=#{isSend188}, ",
             "cust_type_id=#{custTypeId}, ",
+            "class_attend_times=#{classAttendTimes}, ",
+            "class_attend_duration=#{classAttendDuration}, ",
+            "customer_learning_freq=#{customerLearningFreq}, ",
+            "owner_interaction_freq=#{ownerInteractionFreq}, ",
             "update_time=#{updateTime} ",
             "WHERE id=#{id}"
     })
