@@ -161,9 +161,9 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (Objects.nonNull(customerInfo)) {
                 // 这里设置听课数据
                 customerFeature.getWarmth().setClassAttendTimes_2(customerInfo.getTotalCourses_2_0());
-                customerFeature.getWarmth().setClassAttendDuration_2(customerInfo.getTotalDuration_2_0());
+                customerFeature.getWarmth().setClassAttendDuration_2(customerInfo.getTotalDuration_2_0() / 60);
                 customerFeature.getWarmth().setClassAttendTimes_3(customerInfo.getTotalCourses_3_0());
-                customerFeature.getWarmth().setClassAttendDuration_3(customerInfo.getTotalDuration_3_0());
+                customerFeature.getWarmth().setClassAttendDuration_3(customerInfo.getTotalDuration_3_0() / 60);
             }
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
             customerFeature.setSummary(getProcessSummary(customerFeature, stageStatus));
