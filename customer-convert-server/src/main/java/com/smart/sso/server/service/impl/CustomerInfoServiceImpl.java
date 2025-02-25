@@ -137,7 +137,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         if (Objects.isNull(customerProfile.getCommunicationRounds())) {
             customerProfile.setCommunicationRounds(0);
         }
-        // 这里重新判断下打电话的次数
+        // 这里重新判断下打电话的次数和最后通话时间
         TelephoneRecordStatics round = recordService.getCommunicationRound(customerId, activityId);
         if (customerProfile.getCommunicationRounds() != round.getTotalCalls()) {
             customerInfoMapper.updateCommunicationRounds(customerId, activityId, round.getTotalCalls(), round.getLatestCommunicationTime());
@@ -289,13 +289,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         try {
             CustomerRelation customerRelation = customerRelationService.getByActivityAndCustomer(customerInfo.getCustomerId(),
                     customerInfo.getOwnerId(), customerInfo.getActivityId());
-            customerInfo.setClassAttendTimes(customerRelation.getClasseAttendTimes());
-            customerInfo.setClassAttendDuration(customerRelation.getClasseAttendDuration());
-            customerInfo.setIsSend188(customerRelation.getIsSend188());
-            customerInfo.setCustTypeId(customerRelation.getCustTypeId());
-            if (Objects.nonNull(customerRelation) && Objects.nonNull(customerRelation.getCustomerSigned())
-                    && customerRelation.getCustomerSigned()) {
-                stageStatus.setCompletePurchase(1);
+            if(Objects.nonNull(customerRelation)) {
+                customerInfo.setClassAttendTimes(customerRelation.getClasseAttendTimes());
+                customerInfo.setClassAttendDuration(customerRelation.getClasseAttendDuration());
+                customerInfo.setIsSend188(customerRelation.getIsSend188());
+                customerInfo.setCustTypeId(customerRelation.getCustTypeId());
+                if (Objects.nonNull(customerRelation.getCustomerSigned()) && customerRelation.getCustomerSigned()) {
+                    stageStatus.setCompletePurchase(1);
+                }
             }
         } catch (Exception e) {
             log.error("判断确认购买状态失败, ID={}", customerInfo.getCustomerId());

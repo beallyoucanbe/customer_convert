@@ -532,12 +532,16 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
                     CommunicationContent communicationContent = record.getCustomerLearning().get(0);
                     if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
-                        customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
-                        customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                                record.getCallId(),
-                                customerFeatureFromLLM.getCommunicationTime(),
-                                Integer.parseInt(communicationContent.getAnswerTag()),
-                                communicationContent.getAnswerText()));
+                        try {
+                            customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                            customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                                    record.getCallId(),
+                                    customerFeatureFromLLM.getCommunicationTime(),
+                                    Integer.parseInt(communicationContent.getAnswerTag()),
+                                    communicationContent.getAnswerText()));
+                        } catch (NumberFormatException e) {
+                           // 兼容大模型提取内容的问题
+                        }
                     }
                 }
 
@@ -548,12 +552,16 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!CollectionUtils.isEmpty(record.getOwnerInteraction())) {
                     CommunicationContent communicationContent = record.getOwnerInteraction().get(0);
                     if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
-                        ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
-                        ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                                record.getCallId(),
-                                customerFeatureFromLLM.getCommunicationTime(),
-                                Integer.parseInt(communicationContent.getAnswerTag()),
-                                communicationContent.getAnswerText()));
+                        try {
+                            ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                            ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                                    record.getCallId(),
+                                    customerFeatureFromLLM.getCommunicationTime(),
+                                    Integer.parseInt(communicationContent.getAnswerTag()),
+                                    communicationContent.getAnswerText()));
+                        } catch (NumberFormatException e) {
+                            // 兼容大模型提取内容的问题
+                        }
                     }
                 }
             }
