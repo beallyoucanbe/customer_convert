@@ -61,7 +61,7 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private MessageMapper messageMapper;
 
-    ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "未完成判断").put("low", "较低").put("medium", "中等").put("high", "较高").build();
+    ImmutableMap<String, String> conversionRateMap = ImmutableMap.<String, String>builder().put("incomplete", "潜力待判断").put("low", "有潜力待挖掘").put("medium", "还有少量卡点").put("high", "临门一脚").build();
 
     @Override
     public String sendMessageToUser(TextMessage message, String activityid, String messageType) {

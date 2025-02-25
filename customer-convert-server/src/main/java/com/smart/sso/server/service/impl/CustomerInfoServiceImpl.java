@@ -193,27 +193,38 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public String getConversionRate(CustomerFeatureResponse customerFeature) {
         // "high", "medium", "low", "incomplete"
-        // -较高：资金体量=“大于10万”
-        // -中等：资金体量=“5到10万”
-        // -较低：资金体量=“小于5万”
-        // -未完成判断：资金体量=空
+        // 临门一脚：资金量≥5万且认可数≥3，购买态度为确认购买
+        // 还有少量卡点：资金量≥5万且认可数≥3，购买态度为尚未确认购买
+        // 有潜力待挖掘：资金量≥5万且认可数≤2
+        // 潜力待判断：不属于上述三类的其他所有客户
         String result = "incomplete";
-        if (Objects.isNull(customerFeature) || Objects.isNull(customerFeature.getBasic())
-                || Objects.isNull(customerFeature.getBasic().getFundsVolume())
-                || Objects.isNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion())) {
-            return result;
+        // 判断认可度次数
+        int approvalCount = getApprovalCount(customerFeature);
+        // 判断购买态度
+        Boolean purchaseAttitude = Boolean.FALSE;
+        try {
+            if ((Boolean) customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) {
+                purchaseAttitude = Boolean.TRUE;
+            }
+        } catch (Exception e) {
+            // 为空
         }
-        Feature.CustomerConclusion conclusion = customerFeature.getBasic().getFundsVolume().getCustomerConclusion();
-        if (StringUtils.isEmpty(conclusion.getCompareValue())) {
-            return result;
+        // 判断资金体量
+        String fundsVolume = null;
+        try {
+            fundsVolume = customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue().toString();
+        } catch (Exception e) {
+            // 为空
         }
-        if (conclusion.getCompareValue().equals(GREAT_TEN_MILLION.getValue())) {
+        // 临门一脚：资金量≥5万且认可数≥3，购买态度为确认购买
+        if (approvalCount >= 3 && purchaseAttitude && !StringUtils.isEmpty(fundsVolume) &&
+                (fundsVolume.equals(GREAT_TEN_MILLION.getValue()) || fundsVolume.equals(FIVE_TO_TEN_MILLION.getValue()))) {
             return "high";
-        }
-        if (conclusion.getCompareValue().equals(FIVE_TO_TEN_MILLION.getValue())) {
+        } else if(approvalCount >= 3 && !purchaseAttitude && !StringUtils.isEmpty(fundsVolume) &&
+                (fundsVolume.equals(GREAT_TEN_MILLION.getValue()) || fundsVolume.equals(FIVE_TO_TEN_MILLION.getValue()))) {
             return "medium";
-        }
-        if (conclusion.getCompareValue().equals(LESS_FIVE_MILLION.getValue())) {
+        } else if(approvalCount <= 2 && !StringUtils.isEmpty(fundsVolume) &&
+                (fundsVolume.equals(GREAT_TEN_MILLION.getValue()) || fundsVolume.equals(FIVE_TO_TEN_MILLION.getValue()))) {
             return "low";
         }
         return result;
