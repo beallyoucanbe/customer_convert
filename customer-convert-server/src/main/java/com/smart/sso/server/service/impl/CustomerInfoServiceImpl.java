@@ -533,6 +533,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return customerBaseList.stream().map(item -> {
             CustomerListVO customerListVO = new CustomerListVO();
             BeanUtils.copyProperties(item, customerListVO);
+            customerListVO.setCustomerId(CommonUtils.encrypt(customerListVO.getCustomerId()));
             return customerListVO;
         }).collect(Collectors.toList());
     }

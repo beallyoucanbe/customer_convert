@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,10 +14,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 
 @Slf4j
 public class CommonUtils {
+
+    private static String key = "12j4g6f89e12e456";
 
     public static String generatePrimaryKey() {
         // 获取当前时间戳（毫秒级别）
@@ -223,6 +225,34 @@ public class CommonUtils {
         } else {
             // 如果小时数为0，则只返回分钟数
             return remainingSeconds + "s";
+        }
+    }
+
+    // AES 加密
+    public static String encrypt(String content) {
+        try {
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            byte[] encryptedBytes = cipher.doFinal(content.getBytes());
+            String base64Encoded = Base64.getEncoder().encodeToString(encryptedBytes);
+            return base64Encoded.replace('+', '-').replace('/', '_');
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // AES 解密
+    public static String decrypt(String encryptedContent) {
+        try {
+            encryptedContent = encryptedContent.replace('-', '+').replace('_', '/');
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedContent));
+            return new String(decryptedBytes);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

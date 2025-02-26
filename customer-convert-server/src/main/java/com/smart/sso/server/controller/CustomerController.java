@@ -71,6 +71,8 @@ public class CustomerController {
     @GetMapping("/customer/{customer_id}/activity/{activity_id}/profile")
     public BaseResponse<CustomerProfile> getCustomerProfile(@PathVariable(value = "customer_id") String customerId,
                                                             @PathVariable(value = "activity_id") String activityId) {
+
+        customerId = CommonUtils.decrypt(customerId);
         CustomerProfile customerProfile = customerInfoService.queryCustomerById(customerId, activityId);
         CustomerInfo customerInfo = customerRelationService.getByCustomer(customerId, customerProfile.getOwnerId());
         customerProfile.setAccessTime(customerInfo.getAccessTime());
@@ -82,6 +84,7 @@ public class CustomerController {
     @GetMapping("/customer/{customer_id}/activity/{activity_id}/features")
     public BaseResponse<CustomerFeatureResponse> getCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                      @PathVariable(value = "activity_id") String activityId) {
+        customerId = CommonUtils.decrypt(customerId);
         CustomerFeatureResponse FeatureProfile = customerInfoService.queryCustomerFeatureById(customerId, activityId);
         return ResultUtils.success(FeatureProfile);
     }
@@ -89,6 +92,7 @@ public class CustomerController {
     @ApiOperation(value = "获取客户参加的活动列表")
     @GetMapping("/customer/{customer_id}/activities")
     public BaseResponse<List<ActivityInfoWithVersion>> getCustomerActivityInfo(@PathVariable(value = "customer_id") String customerId) {
+        customerId = CommonUtils.decrypt(customerId);
         List<ActivityInfoWithVersion> activityInfoList = customerInfoService.getActivityInfoByCustomerId(customerId);
         return ResultUtils.success(activityInfoList);
     }
@@ -98,6 +102,7 @@ public class CustomerController {
     public BaseResponse<Void> modifyCustomerFeatures(@PathVariable(value = "customer_id") String customerId,
                                                                        @PathVariable(value = "activity_id") String activityId,
                                                                        @RequestBody CustomerFeatureResponse customerFeatureRequest) {
+        customerId = CommonUtils.decrypt(customerId);
         customerInfoService.modifyCustomerFeatureById(customerId, activityId, customerFeatureRequest);
         return ResultUtils.success(null);
     }
@@ -170,6 +175,7 @@ public class CustomerController {
                                        @RequestParam(value = "owner", required = false) String owner,
                                        String from, String manager,
                                        HttpServletResponse response) throws IOException {
+        customerId = CommonUtils.decrypt(customerId);
         String targetUrl = customerInfoService.getRedirectUrl(customerId, activityId, ownerId, owner, from, manager);
         // 使用HttpServletResponse进行重定向
         response.sendRedirect(CommonUtils.encodeParameters(targetUrl));
@@ -196,6 +202,7 @@ public class CustomerController {
     @GetMapping("/customer/{customer_id}/activity/{activity_id}/chat_history")
     public BaseResponse<List<ChatHistoryVO>> getChatContent1(@PathVariable(value = "customer_id") String customerId,
                                                              @PathVariable(value = "activity_id") String activityId) {
+        customerId = CommonUtils.decrypt(customerId);
         return ResultUtils.success(recordService.getChatHistory(customerId, activityId));
     }
 
@@ -204,6 +211,7 @@ public class CustomerController {
     public BaseResponse<ChatDetail> getChatContent2(@PathVariable(value = "customer_id") String customerId,
                                                     @PathVariable(value = "activity_id") String activityId,
                                                     @RequestParam(value = "id") String callId) {
+        customerId = CommonUtils.decrypt(customerId);
         return ResultUtils.success(recordService.getChatDetail(customerId, activityId, callId));
     }
 
