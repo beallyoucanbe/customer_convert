@@ -19,6 +19,7 @@ public class CustomerCharacter implements Serializable {
     @TableId
     private String id;
     private String customerId;
+    private String customerIdEncode;
     private String customerName;
     private String ownerId;
     private String ownerName;

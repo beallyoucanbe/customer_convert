@@ -294,6 +294,7 @@ public class MessageServiceImpl implements MessageService {
                                  CustomerProfile customerProfile, CustomerFeatureResponse customerFeature) {
         latestCustomerCharacter.setId(customerBase.getId());
         latestCustomerCharacter.setCustomerId(customerBase.getCustomerId());
+        latestCustomerCharacter.setCustomerIdEncode(CommonUtils.encrypt(customerBase.getCustomerId()));
         latestCustomerCharacter.setCustomerName(customerBase.getCustomerName());
         latestCustomerCharacter.setOwnerId(customerBase.getOwnerId());
         latestCustomerCharacter.setOwnerName(customerBase.getOwnerName());
