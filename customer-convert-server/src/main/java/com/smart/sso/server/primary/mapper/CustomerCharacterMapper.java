@@ -15,6 +15,7 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
     @Update({
             "UPDATE customer_character SET ",
             "customer_id=#{customerId}, ",
+            "customer_id_encode=#{customerIdEncode}, ",
             "customer_name=#{customerName}, ",
             "owner_id=#{ownerId}, ",
             "owner_name=#{ownerName}, ",
