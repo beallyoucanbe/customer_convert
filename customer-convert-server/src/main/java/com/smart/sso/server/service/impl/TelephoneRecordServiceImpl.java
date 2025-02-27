@@ -23,8 +23,8 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -40,8 +40,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
     @Autowired
     private ConfigService configService;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CustomerFeatureFromLLM getCustomerFeatureFromLLM(String customerId, String activityId) {
@@ -259,7 +258,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getRemindService_1().add(communicationContent);
                 }
             }
@@ -269,7 +268,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getRemindService_2().add(communicationContent);
                 }
             }
@@ -279,7 +278,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getRemindService_3().add(communicationContent);
                 }
             }
@@ -289,7 +288,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getRemindService_4().add(communicationContent);
                 }
             }
@@ -299,7 +298,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getRemindService_5().add(communicationContent);
                 }
             }
@@ -394,7 +393,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getDeliveryRemindLive().add(communicationContent);
                 }
             }
@@ -404,7 +403,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getAnswerText()) &&
                         !communicationContent.getAnswerText().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getDeliveryRemindPlayback().add(communicationContent);
                 }
             }
@@ -415,7 +414,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 if (!StringUtils.isEmpty(communicationContent.getQuestion()) &&
                         !communicationContent.getQuestion().equals("无")) {
                     communicationContent.setCallId(record.getCallId());
-                    communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                    communicationContent.setTs(record.getCommunicationTime().format(formatter));
                     customerFeatureFromLLM.getHomework().add(communicationContent);
                 }
             }
@@ -451,7 +450,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             //客户对课程的认可度1
             if (!CollectionUtils.isEmpty(record.getCourseMaster_1())) {
                 CommunicationContent communicationContent = record.getCourseMaster_1().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_1())) {
                     customerFeatureFromLLM.setCourseMaster_1(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_1().setCallId(record.getCallId());
@@ -479,7 +478,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_2())) {
                 CommunicationContent communicationContent = record.getCourseMaster_2().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_2())) {
                     customerFeatureFromLLM.setCourseMaster_2(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_2().setCallId(record.getCallId());
@@ -507,7 +506,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_3())) {
                 CommunicationContent communicationContent = record.getCourseMaster_3().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_3())) {
                     customerFeatureFromLLM.setCourseMaster_3(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_3().setCallId(record.getCallId());
@@ -535,7 +534,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_4())) {
                 CommunicationContent communicationContent = record.getCourseMaster_4().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_4())) {
                     customerFeatureFromLLM.setCourseMaster_4(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_4().setCallId(record.getCallId());
@@ -563,7 +562,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_5())) {
                 CommunicationContent communicationContent = record.getCourseMaster_5().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_5())) {
                     customerFeatureFromLLM.setCourseMaster_5(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_5().setCallId(record.getCallId());
@@ -591,7 +590,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_6())) {
                 CommunicationContent communicationContent = record.getCourseMaster_6().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_6())) {
                     customerFeatureFromLLM.setCourseMaster_6(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_6().setCallId(record.getCallId());
@@ -619,7 +618,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
 
             if (!CollectionUtils.isEmpty(record.getCourseMaster_7())) {
                 CommunicationContent communicationContent = record.getCourseMaster_7().get(0);
-                communicationContent.setTs(sdf.format(record.getCommunicationTime()));
+                communicationContent.setTs(record.getCommunicationTime().format(formatter));
                 if (Objects.isNull(customerFeatureFromLLM.getCourseMaster_7())) {
                     customerFeatureFromLLM.setCourseMaster_7(communicationContent);
                     customerFeatureFromLLM.getCourseMaster_7().setCallId(record.getCallId());
