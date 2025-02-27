@@ -2,8 +2,6 @@ package com.smart.sso.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.smart.sso.server.enums.FundsVolumeEnum;
-import com.smart.sso.server.enums.LearningAbilityEnum;
 import com.smart.sso.server.primary.mapper.CharacterCostTimeMapper;
 import com.smart.sso.server.primary.mapper.CustomerFeatureMapper;
 import com.smart.sso.server.primary.mapper.CustomerInfoMapper;
@@ -175,8 +173,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeature.setTradingMethod(Objects.isNull(summaryResponse) ? null : summaryResponse.getTradingMethod());
             getStandardExplanationCompletion(customerFeature);
             customerFeature.setSummary(getProcessSummary(customerFeature, customerInfo, stageStatus, summaryResponse));
-            customerFeature.getBasic().setClassAttendTimes(customerInfo.getClassAttendTimes());
-            customerFeature.getBasic().setClassAttendDuration(Objects.isNull(customerInfo.getClassAttendDuration()) ? 0 : customerInfo.getClassAttendDuration()/60);
             customerFeature.getBasic().setApproveCount(getApprovalCount(customerFeature));
         }
         return customerFeature;
@@ -210,23 +206,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 为空
         }
         // 判断资金体量
-        String fundsVolume = null;
-        try {
-            fundsVolume = customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue().toString();
-        } catch (Exception e) {
-            // 为空
-        }
-        // 临门一脚：资金量≥5万且认可数≥3，购买态度为确认购买
-        if (approvalCount >= 3 && purchaseAttitude && !StringUtils.isEmpty(fundsVolume) &&
-                (fundsVolume.equals(GREAT_TEN_MILLION.getValue()) || fundsVolume.equals(FIVE_TO_TEN_MILLION.getValue()))) {
-            return "high";
-        } else if(approvalCount >= 3 && !purchaseAttitude && !StringUtils.isEmpty(fundsVolume) &&
-                (fundsVolume.equals(GREAT_TEN_MILLION.getValue()) || fundsVolume.equals(FIVE_TO_TEN_MILLION.getValue()))) {
-            return "medium";
-        } else if(approvalCount <= 2 && !StringUtils.isEmpty(fundsVolume) &&
-                (fundsVolume.equals(GREAT_TEN_MILLION.getValue()) || fundsVolume.equals(FIVE_TO_TEN_MILLION.getValue()))) {
-            return "low";
-        }
         return result;
     }
 
@@ -288,8 +267,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             try {
                 if (Objects.nonNull(infoExplanation.getSoftwareValueQuantified()) &&
                         infoExplanation.getSoftwareValueQuantified().getResult() &&
-                        Objects.nonNull(infoExplanation.getTradeBasedIntro()) &&
-                        infoExplanation.getTradeBasedIntro().getResult()) {
+                        Objects.nonNull(infoExplanation.getCustomerIssuesQuantified()) &&
+                        infoExplanation.getCustomerIssuesQuantified().getResult()) {
                     stageStatus.setFunctionIntroduction(1);
                 }
             } catch (Exception e) {
@@ -367,13 +346,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerFeatureMapper.insert(customerFeature);
         }
         if (Objects.nonNull(customerFeatureRequest.getBasic())) {
-            if (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume()) &&
-                    Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion()) &&
-                    (Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord()) ||
-                            Objects.nonNull(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag()))) {
-                customerFeature.setFundsVolumeSales(new FeatureContentSales(customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesRecord(),
-                        customerFeatureRequest.getBasic().getFundsVolume().getCustomerConclusion().getSalesManualTag(), DateUtil.getCurrentDateTime()));
-            }
 
             if (Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition()) &&
                     Objects.nonNull(customerFeatureRequest.getBasic().getSelfIssueRecognition().getCustomerConclusion()) &&
@@ -577,10 +549,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         for (CustomerInfo customerInfo : customerFeatureList) {
             CustomerFeatureResponse featureProfile = queryCustomerFeatureById(customerInfo.getCustomerId(), customerInfo.getActivityId());
             boolean tttt = true;
-            if (!equal(featureProfile.getBasic().getFundsVolume())) {
-                tttt = false;
-                featureNum++;
-            }
             if (!equal(featureProfile.getBasic().getSoftwareFunctionClarity())) {
                 tttt = false;
                 featureNum++;
@@ -760,11 +728,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         tradingMethod.setTradeTimingDecision(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradeTimingDecision(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradeTimingDecisionSales(), null, String.class));
         tradingMethod.setTradingStyle(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
         tradingMethod.setStockMarketAge(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
-
-        tradingMethod.getCurrentStocks().setStandardAction(infoExplanation.getStock());
-        tradingMethod.getStockPurchaseReason().setStandardAction(infoExplanation.getStockPickReview());
-        tradingMethod.getTradeTimingDecision().setStandardAction(infoExplanation.getStockTimingReview());
-        tradingMethod.getTradingStyle().setStandardAction(infoExplanation.getTradeBasedIntro());
 
         customerSummaryResponse.setTradingMethod(tradingMethod);
         return customerSummaryResponse;

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.smart.sso.server.constant.AppConstant;
-import com.smart.sso.server.enums.FundsVolumeEnum;
 import com.smart.sso.server.enums.MessageContentType;
 import com.smart.sso.server.enums.MessageTargetType;
 import com.smart.sso.server.model.VO.MessageSendVO;
@@ -856,8 +855,6 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setConfirmPurchaseStage(customerProfile.getCustomerStage().getConfirmPurchase() == 1);
         latestCustomerCharacter.setCompletePurchaseStage(customerProfile.getCustomerStage().getCompletePurchase() == 1);
 
-        latestCustomerCharacter.setFundsVolume(FundsVolumeEnum.getTextByValue(
-                Objects.nonNull(customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getFundsVolume().getCustomerConclusion().getCompareValue().toString() : null));
 
         latestCustomerCharacter.setSoftwareFunctionClarity(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setStockSelectionMethod(Objects.nonNull(customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getStockSelectionMethod().getCustomerConclusion().getCompareValue().toString() : null);
@@ -867,11 +864,7 @@ public class MessageServiceImpl implements MessageService {
                 Objects.nonNull(customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getSoftwarePurchaseAttitude().getCustomerConclusion().getCompareValue().toString() : null);
 
         latestCustomerCharacter.setStandardExplanationCompletion(Objects.nonNull(customerFeature.getBasic().getSoftwareFunctionClarity()) ? customerFeature.getBasic().getSoftwareFunctionClarity().getStandardProcess() : 0);
-        latestCustomerCharacter.setCustomerContinueCommunicate(Objects.nonNull(customerFeature.getBasic().getCustomerContinueCommunicate().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerContinueCommunicate().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setOwnerPackagingCourse(Objects.nonNull(customerFeature.getBasic().getOwnerPackagingCourse().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getOwnerPackagingCourse().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setOwnerPackagingFunction(Objects.nonNull(customerFeature.getBasic().getOwnerPackagingFunction().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getOwnerPackagingFunction().getCustomerConclusion().getCompareValue().toString() : null);
-        latestCustomerCharacter.setClassAttendTimes(customerFeature.getBasic().getClassAttendTimes());
-        latestCustomerCharacter.setClassAttendDuration(customerFeature.getBasic().getClassAttendDuration());
         latestCustomerCharacter.setCustomerLearningFreq(Objects.nonNull(customerFeature.getBasic().getCustomerLearningFreq().getValue()) ? (Double) customerFeature.getBasic().getCustomerLearningFreq().getValue() : null);
         latestCustomerCharacter.setOwnerInteractionFreq(Objects.nonNull(customerFeature.getBasic().getOwnerInteractionFreq().getValue()) ? (Double) customerFeature.getBasic().getOwnerInteractionFreq().getValue() : null);
         List<String> advantages = customerFeature.getSummary().getAdvantage();

@@ -26,14 +26,6 @@ public class CustomerProcessSummary {
     @Getter
     @Setter
     public static class ProcessInfoExplanation {
-        // 销售有结合客户的股票举例
-        private ProcessInfoExplanationContent stock;
-        // 销售有基于客户交易风格做针对性的功能介绍
-        private ProcessInfoExplanationContent tradeBasedIntro;
-        // 销售有点评客户的选股方法
-        private ProcessInfoExplanationContent stockPickReview;
-        // 销售有点评客户的选股时机
-        private ProcessInfoExplanationContent stockTimingReview;
         // 销售有对客户的问题做量化放大
         private ProcessInfoExplanationContent customerIssuesQuantified;
         // 销售有对软件的价值做量化放大
@@ -55,6 +47,5 @@ public class CustomerProcessSummary {
         private TradeMethodFeature tradeTimingDecision;
         private TradeMethodFeature tradingStyle;
         private TradeMethodFeature stockMarketAge;
-        private TradeMethodFeature learningAbility;
     }
 }
