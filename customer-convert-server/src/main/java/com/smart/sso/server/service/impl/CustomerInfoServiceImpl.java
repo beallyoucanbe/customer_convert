@@ -497,20 +497,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         int communicationRound = 1; // 累计通话轮次
         for (TelephoneRecord telephoneRecord : customerFeatureList) {
             // 该次通话有记录特征提取的时间，并且之前没有记录过
-            if (!CollectionUtils.isEmpty(telephoneRecord.getFundsVolume()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getFundsVolume().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundFundsVolume())) {
-                characterCostTime.setCommunicationDurationFundsVolume(communicationTime +
-                        Integer.parseInt(telephoneRecord.getFundsVolume().get(0).getTs()));
-                characterCostTime.setCommunicationRoundFundsVolume(communicationRound);
-            }
-            if (!CollectionUtils.isEmpty(telephoneRecord.getEarningDesire()) &&
-                    !StringUtils.isEmpty(telephoneRecord.getEarningDesire().get(0).getTs()) &&
-                    Objects.isNull(characterCostTime.getCommunicationRoundEarningDesire())) {
-                characterCostTime.setCommunicationDurationFearningDesire(communicationTime +
-                        Integer.parseInt(telephoneRecord.getEarningDesire().get(0).getTs()));
-                characterCostTime.setCommunicationRoundEarningDesire(communicationRound);
-            }
             if (!CollectionUtils.isEmpty(telephoneRecord.getSoftwareFunctionClarity()) &&
                     !StringUtils.isEmpty(telephoneRecord.getSoftwareFunctionClarity().get(0).getTs()) &&
                     Objects.isNull(characterCostTime.getCommunicationRoundSoftwareFunctionClarity())) {
@@ -740,16 +726,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 设置提醒频率
         basic.setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
         basic.setOwnerInteractionFreq(getOwnerInteractionFrequencyContent(featureFromLLM.getOwnerInteraction()));
-        basic.setFundsVolume(convertBaseFeatureByOverwrite(featureFromLLM.getFundsVolume(), Objects.isNull(featureFromSale) ? null : featureFromSale.getFundsVolumeSales(), FundsVolumeEnum.class, String.class));
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
         quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
         quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
         basic.setQuantified(quantified);
 
-        basic.setCustomerContinueCommunicate(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerContinueCommunicate(), null, null, Boolean.class));
         basic.setOwnerPackagingCourse(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPackagingCourse(), null, null, Boolean.class));
-        basic.setOwnerPackagingFunction(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPackagingFunction(), null, null, Boolean.class));
         basic.setExamineCustomer(getExamineCustomer(featureFromLLM.getSoftwareFunctionClarity()));
 
         basic.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
@@ -767,10 +750,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
         CustomerProcessSummary customerSummaryResponse = new CustomerProcessSummary();
         CustomerProcessSummary.ProcessInfoExplanation infoExplanation = new CustomerProcessSummary.ProcessInfoExplanation();
-        infoExplanation.setStock(convertSummaryByOverwrite(featureFromLLM.getIllustrateBasedStock()));
-        infoExplanation.setTradeBasedIntro(convertSummaryByOverwrite(featureFromLLM.getTradeStyleIntroduce()));
-        infoExplanation.setStockPickReview(convertSummaryByOverwrite(featureFromLLM.getStockPickMethodReview()));
-        infoExplanation.setStockTimingReview(convertSummaryByOverwrite(featureFromLLM.getStockPickTimingReview()));
         infoExplanation.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
         infoExplanation.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
         customerSummaryResponse.setInfoExplanation(infoExplanation);
@@ -781,7 +760,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         tradingMethod.setTradeTimingDecision(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradeTimingDecision(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradeTimingDecisionSales(), null, String.class));
         tradingMethod.setTradingStyle(convertTradeMethodFeatureByOverwrite(featureFromLLM.getTradingStyle(), Objects.isNull(featureFromSale) ? null : featureFromSale.getTradingStyleSales(), null, String.class));
         tradingMethod.setStockMarketAge(convertTradeMethodFeatureByOverwrite(featureFromLLM.getStockMarketAge(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockMarketAgeSales(), null, String.class));
-        tradingMethod.setLearningAbility(convertTradeMethodFeatureByOverwrite(featureFromLLM.getLearningAbility(), Objects.isNull(featureFromSale) ? null : featureFromSale.getLearningAbilitySales(), LearningAbilityEnum.class, String.class));
 
         tradingMethod.getCurrentStocks().setStandardAction(infoExplanation.getStock());
         tradingMethod.getStockPurchaseReason().setStandardAction(infoExplanation.getStockPickReview());

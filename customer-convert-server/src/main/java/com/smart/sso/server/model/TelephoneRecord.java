@@ -1,13 +1,11 @@
 package com.smart.sso.server.model;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.smart.sso.server.handler.CommunicationContentTypeHandler;
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,14 +20,27 @@ public class TelephoneRecord {
     private String ownerName;
     private String activityId;
     private Integer communicationDuration;
-    private Timestamp communicationTime;
+    private LocalDateTime communicationTime;
     private String callId;
     private String communicationType;
-
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> fundsVolume;
+    private List<CommunicationContent> ownerPrologue;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> earningDesire;
+    private List<CommunicationContent> ownerExplainCaseOrder;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerResponseRefusePurchase;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> customerLearning;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerInteraction;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> customerRefuseCommunication;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerResponseRefuseCommunication;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> ownerPackagingCourse;
+    @TableField(typeHandler = CommunicationContentTypeHandler.class)
+    private List<CommunicationContent> appointmentContact;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> softwareFunctionClarity;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
@@ -51,38 +62,10 @@ public class TelephoneRecord {
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> stockMarketAge;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> learningAbility;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> illustrateBasedStock;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> tradeStyleIntroduce;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPickMethodReview;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> stockPickTimingReview;
-
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> customerIssuesQuantified;
     @TableField(typeHandler = CommunicationContentTypeHandler.class)
     private List<CommunicationContent> softwareValueQuantified;
-
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> customerLearning;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> ownerInteraction;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> customerContinueCommunicate;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> ownerPackagingCourse;
-    @TableField(typeHandler = CommunicationContentTypeHandler.class)
-    private List<CommunicationContent> ownerPackagingFunction;
     private Integer parsed;
-    private String tenantId;
-    // 预留属性
-    private String reservedInfo;
-    private String reservedProperty;
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime  updateTime;
 }

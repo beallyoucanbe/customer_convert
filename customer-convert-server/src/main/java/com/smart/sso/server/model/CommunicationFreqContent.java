@@ -2,7 +2,7 @@ package com.smart.sso.server.model;
 
 import lombok.*;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class CommunicationFreqContent {
     @AllArgsConstructor
     public static class FrequencyItem{
         private String callId;
-        private Timestamp communicationTime;
+        private LocalDateTime communicationTime;
         private Integer count;
         private String content;
     }
