@@ -30,10 +30,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -332,9 +330,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setVisitLiveFreq(Objects.nonNull(customerFeature.getWarmth().getVisitLiveFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitLiveFreq().getValue() : null);
         latestCustomerCharacter.setVisitCommunityFreq(Objects.nonNull(customerFeature.getWarmth().getVisitCommunityFreq().getValue()) ? (Double) customerFeature.getWarmth().getVisitCommunityFreq().getValue() : null);
         latestCustomerCharacter.setFunctionFreq(Objects.nonNull(customerFeature.getWarmth().getFunctionFreq().getValue()) ? (Double) customerFeature.getWarmth().getFunctionFreq().getValue() : null);
-
-        latestCustomerCharacter.setUpdateTime(
-                customerProfile.getLastCommunicationDate().toInstant().atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
+        latestCustomerCharacter.setUpdateTime(customerProfile.getLastCommunicationDate());
 
         latestCustomerCharacter.setCustomerRefundStatus(Objects.nonNull(customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue()) ? customerFeature.getBasic().getCustomerRequireRefund().getCustomerConclusion().getCompareValue().toString() : null);
         latestCustomerCharacter.setTimeAddCustomer(customerBase.getCreateTime());
@@ -351,6 +347,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setTeacherProfession(Objects.nonNull(customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession()) ? customerFeature.getDeliveryPeriod().getCourseTeacher().getTeacherProfession().toString() : null);
         latestCustomerCharacter.setCourseProcessed(customerFeature.getDeliveryPeriod().getMasterCourse().getProcess());
         latestCustomerCharacter.setCourseCorrect(customerFeature.getDeliveryPeriod().getMasterCourse().getCorrect());
+        latestCustomerCharacter.setLatestTimeTelephone(customerFeature.getBasic().getLatestTimeTelephone());
 
         // 设置事件的最新访问时间，如果有异常，就跳过
         try {

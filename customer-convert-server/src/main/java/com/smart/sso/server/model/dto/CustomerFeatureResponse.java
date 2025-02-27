@@ -2,6 +2,7 @@ package com.smart.sso.server.model.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ public class CustomerFeatureResponse {
         private BaseFeature courseMaster_6;
         private BaseFeature courseMaster_7;
         private BaseFeature customerRequireRefund;
+        private LocalDateTime latestTimeTelephone;
 
     }
 

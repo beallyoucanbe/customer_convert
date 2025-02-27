@@ -60,6 +60,9 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         customerFeatureFromLLM.setCommunicationTime(records.get(0).getCommunicationTime());
         // 对该客户下的所有的通话记录进行总结
         for (TelephoneRecord record : records) {
+            if (Objects.isNull(customerFeatureFromLLM.getLatestTimeTelephone()) && record.getCommunicationType().equals("phone")){
+                customerFeatureFromLLM.setLatestTimeTelephone(record.getCommunicationTime());
+            }
             //客户的资金体量
             if (!CollectionUtils.isEmpty(record.getFundsVolume())) {
                 CommunicationContent communicationContent = record.getFundsVolume().get(0);

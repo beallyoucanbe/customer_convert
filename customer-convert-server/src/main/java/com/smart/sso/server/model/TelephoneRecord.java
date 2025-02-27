@@ -1,13 +1,11 @@
 package com.smart.sso.server.model;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.smart.sso.server.handler.CommunicationContentTypeHandler;
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,7 +21,7 @@ public class TelephoneRecord {
     private String activityId;
     private String period;
     private Integer communicationDuration;
-    private Timestamp communicationTime;
+    private LocalDateTime communicationTime;
     private String communicationType;
     private String callId;
 

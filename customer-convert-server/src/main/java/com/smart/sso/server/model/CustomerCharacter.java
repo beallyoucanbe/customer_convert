@@ -42,6 +42,7 @@ public class CustomerCharacter implements Serializable {
     private Double visitLiveFreq;
     private Double visitCommunityFreq;
     private Double functionFreq;
+    private LocalDateTime latestTimeTelephone;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private LocalDateTime updateTimeTelephone;

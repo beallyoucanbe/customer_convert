@@ -44,6 +44,7 @@ public interface CustomerCharacterMapper extends BaseMapper<CustomerCharacter> {
             "latest_time_remind_community=#{latestTimeRemindCommunity}, ",
             "latest_time_use_function=#{latestTimeUseFunction}, ",
             "time_add_customer=#{timeAddCustomer}, ",
+            "latest_time_telephone=#{latestTimeTelephone}, ",
             "delivery_remind_live_freq=#{deliveryRemindLiveFreq}, ",
             "delivery_remind_callback_freq=#{deliveryRemindCallbackFreq}, ",
             "course1=#{course1}, ",

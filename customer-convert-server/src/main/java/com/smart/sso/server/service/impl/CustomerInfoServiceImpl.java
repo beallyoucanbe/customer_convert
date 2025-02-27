@@ -557,7 +557,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         basic.setCourseMaster_7(convertBaseFeatureByOverwrite(featureFromLLM.getCourseMaster_7(), null, null, Boolean.class));
 
         basic.setSoftwarePurchaseAttitude(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwarePurchaseAttitude(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwarePurchaseAttitudeSales(), null, Boolean.class));
-
+        basic.setLatestTimeTelephone(featureFromLLM.getLatestTimeTelephone());
         customerFeatureResponse.setBasic(basic);
         return customerFeatureResponse;
     }
