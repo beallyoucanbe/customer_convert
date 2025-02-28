@@ -25,7 +25,7 @@ def send_dingtalk_message(message):
         "msg": {
             "msgtype": "text",
             "text": {
-                "content": message
+                "content": '[海能]' + message
             }
         }
     }
@@ -41,7 +41,7 @@ def is_working_hour():
     return False
 
 def send_customer_log_alarm(data):
-    message = '[合众] 昨天的同步信息为：' + json.dumps(data)
+    message = '昨天的同步信息为：' + json.dumps(data)
     send_dingtalk_message(message)
 
 def send_nginx_log_alarm(data):
@@ -57,7 +57,7 @@ def send_nginx_log_alarm(data):
 
     if response_time_tp80 > 0.9 or err_request > 10:
         # 发送报警信息
-        send_dingtalk_message('[合众]' + json.dumps(data))
+        send_dingtalk_message(json.dumps(data))
 
 if __name__ == '__main__':
     data = {"response_time_result": {"response_time_tp80": 0.051, "response_time_tp99": 0.502, "response_time_average": 0.033, "response_time_tp90": 0.084}, "code_dict": {"200": 39, "502": 1, "500": 5}}
