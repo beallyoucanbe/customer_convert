@@ -44,6 +44,7 @@ public class CustomerFeatureResponse {
         private BaseFeature courseMaster_7;
         private BaseFeature customerRequireRefund;
         private LocalDateTime latestTimeTelephone;
+        private LocalDateTime firstTimeTelephone;
 
     }
 

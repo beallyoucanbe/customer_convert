@@ -62,6 +62,9 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
             if (Objects.isNull(customerFeatureFromLLM.getLatestTimeTelephone()) && record.getCommunicationType().equals("phone")){
                 customerFeatureFromLLM.setLatestTimeTelephone(record.getCommunicationTime());
             }
+            if (record.getCommunicationType().equals("phone")){
+                customerFeatureFromLLM.setFirstTimeTelephone(record.getCommunicationTime());
+            }
             //客户的资金体量
             if (!CollectionUtils.isEmpty(record.getFundsVolume())) {
                 CommunicationContent communicationContent = record.getFundsVolume().get(0);

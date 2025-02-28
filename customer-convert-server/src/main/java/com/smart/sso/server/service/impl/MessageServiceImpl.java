@@ -348,6 +348,7 @@ public class MessageServiceImpl implements MessageService {
         latestCustomerCharacter.setCourseProcessed(customerFeature.getDeliveryPeriod().getMasterCourse().getProcess());
         latestCustomerCharacter.setCourseCorrect(customerFeature.getDeliveryPeriod().getMasterCourse().getCorrect());
         latestCustomerCharacter.setLatestTimeTelephone(customerFeature.getBasic().getLatestTimeTelephone());
+        latestCustomerCharacter.setFirstTimeTelephone(customerFeature.getBasic().getFirstTimeTelephone());
 
         // 设置事件的最新访问时间，如果有异常，就跳过
         try {
