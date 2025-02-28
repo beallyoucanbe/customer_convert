@@ -19,6 +19,7 @@ public class CustomerFeatureFromLLM {
     private Integer communicationDuration;
     private LocalDateTime communicationTime;
     private LocalDateTime latestTimeTelephone;
+    private LocalDateTime firstTimeTelephone;
     private String callId;
 
     private CommunicationContent fundsVolume;
