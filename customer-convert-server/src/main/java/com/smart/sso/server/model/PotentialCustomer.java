@@ -17,6 +17,7 @@ public class PotentialCustomer {
     private List<String> middle = new ArrayList<>();
     // 资金量≥5万且认可数≤2
     private List<String> low = new ArrayList<>();
+    private List<String> purchased = new ArrayList<>();
     // 资金量≥5万且认可数≥3，超过3天未联系
     private List<String> longTimeNoSee = new ArrayList<>();
 }

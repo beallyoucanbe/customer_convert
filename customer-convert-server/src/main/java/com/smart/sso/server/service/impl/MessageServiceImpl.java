@@ -531,10 +531,6 @@ public class MessageServiceImpl implements MessageService {
 
         Map<String, PotentialCustomer> potentialCustomerMap = new HashMap<>();
         for (CustomerCharacter character : characterList) {
-            // 完成购买，跳过不统计
-            if (character.getCompletePurchaseStage()) {
-                continue;
-            }
             // 只推送合格用户
             if (StringUtils.isEmpty(character.getCustTypeId()) || !character.getCustTypeId().equals(1)){
                 continue;
@@ -549,8 +545,10 @@ public class MessageServiceImpl implements MessageService {
             }
             // 判断 认可度次数
             int approvalCount = getApprovalCount(character);
-            // 资金量≥5万且认可数≥3，购买态度为确认购买
-            if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
+            // 完成购买
+            if (character.getCompletePurchaseStage()) {
+                potentialCustomer.getPurchased().add(character.getCustomerId());
+            } else if (approvalCount >= 3 && Boolean.parseBoolean(character.getSoftwarePurchaseAttitude()) &&
                     !StringUtils.isEmpty(character.getFundsVolume()) &&
                     (character.getFundsVolume().equals("大于10万") || character.getFundsVolume().equals("5到10万之间"))) {
                 potentialCustomer.getHigh().add(character.getCustomerId());
@@ -585,6 +583,8 @@ public class MessageServiceImpl implements MessageService {
                 }
                 int communicationDurationToday = teleTimeMap.values().stream().mapToInt(Integer::intValue).sum();
                 // 统计该销售下所有客户的特征信息
+                int purchasedCount = 0;
+                int purchasedTime = 0;
                 int highCount = 0;
                 int highTime = 0;
                 int middleCount = 0;
@@ -594,6 +594,7 @@ public class MessageServiceImpl implements MessageService {
                 int elseTime = 0;
                 StringBuilder elseString = new StringBuilder();
                 PotentialCustomer potentialCustomer = potentialCustomerMap.get(ownerId);
+                Set<String> purchasedSet = new HashSet<>(potentialCustomer.getPurchased());
                 Set<String> highSet = new HashSet<>(potentialCustomer.getHigh());
                 Set<String> middleSet = new HashSet<>(potentialCustomer.getMiddle());
                 Set<String> lowSet = new HashSet<>(potentialCustomer.getLow());
@@ -603,7 +604,10 @@ public class MessageServiceImpl implements MessageService {
                         if (characterMap.containsKey(entry.getKey())) {
                             characterMap.put(entry.getKey(), customerCharacterMapper.selectByCustomerIdAndActivityId(entry.getKey(), activityId));
                         }
-                        if (highSet.contains(entry.getKey())) {
+                        if (purchasedSet.contains(entry.getKey())) {
+                            purchasedCount++;
+                            purchasedTime += entry.getValue();
+                        } else if (highSet.contains(entry.getKey())) {
                             highCount++;
                             highTime += entry.getValue();
                         } else if (middleSet.contains(entry.getKey())) {
@@ -638,6 +642,9 @@ public class MessageServiceImpl implements MessageService {
                 if (!CollectionUtils.isEmpty(customerExceed2Hour)) {
                     for (String one : customerExceed2Hour) {
                         try {
+                            if(purchasedSet.contains(one)){
+                                continue;
+                            }
                             customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
                                     .append("，单通通话超过2小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
                                     .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
@@ -651,6 +658,9 @@ public class MessageServiceImpl implements MessageService {
                 if (!CollectionUtils.isEmpty(customerExceed8Hour)) {
                     for (String one : customerExceed8Hour) {
                         try {
+                            if(purchasedSet.contains(one)){
+                                continue;
+                            }
                             customerExceedTimeStr.append(characterMap.get(one).getCustomerName()).append("，").append(characterMap.get(one).getCustomerId())
                                     .append("，累计通话超过4小时（资金体量为：").append(StringUtils.isEmpty(characterMap.get(one).getFundsVolume()) ? "未提及" : characterMap.get(one).getFundsVolume())
                                     .append("，认可数为：").append(getApprovalCount(characterMap.get(one))).append("个，购买态度为：")
@@ -662,6 +672,7 @@ public class MessageServiceImpl implements MessageService {
                 String dayStr = day.equals("today") ? "今日" : "昨日";
                 String message = String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF_TEMPLATE,
                         dayStr, getTimeString(communicationDurationToday),
+                        String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, purchasedSet.size(), purchasedCount, getTimeString(purchasedTime)),
                         String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, highSet.size(), highCount, getTimeString(highTime)),
                         String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, middleSet.size(), middleCount, getTimeString(middleTime)),
                         String.format(COMMUNICATION_TIME_SUMMARY_FOR_STAFF, lowSet.size(), lowCount, getTimeString(lowTime)),

@@ -76,6 +76,9 @@ public class AppConstant {
 
     public static final String COMMUNICATION_TIME_SUMMARY_FOR_STAFF_TEMPLATE =
             "%s通话总时长为**%s**，时间分配如下：\n" +
+            "0）**完成购买**\n" +
+            "%s" +
+            "  \n" +
             "1）**临门一脚**（资金量≥5万且认可数≥3，购买态度为确认购买）\n" +
             "%s" +
             "  \n" +
