@@ -27,14 +27,20 @@ public class CustomerFeatureResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Basic {
+        private BaseFeature ownerPrologue;
+        private BaseFeature ownerExplainCaseOrder;
+        private Integer ownerResponseRefusePurchase;
         // 客户认可数
         private Integer approveCount;
         // 客户学习请教频次
         private FrequencyContent customerLearningFreq = new FrequencyContent();
         // 业务员互动频次
         private FrequencyContent ownerInteractionFreq = new FrequencyContent();
-        // 业务员正确包装系列课
+
+        private BaseFeature customerRefuseCommunication;
+        private BaseFeature ownerResponseRefuseCommunication;
         private BaseFeature ownerPackagingCourse;
+        private BaseFeature appointmentContact;
         // 考察客户
         private CustomerProcessSummary.ProcessInfoExplanationContent examineCustomer;
         private BaseFeature softwareFunctionClarity;

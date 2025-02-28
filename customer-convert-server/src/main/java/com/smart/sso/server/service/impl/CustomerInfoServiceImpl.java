@@ -691,18 +691,25 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse customerFeatureResponse = new CustomerFeatureResponse();
         // Basic 基本信息
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
+        basic.setOwnerPrologue(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPrologue(), null, null, Boolean.class));
+        basic.setOwnerExplainCaseOrder(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerExplainCaseOrder(), null, null, Boolean.class));
+        basic.setOwnerResponseRefusePurchase(0);
         // 设置提醒频率
         basic.setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
         basic.setOwnerInteractionFreq(getOwnerInteractionFrequencyContent(featureFromLLM.getOwnerInteraction()));
+
+        basic.setCustomerRefuseCommunication(convertBaseFeatureByOverwrite(featureFromLLM.getCustomerRefuseCommunication(), null, null, String.class));
+        basic.setOwnerResponseRefuseCommunication(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerResponseRefuseCommunication(), null, null, String.class));
+
+        basic.setOwnerPackagingCourse(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPackagingCourse(), null, null, Boolean.class));
+        basic.setAppointmentContact(convertBaseFeatureByOverwrite(featureFromLLM.getAppointmentContact(), null, null, Boolean.class));
+
         // 量化信息
         CustomerFeatureResponse.Quantified quantified = new CustomerFeatureResponse.Quantified();
         quantified.setCustomerIssuesQuantified(convertSummaryByOverwrite(featureFromLLM.getCustomerIssuesQuantified()));
         quantified.setSoftwareValueQuantified(convertSummaryByOverwrite(featureFromLLM.getSoftwareValueQuantified()));
         basic.setQuantified(quantified);
-
-        basic.setOwnerPackagingCourse(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPackagingCourse(), null, null, Boolean.class));
         basic.setExamineCustomer(getExamineCustomer(featureFromLLM.getSoftwareFunctionClarity()));
-
         basic.setSoftwareFunctionClarity(convertBaseFeatureByOverwrite(featureFromLLM.getSoftwareFunctionClarity(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSoftwareFunctionClaritySales(), null, Boolean.class));
         basic.setStockSelectionMethod(convertBaseFeatureByOverwrite(featureFromLLM.getStockSelectionMethod(), Objects.isNull(featureFromSale) ? null : featureFromSale.getStockSelectionMethodSales(), null, Boolean.class));
         basic.setSelfIssueRecognition(convertBaseFeatureByOverwrite(featureFromLLM.getSelfIssueRecognition(), Objects.isNull(featureFromSale) ? null : featureFromSale.getSelfIssueRecognitionSales(), null, Boolean.class));
