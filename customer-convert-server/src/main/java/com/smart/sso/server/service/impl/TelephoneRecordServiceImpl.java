@@ -532,7 +532,7 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
         chatDetail.setCommunicationDuration(record.getCommunicationDuration());
         chatDetail.setType(record.getCommunicationType());
 
-        String filePath = "/opt/customer-convert/callback/files/" + record.getCallId(); // 文件路径
+        String filePath = "/opt/customer-convert/callback/files_188/" + record.getCallId(); // 文件路径
         List<ChatDetail.Message> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;

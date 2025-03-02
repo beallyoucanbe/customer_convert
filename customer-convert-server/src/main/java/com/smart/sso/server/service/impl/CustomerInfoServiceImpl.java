@@ -31,15 +31,12 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
-import static com.smart.sso.server.enums.FundsVolumeEnum.FIVE_TO_TEN_MILLION;
-import static com.smart.sso.server.enums.FundsVolumeEnum.GREAT_TEN_MILLION;
-import static com.smart.sso.server.enums.FundsVolumeEnum.LESS_FIVE_MILLION;
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 
 @Service
@@ -68,8 +65,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Lazy
     private MessageService messageService;
 
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public CustomerInfoListResponse queryCustomerInfoList(CustomerInfoListRequest params) {
@@ -693,7 +689,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         basic.setOwnerPrologue(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPrologue(), null, null, Boolean.class));
         basic.setOwnerExplainCaseOrder(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerExplainCaseOrder(), null, null, Boolean.class));
-        basic.setOwnerResponseRefusePurchase(getCustomerLearningFrequencyContent(featureFromLLM.getOwnerResponseRefusePurchase()));
+        basic.setOwnerResponseRefusePurchase(getRefusePurchaseContent(featureFromLLM.getOwnerResponseRefusePurchase()));
         // 设置提醒频率
         basic.setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
         basic.setOwnerInteractionFreq(getOwnerInteractionFrequencyContent(featureFromLLM.getOwnerInteraction()));
@@ -772,7 +768,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
                 for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
                     Map<String, Object> item = new HashMap<>();
-                    item.put("communication_time", sdf.format(one.getCommunicationTime()));
+                    item.put("communication_time", one.getCommunicationTime().format(formatter));
                     item.put("remind_count", one.getCount());
                     item.put("content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getContent()));
                     data.add(item);
@@ -802,8 +798,41 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
                 for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
                     Map<String, Object> item = new HashMap<>();
-                    item.put("communication_time", sdf.format(one.getCommunicationTime()));
+                    item.put("communication_time", one.getCommunicationTime().format(formatter));
                     item.put("remind_count", one.getCount());
+                    data.add(item);
+                }
+            }
+            recordContent.setData(data);
+            frequencyContent.setRecords(recordContent);
+        }
+        return frequencyContent;
+    }
+
+    private CustomerFeatureResponse.FrequencyContent getRefusePurchaseContent(CommunicationFreqContent communicationFreqContent){
+        CustomerFeatureResponse.FrequencyContent frequencyContent = new CustomerFeatureResponse.FrequencyContent();
+        if (communicationFreqContent.getRemindCount() > 0 ) {
+            // 频率计算规则 提醒次数/通话次数
+            frequencyContent.setValue(communicationFreqContent.getRemindCount());
+
+            // 提醒查看交付课直播：
+            CustomerFeatureResponse.RecordContent recordContent = new CustomerFeatureResponse.RecordContent();
+            List<CustomerFeatureResponse.RecordTitle> columns = new ArrayList<>();
+            columns.add(new CustomerFeatureResponse.RecordTitle("communication_time", "会话时间"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("remind_count", "应对次数"));
+            columns.add(new CustomerFeatureResponse.RecordTitle("content", "原文摘要"));
+            recordContent.setColumns(columns);
+
+            List<Map<String, Object>> data = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(communicationFreqContent.getFrequencyItemList())) {
+                for (CommunicationFreqContent.FrequencyItem one : communicationFreqContent.getFrequencyItemList()) {
+                    Map<String, Object> item = new HashMap<>();
+                    if (one.getCount() == 0){
+                        continue;
+                    }
+                    item.put("communication_time", one.getCommunicationTime().format(formatter));
+                    item.put("remind_count", one.getCount());
+                    item.put("content", CommonUtils.getOriginChatFromChatText(one.getCallId(), one.getContent()));
                     data.add(item);
                 }
             }
