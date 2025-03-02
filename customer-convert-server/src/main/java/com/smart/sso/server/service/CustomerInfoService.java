@@ -29,7 +29,7 @@ public interface CustomerInfoService {
 
     void modifyCustomerFeatureById(String customerId, String campaignId, CustomerFeatureResponse customerFeature);
 
-    void callback(String sourceId);
+    void callback(String ownerId, String sourceId);
 
     String getRedirectUrl(String customerId, String activeId, String ownerId, String owner, String from, String manager);
 

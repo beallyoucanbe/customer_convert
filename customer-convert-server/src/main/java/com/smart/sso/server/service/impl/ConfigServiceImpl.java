@@ -22,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
+import static com.smart.sso.server.constant.AppConstant.staffNewAttend;
+
 @Service
 @Slf4j
 public class ConfigServiceImpl implements ConfigService {
@@ -262,6 +264,7 @@ public class ConfigServiceImpl implements ConfigService {
             staffIdMap.put(entry.getKey(), new HashSet<>(entry.getValue()));
         }
         AppConstant.staffIdMap = staffIdMap;
+        AppConstant.staffIdMap.put("new_188", staffNewAttend);
         // 更新员工和主管和大区经理的关系
         AppConstant.staffLeaderMap = getStaffLeaderMap();
         AppConstant.staffManagerrMap = getStaffManagerMap();

@@ -39,9 +39,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.smart.sso.server.constant.AppConstant.SOURCEID_KEY_PREFIX;
+import static com.smart.sso.server.constant.AppConstant.staffNewAttend;
 import static com.smart.sso.server.enums.FundsVolumeEnum.FIVE_TO_TEN_MILLION;
 import static com.smart.sso.server.enums.FundsVolumeEnum.GREAT_TEN_MILLION;
-import static com.smart.sso.server.enums.FundsVolumeEnum.LESS_FIVE_MILLION;
 import static com.smart.sso.server.util.CommonUtils.deletePunctuation;
 
 @Service
@@ -421,13 +421,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Override
     @Async
-    public void callback(String sourceId) {
+    public void callback(String ownerId, String sourceId) {
         try {
             // 将sourceId 写入文件
             String filePath = "/opt/customer-convert/callback/v1/sourceid.txt";
             CommonUtils.appendTextToFile(filePath, sourceId);
             String[] params = {sourceId};
-            Process process = ShellUtils.saPythonRun("/home/opsuser/hsw/chat_insight_v2/dads/yimeng/process_text.py", params.length, params);
+            String pythonFilePath;
+            if (staffNewAttend.contains(ownerId)) {
+                pythonFilePath = "/home/opsuser/hsw/chat_insight_v2/dads/yimeng/process_text_188.py";
+            } else {
+                pythonFilePath = "/home/opsuser/hsw/chat_insight_v2/dads/yimeng/process_text.py";
+            }
+            Process process = ShellUtils.saPythonRun(pythonFilePath, params.length, params);
             // 等待脚本执行完成
             int exitCode = process.waitFor();
             String redisKey = SOURCEID_KEY_PREFIX + sourceId;
