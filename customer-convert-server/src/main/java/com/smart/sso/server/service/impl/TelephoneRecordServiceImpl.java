@@ -449,44 +449,42 @@ public class TelephoneRecordServiceImpl implements TelephoneRecordService {
                 }
             }
 
-            if (record.getCommunicationDuration() >= 30) {
-                //客户学习请教次数
-                CommunicationFreqContent customerLearningFre = customerFeatureFromLLM.getCustomerLearning();
-                customerLearningFre.setCommunicationCount(customerLearningFre.getCommunicationCount() + 1);
-                customerLearningFre.setCommunicationTime(customerLearningFre.getCommunicationTime() + record.getCommunicationDuration());
-                if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
-                    CommunicationContent communicationContent = record.getCustomerLearning().get(0);
-                    if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
-                        try {
-                            customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
-                            customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                                    record.getCallId(),
-                                    customerFeatureFromLLM.getCommunicationTime(),
-                                    Integer.parseInt(communicationContent.getAnswerTag()),
-                                    communicationContent.getAnswerText()));
-                        } catch (NumberFormatException e) {
-                           // 兼容大模型提取内容的问题
-                        }
+            //客户学习请教次数
+            CommunicationFreqContent customerLearningFre = customerFeatureFromLLM.getCustomerLearning();
+            customerLearningFre.setCommunicationCount(customerLearningFre.getCommunicationCount() + 1);
+            customerLearningFre.setCommunicationTime(customerLearningFre.getCommunicationTime() + record.getCommunicationDuration());
+            if (!CollectionUtils.isEmpty(record.getCustomerLearning())) {
+                CommunicationContent communicationContent = record.getCustomerLearning().get(0);
+                if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
+                    try {
+                        customerLearningFre.setRemindCount(customerLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                        customerLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                                record.getCallId(),
+                                customerFeatureFromLLM.getCommunicationTime(),
+                                Integer.parseInt(communicationContent.getAnswerTag()),
+                                communicationContent.getAnswerText()));
+                    } catch (NumberFormatException e) {
+                       // 兼容大模型提取内容的问题
                     }
                 }
+            }
 
-                //业务员互动次数
-                CommunicationFreqContent ownerInteractionLearningFre = customerFeatureFromLLM.getOwnerInteraction();
-                ownerInteractionLearningFre.setCommunicationCount(ownerInteractionLearningFre.getCommunicationCount() + 1);
-                ownerInteractionLearningFre.setCommunicationTime(ownerInteractionLearningFre.getCommunicationTime() + record.getCommunicationDuration());
-                if (!CollectionUtils.isEmpty(record.getOwnerInteraction())) {
-                    CommunicationContent communicationContent = record.getOwnerInteraction().get(0);
-                    if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
-                        try {
-                            ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
-                            ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
-                                    record.getCallId(),
-                                    customerFeatureFromLLM.getCommunicationTime(),
-                                    Integer.parseInt(communicationContent.getAnswerTag()),
-                                    communicationContent.getAnswerText()));
-                        } catch (NumberFormatException e) {
-                            // 兼容大模型提取内容的问题
-                        }
+            //业务员互动次数
+            CommunicationFreqContent ownerInteractionLearningFre = customerFeatureFromLLM.getOwnerInteraction();
+            ownerInteractionLearningFre.setCommunicationCount(ownerInteractionLearningFre.getCommunicationCount() + 1);
+            ownerInteractionLearningFre.setCommunicationTime(ownerInteractionLearningFre.getCommunicationTime() + record.getCommunicationDuration());
+            if (!CollectionUtils.isEmpty(record.getOwnerInteraction())) {
+                CommunicationContent communicationContent = record.getOwnerInteraction().get(0);
+                if (!StringUtils.isEmpty(communicationContent.getAnswerTag())) {
+                    try {
+                        ownerInteractionLearningFre.setRemindCount(ownerInteractionLearningFre.getRemindCount() + Integer.parseInt(communicationContent.getAnswerTag()));
+                        ownerInteractionLearningFre.getFrequencyItemList().add(new CommunicationFreqContent.FrequencyItem(
+                                record.getCallId(),
+                                customerFeatureFromLLM.getCommunicationTime(),
+                                Integer.parseInt(communicationContent.getAnswerTag()),
+                                communicationContent.getAnswerText()));
+                    } catch (NumberFormatException e) {
+                        // 兼容大模型提取内容的问题
                     }
                 }
             }

@@ -29,7 +29,7 @@ public class CustomerFeatureResponse {
     public static class Basic {
         private BaseFeature ownerPrologue;
         private BaseFeature ownerExplainCaseOrder;
-        private Integer ownerResponseRefusePurchase;
+        private FrequencyContent ownerResponseRefusePurchase = new FrequencyContent();
         // 客户认可数
         private Integer approveCount;
         // 客户学习请教频次

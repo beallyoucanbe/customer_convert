@@ -693,7 +693,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         CustomerFeatureResponse.Basic basic = new CustomerFeatureResponse.Basic();
         basic.setOwnerPrologue(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerPrologue(), null, null, Boolean.class));
         basic.setOwnerExplainCaseOrder(convertBaseFeatureByOverwrite(featureFromLLM.getOwnerExplainCaseOrder(), null, null, Boolean.class));
-        basic.setOwnerResponseRefusePurchase(0);
+        basic.setOwnerResponseRefusePurchase(getCustomerLearningFrequencyContent(featureFromLLM.getOwnerResponseRefusePurchase()));
         // 设置提醒频率
         basic.setCustomerLearningFreq(getCustomerLearningFrequencyContent(featureFromLLM.getCustomerLearning()));
         basic.setOwnerInteractionFreq(getOwnerInteractionFrequencyContent(featureFromLLM.getOwnerInteraction()));
