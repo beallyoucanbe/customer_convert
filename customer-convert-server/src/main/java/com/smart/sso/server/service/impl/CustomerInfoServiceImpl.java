@@ -843,7 +843,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 构建结论
         Feature.CustomerConclusion customerConclusion = new Feature.CustomerConclusion();
         if (isTag) {
-            if (Objects.nonNull(featureContentByModel) && !StringUtils.isEmpty(featureContentByModel.getAnswerText())) {
+            if (Objects.nonNull(featureContentByModel) &&
+                    (!StringUtils.isEmpty(featureContentByModel.getAnswerText()) || !StringUtils.isEmpty(featureContentByModel.getAnswerTag()))) {
                 // 没有候选值枚举，直接返回最后一个非空（如果存在）记录值
                 if (Objects.isNull(enumClass)) {
                     customerConclusion.setModelRecord(featureContentByModel.getAnswerTag());

@@ -20,7 +20,7 @@ public class CustomerFeatureFromLLM {
 
     private CommunicationContent ownerPrologue;
     private CommunicationContent ownerExplainCaseOrder;
-    private CommunicationContent ownerResponseRefusePurchase;
+    private CommunicationFreqContent ownerResponseRefusePurchase = new CommunicationFreqContent();
     private CommunicationFreqContent customerLearning = new CommunicationFreqContent();
     private CommunicationFreqContent ownerInteraction = new CommunicationFreqContent();
     private CommunicationContent customerRefuseCommunication;

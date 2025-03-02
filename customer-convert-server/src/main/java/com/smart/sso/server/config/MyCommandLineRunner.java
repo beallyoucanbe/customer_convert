@@ -15,6 +15,6 @@ public class MyCommandLineRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         log.error("客户配置初始化");
-        configService.refreshCustomerConfig();
+//        configService.refreshCustomerConfig();
     }
 }
